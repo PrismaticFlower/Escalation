@@ -4,7 +4,7 @@
 #define _escalation_bannedupgrades_included
 
 #include<adt>
-#include<escalation>
+#include<Escalation_Constants>
 
 #define BannedUpgradesID (9 << _:BannedUpgrades)
 

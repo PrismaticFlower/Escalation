@@ -4,7 +4,7 @@
 #define _escalation_playerdata_included
 
 #include<adt>
-#include<Escalation>
+#include<Escalation_Constants>
 
 //! This one here is a data struct and has no member functions
 /*! A data struct used to make up each player's upgrade queue. All the symbols are prefixed with _ so they can still be used in other parts of the code. */ 

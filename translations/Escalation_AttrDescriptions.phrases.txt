@@ -1,0 +1,707 @@
+"Phrases"
+{
+	"AttrbDesc_HealthIncrease"
+	{
+		"en"	"+%i Max Health"
+	}
+	
+	"AttrbDesc_HealthDecrease"
+	{
+		"en"	"-%i Max Health"
+	}
+	
+	"AttrbDesc_SpeedIncrease"
+	{
+		"en"	"+%i%% Player Move Speed"
+	}
+	
+	"AttrbDesc_SpeedDecrease"
+	{
+		"en"	"-%i%% Player Move Speed"
+	}
+
+	"AttrbDesc_JumpIncrease"
+	{
+		"en"	"+%i%% Player Jump Height"
+	}
+	
+	"AttrbDesc_JumpDecrease"
+	{
+		"en"	"-%i%% Player Jump Height"
+	}
+
+	"AttrbDesc_BulletIncrease"
+	{
+		"en"	"+%i%% Damage Taken From Bullets"
+	}
+	
+	"AttrbDesc_BlastIncrease"
+	{
+		"en"	"+%i%% Damage Taken From Explosives"
+	}
+	
+	"AttrbDesc_FireIncrease"
+	{
+		"en"	"+%i%% Damage Taken From Fire"
+	}
+
+	"AttrbDesc_SentryDecrease"
+	{
+		"en"	"-%i%% Damage Taken From Sentry Guns"
+	}
+
+	"AttrbDesc_AirBlastPushIncrease"
+	{
+		"en"	"+%i%% Push Force Taken From Airblast"
+	}
+
+	"AttrbDesc_DamagePushIncrease"
+	{
+		"en"	"+%i%% Push Force Taken From Damage"
+	}
+
+	"AttrbDesc_PushDecrease"
+	{
+		"en"	"-%i%% Push Force Taken From Damage And Airblast"
+	}
+	
+	"AttrbDesc_PushIncrease"
+	{
+		"en"	"+%i%% Push Force Taken From Damage And Airblast"
+	}
+	
+	"AttrbDesc_ReloadSpeedIncrease"
+	{
+		"en"	"%i%% Faster Reload Speed"
+	}
+
+	"AttrbDesc_ReloadSpeedDecrease"
+	{
+		"en"	"%i%% Slower Reload Speed"
+	}
+	
+	"AttrbDesc_RocketSpeedDecrease"
+	{
+		"en"	"-%i%% Slower Projectile Speed"
+	}
+	
+	"AttrbDesc_ClipSizeIncrease"
+	{
+		"en"	"+%i%% Clip Size"
+	}
+	
+	"AttrbDesc_ClipSizeDecrease"
+	{
+		"en"	"-%i%% Clip Size"
+	}
+
+	"AttrbDesc_FireRateIncrease"
+	{
+		"en"	"%i%% Faster Firing Speed"
+	}
+
+	"AttrbDesc_FireRateDecrease"
+	{
+		"en"	"%i%% Slower Firing Speed"
+	}
+	
+	"AttrbDesc_DmgPenaltyOverhealed"
+	{
+		"en"	"-%i%% Damage vs Overhealed Players"
+	}
+
+	"AttrbDesc_DmgPenaltyGrounded"
+	{
+		"en"	"-%i%% Damage vs Non-Airborne Players"
+	}
+
+	"AttrbDesc_DmgBonusBuildings"
+	{
+		"en"	"+%i%% Damage vs Buildings"
+	}
+
+	"AttrbDesc_DmgPenaltyBuildings"
+	{
+		"en"	"-%i%% Damage vs Buildings"
+	}
+	
+	"AttrbDesc_PrimaryAmmoIncrease"
+	{
+		"en"	"+%i%% Max Primary Ammo"
+	}
+	
+	"AttrbDesc_PrimaryAmmoDecrease"
+	{
+		"en"	"-%i%% Max Primary Ammo"
+	}
+	
+	"AttrbDesc_SecondaryAmmoIncrease"
+	{
+		"en"	"+%i%% Max Secondary Ammo"
+	}
+	
+	"AttrbDesc_SecondaryAmmoDecrease"
+	{
+		"en"	"-%i%% Max Secondary Ammo"
+	}
+	
+	"AttrbDesc_MiscAmmoIncrease"
+	{
+		"en"	"+%i%% Max Misc Ammo"
+	}
+	
+	"AttrbDesc_ScatKnockbackIncrease"
+	{
+		"en"	"Scattergun Knockback Increased by %i%%"  
+	}
+	
+	"AttrbDesc_BulletPerShotDecrease"
+	{
+		"en"	"-%i%% Bullets Per Shot"
+	}
+
+	"AttrbDesc_SpreadBonus"
+	{
+		"en"	"+%i%% More Accurate"
+	}
+	
+	"AttrbDesc_SpreadPenalty"
+	{
+		"en"	"-%i%% Less Accurate"
+	}
+
+	"AttrbDesc_DamageIncrease"
+	{
+		"en"	"+%i%% Damage"
+	}
+	
+	"AttrbDesc_DamageDecrease"
+	{
+		"en"	"-%i%% Damage"
+	}
+	
+	"AttrbDesc_BodyshotDamagePenalty"
+	{
+		"en"	"-%i%% Damage On Bodyshot"
+	}
+	
+	"AttrbDesc_WeaponSwitchIncrease"
+	{
+		"en"	"%i%% Longer Weapon Switch Time" 
+	}
+	
+	"AttrbDesc_WeaponSwitchDecrease"
+	{
+		"en"	"%i%% Shorter Weapon Switch Time" 
+	}
+
+	"AttrbDesc_DmgPenaltyPlayers"
+	{
+		"en"	"-%i%% Damage vs Players"
+	}
+
+	"AttrbDesc_DmgPenaltyNonBurning"
+	{
+		"en"	"-%i%% Damage vs Non-Burning Players"
+	}
+	
+	"AttrbDesc_DmgBonusBurning"
+	{
+		"en"	"+%i%% Damage vs Burning Players"
+	}
+	
+	"AttrbDesc_DmgPenaltySurface"
+	{
+		"en"	"-%i%% Damage On Contact With Surfaces"
+	}
+	
+	"AttrbDesc_JumpWeaponIncrease"
+	{
+		"en"	"+%i%% Jump Height While Active Weapon"
+	}
+	
+	"AttrbDesc_RechargeRateIncrease"
+	{
+		"en"	"+%i%% Faster Recharge Rate"
+	}
+	
+	"AttrbDesc_RechargeRateDecrease"
+	{
+		"en"	"+%i%% Slower Recharge Rate"
+	}
+	
+	"AttrbDesc_DmgPushForceIncrease"
+	{
+		"en"	"%i%% More Push Force Taken From Damage"
+	}
+	
+	"AttrbDesc_SlowMilkedPlayers"
+	{
+		"en"	"Slowdown Milked Players for %i Seconds"
+	}
+	
+	"AttrbDesc_MilkDurationDecrease"
+	{
+		"en"	"-%i%% Milk Duration"
+	}
+
+	"AttrbDesc_HealthPacksDecrease"
+	{
+		"en"	"-%i%% Health From Packs"
+	}
+
+	"AttrbDesc_HealthHealersDecrease"
+	{
+		"en"	"-%i%% Health From Healers"
+	}
+
+	"AttrbDesc_SwingRateIncrease"
+	{
+		"en"	"%i%% Faster Swing Speed"
+	}
+	
+	"AttrbDesc_MeleeRangeDecrease"
+	{
+		"en"	"-%i%% Melee Range"
+	}
+	
+	"AttrbDesc_MeleeBoundsDecrease"
+	{
+		"en"	"-%i%% Melee Hit Radius"
+	}
+	
+	"AttrbDesc_BallDamageIncrease"
+	{
+		"en"	"+%i%% Ornament Damage"
+	}
+	
+	"AttrbDesc_MiniCritsOnKill"
+	{
+		"en"	"On Kill: Gain Mini-Crits for %i Seconds"
+	}
+	
+	"AttrbDesc_DmgFromCritsIncrease"
+	{
+		"en"	"+%i%% Damage Taken From Critical Hits"
+	}
+	
+	"AttrbDesc_BleedDuration"
+	{
+		"en"	"On Hit: Bleed for %i Seconds"
+	}
+	
+	"AttrbDesc_BleedDurationIncrease"
+	{
+		"en"	"On Hit: Bleed for an Additional %i Seconds"
+	}
+	
+	"AtrbDesc_SelfBleedDmgIncrease"
+	{
+		"en"	"+%i%% Self Bleed Damage Taken"
+	}
+	
+	"AttrbDesc_MarkMultipleForDeath"
+	{
+		"en"	"Mark Multiple Targets for Death for %i Seconds Each"
+	}
+
+	"AtrbDesc_RangedDmgIncrease"
+	{
+		"en"	"While Active: Take an Extra %i%% Ranged Damage"
+	}
+
+	"AtrbDesc_RangedDmgDecrease"
+	{
+		"en"	"While Active: Take %i%% Less Ranged Damage"
+	}
+	
+	"AttrbDesc_AirDashCount"
+	{
+		"en"	"Gain an Extra %i Air Jumps"
+	}
+	
+	"AtrbDesc_DmgPerJump"
+	{
+		"en"	"Each Extra Jump Deals %i Damage"
+	}
+	
+	"AttrbDesc_HealthOnAnyKill"
+	{
+		"en"	"On Any Kill: Gain %i Health"
+	}
+	
+	"AttrbDesc_HealthOnKill"
+	{
+		"en"	"On Kill: Gain %i Health"
+	}
+	
+	"AttrbDesc_DmgTakenIncrease"
+	{
+		"en"	"+%i%% Damage Vulnerability"
+	}
+	
+	"AttrbDesc_BlastRadiusIncrease"
+	{
+		"en"	"+%i%% Blast Radius"
+	}
+	
+	"AttrbDesc_BlastRadiusDecrease"
+	{
+		"en"	"-%i%% Blast Radius"
+	}
+	
+	"AttrbDesc_RocketSpeedDecrease"
+	{
+		"en"	"-%i%% Projectile Speed"
+	}
+	
+	"AttrbDesc_ClipSizeOverride"
+	{
+		"en"	"Gain a Clip Size of %i"
+	}
+	
+	"AttrbDesc_BuffDurationIncrease"
+	{
+		"en"	"+%i%% Buff Duration"
+	}
+	
+	"AttrbDesc_BlastDmgSelfIncrease"
+	{
+		"en"	"+%i%% Damage to Self"
+	}
+	
+	"AttrbDesc_BlastDmgSelfDecrease"
+	{
+		"en"	"-%i%% Damage to Self"
+	}
+
+	"AttrbDesc_SelfBlastDescrease"
+	{
+		"en"	"-%i%% Self Damage Force"
+	}
+	
+	"AttrbDesc_SelfBlastInscrease"
+	{
+		"en"	"+%i%% Self Damage Force"
+	}
+	
+	"AttrbDesc_BootDamageIncrease"
+	{
+		"en"	"+%i%% Fall Damage to Players"
+	}
+
+	"AttrbDesc_SurviveGrenadeTaunt"
+	{
+		"en"	"Survive Kamikaze Taunt"
+	}
+
+	"AttrbDesc_ReducedFallDamage"
+	{
+		"en"	"Take Only %i%% Fall Damage"
+	}
+
+	"AttrbDesc_IncreasedFallDamage"
+	{
+		"en"	"Take An Extra %i%% Fall Damage"
+	}
+
+	"AttrbDesc_IncreasedGroundDamage"
+	{
+		"en"	"While Not Airborne: Take an Extra %i%% Damage"
+	}
+
+	"AttrbDesc_IncreasedAirExpDamage"
+	{
+		"en"	"While Explosive Jumping: Take an Extra %i%% Damage"
+	}
+	
+	"AttrbDesc_ReducedBASEDamage"
+	{
+		"en"	"While Parachuting: Take %i%% Less Damage"
+	}
+
+	"AttrbDesc_RocketJumpDmgReduced"
+	{
+		"en"	"-%i%% Self Damage Taken From Rocket Jumps"
+	}
+
+	"AttrbDesc_StickyJumpDmgReduced"
+	{
+		"en"	"-%i%% Self Damage Taken From Sticky Jumps"
+	}
+
+	"AttrbDesc_AfterBurnDecrease"
+	{
+		"en"	"-%i%% After Burn Duration"
+	}
+	
+	"AttrbDesc_AfterBurnIncrease"
+	{
+		"en"	"+%i%% After Burn Duration"
+	}
+	
+	"AttrbDesc_AfterBurnDMGIncrease"
+	{
+		"en"	"+%i%% After Burn Damage"
+	}
+	
+	"AttrbDesc_AmmoConsumeIncrease"
+	{
+		"en"	"+%i%% Flame Thrower Ammo Consumed Per Second"
+	}
+	
+	"AttrbDesc_AirBlastSpeedIncrease"
+	{
+		"en"	"Delay Between Airblast Reduced by %i%%"
+	}
+	
+	"AttrbDesc_AirBlastPushIncrease"
+	{
+		"en"	"+%i%% Airblast Push Force"
+	}
+	
+	"AttrbDesc_AirBlastCostIncrease"
+	{
+		"en"	"+%i%% Airblast Cost"
+	}
+	
+	"AttrbDesc_FlameRangeDecrease"
+	{
+		"en"	"-%i%% Flame Thrower Range"
+	}
+	
+	"AttrbDesc_RangeDecrease"
+	{
+		"en"	"-%i%% Projectile Range"
+	}
+	
+	"AttrbDesc_DmgFallOffIncrease"
+	{
+		"en"	"+%i%% Splash Damage Falloff"
+	}
+	
+	"AttrbDesc_ChargeTurnIncrease"
+	{
+		"en"	"+%i%% Charge Turn Control"
+	}
+
+	"AttrbDesc_ChargeLengthDecrease"
+	{
+		"en"	"-0.%i Charge Time"
+	}
+	
+	"AttrbDesc_ChargeLengthIncrease"
+	{
+		"en"	"+0.%i Charge Time"
+	}
+
+	"AttrbDesc_ChargeDamageDecrease"
+	{
+		"en"	"-%i%% Charge Impact Damage"
+	}
+
+	"AttrbDesc_ChargeDamageIncrease"
+	{
+		"en"	"+%i%% Charge Impact Damage"
+	}
+	
+	"AttrbDesc_ChargeRateIncrease"
+	{
+		"en"	"+%i%% Charge Rate"
+	}
+	
+	"AttrbDesc_StickyArmTimeIncrease"
+	{
+		"en"	"0.%i Longer Stickybomb Arm Time"
+	}
+	
+	"AttrbDesc_MaxPipeBombsIncrease"
+	{
+		"en"	"+%i Stickybombs Out"
+	}
+	
+	"AttrbDesc_DeployedSpeedIncrease"
+	{
+		"en"	"+%i%% Deployed Movement Speed"
+	}
+	
+	"AttrbDesc_SpinupTimeIncrease"
+	{
+		"en"	"+%i%% Minigun Spinup Time"
+	}
+	
+	"AttrbDesc_AmmoPerShotIncrease"
+	{
+		"en"	"-%i Ammo Per Shot"
+	}
+
+	"AttrbDesc_BuildingHealthBonus"
+	{
+		"en"	"+%i%% Building Health"
+	}
+
+	"AttrbDesc_BuildingHealthPenalty"
+	{
+		"en"	"-%i%% Building Health"
+	}
+
+	"AttrbDesc_SentryDamageIncrease"
+	{
+		"en"	"+%i%% Sentry Gun Damage"
+	}
+	
+	"AttrbDesc_SentryDamageDecrease"
+	{
+		"en"	"-%i%% Sentry Gun Damage"
+	}
+
+	"AttrbDesc_DispenserRangeBonus"
+	{
+		"en"	"+%i%% Dispenser Range"
+	}
+	
+	"AttrbDesc_OverhealPenalty"
+	{
+		"en"	"-%i%% Max Overheal"
+	}
+	
+	"AttrbDesc_OverhealTimeBonus"
+	{
+		"en"	"+%i%% Overheal Duration"
+	}
+	
+	"AttrbDesc_UberBuildRatePenalty"
+	{
+		"en"	"-%i%% Uber Build Rate"
+	}
+	
+	"AttrbDesc_UberTimeBonus"
+	{
+		"en"	"Uber Duration Increase %i Seconds"
+	}
+	
+	"AttrbDesc_HealRateBonus"
+	{
+		"en"	"+%i%% Healing Rate"
+	}
+	
+	"AttrbDesc_OverhealRatePenalty"
+	{
+		"en"	"+%i%% Longer Overheal Build Time"
+	}
+	
+	"AttrbDesc_MaxMetalIncrease"
+	{
+		"en"	"+%i%% Carried Metal"
+	}
+
+	"AttrbDesc_NoCritNonBurning"
+	{
+		"en"	"No Critical Hits vs Non-Burning Players"
+	}
+	
+	"AttrbDesc_CritVsPocketedPlayers"
+	{
+		"en"	"100% Critical Hit Chance vs Pocketed Players"
+	}
+	
+	"AttrbDesc_ReloadFullCip"
+	{
+		"en"	"Gain Clip Based Reload"
+	}
+	
+	"AttrbDesc_IgniteOnHitModerate"
+	{
+		"en"	"On Moderate Hit: Ignite Enemy Player"
+	}
+	
+	"AttrbDesc_ProjectileDeviation"
+	{
+		"en"	"+%i Degrees Random Projectile Deviation"
+	}
+	
+	"AttrbDesc_SubtractCloakOnHit"
+	{
+		"en"	"On Hit: Subtract %i%% Cloak From Victim"
+	}
+
+	"AttrbDesc_CrossbowRemoveEffects"
+	{
+		"en"	"On Hit Ally: Remove Bleed and Afterburn"
+	}
+	
+	"AttrbDesc_DamageEatingReduced"
+	{
+		"en"	"While Eating: Take %i%% Less Damage"
+	}
+	
+	"AttrbDesc_SleeperExtinguish"
+	{
+		"en"	"On Hit Teammate: Extinguish Them if Shot At %i%% Charge or Greater"
+	}
+	
+	"AttrbDesc_JarateDurationPenalty"
+	{
+		"en"	"-%i Jarate Duration"
+	}
+	
+	"AttrbDesc_CloakRegenDecrease"
+	{
+		"en"	"-%i%% Cloak Regen Rate"
+	}
+	
+	"AttrbDesc_CloakRegenIncrease"
+	{
+		"en"	"+%i%% Cloak Regen Rate"
+	}
+	
+	"AttrbDesc_CloakDurationDecrease"
+	{
+		"en"	"-%i%% Cloak Duration"
+	}
+	
+	"AttrbDesc_CloakDurationIncrease"
+	{
+		"en"	"+%i%% Cloak Duration"
+	}
+	
+	"AttrbDesc_AmmoRegen"
+	{
+		"en"	"+%i%% Ammo Regenerated Every Five Seconds"
+	}
+	
+	"AttrbDesc_CloakOnBackstab"
+	{
+		"en"	"On Backstab: Instantly Cloak"
+	}
+	
+	"AttrbDesc_ProjectilePenetration"
+	{
+		"en"	"Projectiles Penetrate Enemy Players"
+	}
+	
+	"AttrbDesc_NoHeadShots"
+	{
+		"en"	"No Headshots"
+	}
+	
+	"AttrbDesc_HeadshotsDealMiniCrit"
+	{
+		"en"	"Headshots Only Deal Mini-Crits"
+	}
+
+	"AttrbDesc_NoFallDamage"
+	{
+		"en"	"Take No Fall Damage"
+	}
+
+	"AttrbDesc_NoAmmoFromDispensers"
+	{
+		"en"	"No Ammo From Dispensers While Active"
+	}
+
+	"AttrbDesc_NoDownSide"
+	{
+		"en"	"No Downside"
+	}
+}

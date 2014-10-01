@@ -1,0 +1,832 @@
+"Phrases"
+{
+	/* SCOUT PRIMARY WEAPON PHRASES */
+	
+	"UpgradeScattergunDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeScattergunReloadSpeed"
+	{
+		"en" "Reload Speed"
+	}
+	
+	"UpgradeScattergunFiringSpeed"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeScattergunClipSize"
+	{
+		"en" "Clip Size"
+	}
+	
+	"UpgradeScattergunClipSize_FAN"
+	{
+		"en" "Clip Size"
+	}
+	
+	"UpgradeScattergunClipSize_SS"
+	{
+		"en" "Clip Size"
+	}
+	
+	"UpgradeScattergunPushForce"
+	{
+		"en" "Increased Knockback Force"
+	}
+	
+	"UpgradeScattergunAccuracy"
+	{
+		"en" "Decreased Weapon Spread"
+	}
+
+	/* SCOUT SECONDARY WEAPON PHRASES */
+
+	"UpgradePistolDamage_Scout"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradePistolDamage_Winger"
+	{
+		"en" "Damage"
+	}
+
+	"UpgradePistolReloadSpeed_Scout"
+	{
+		"en" "Reload Speed"
+	}
+	
+	"UpgradePistolCarriedAmmo_Scout"
+	{
+		"en" "Max Ammunition"
+	}
+	
+	"UpgradePistolFiringSpeed_Scout"
+	{
+		"en" "Firing Speed"
+	}
+
+	"UpgradeJumpHeightFromWeapon"
+	{
+		"en" "Jump Height While Active"
+	}
+	
+	"UpgradeRechargeRate_Bonk"
+	{
+		"en" "Drink Recharge Rate"
+	}
+	
+	"UpgradeRechargeRate_Cola"
+	{
+		"en" "Drink Recharge Rate"
+	}
+	
+	"UpgradeMilkySlowDown"
+	{
+		"en" "Briefly Slow Milked Players"
+	}
+	
+	"UpgradeThrowableRegenRate_Milk"
+	{
+		"en" "Increased Recharge Rate"
+	}
+	
+	/* SCOUT MELEE WEAPON PHRASES */
+
+	"UpgradeAttackSpeed_Scout"
+	{
+		"en" "Attack Speed"
+	}
+	
+	"UpgradeAttackSpeed_FAN_Scout"
+	{
+		"en" "Attack Speed"
+	}
+
+	"UpgradeMeleeDamage_Scout"
+	{
+		"en" "Damage"
+	}
+
+	"UpgradeBallDamage_Scout"
+	{
+		"en" "Ornament Damage"
+	}
+	
+	"UpgradeMiniCritsOnKill"
+	{
+		"en" "Mini-Crits on Kill"
+	}
+	
+	"UpgradeIncreasedMiscAmmo_Scout"
+	{
+		"en" "Misc Ammunition"
+	}
+	
+	"UpgradeHealthOnKill_CandyCane"
+	{
+		"en" "Health on Any kill"
+	}
+	
+	"UpgradeBleedLength_BostonBasher"
+	{
+		"en" "Bleed Duration"
+	}
+	
+	"UpgradeMarkMultiple_Scout"
+	{
+		"en" "Mark Multiple Targets for Death"
+	}
+	
+	"UpgradeMoreJumps_Scout"
+	{
+		"en" "Extra Air Jumps"
+	}
+	
+	"UpgradeHealth_Scout"
+	{
+		"en" "Max Health"
+	}
+
+	"UpgradeSpeed_Scout"
+	{
+		"en" "Max Speed"
+	}
+	
+	"UpgradeJumpHeight_Scout"
+	{
+		"en" "Jump Height"
+	}
+	
+	/* SOLDIER CLASS PHRASES */
+	
+	"UpgradeHealth_Soldier"
+	{
+		"en" "Max Health"
+	}
+
+	"UpgradeSpeed_Soldier"
+	{
+		"en" "Max Speed"
+	}
+	
+	"UpgradeRocketJump_Soldier"
+	{
+		"en" "Reduced Rocket Jump Damage"
+	}
+
+	/* SOLDIER PRIMARY WEAPON PHRASES */
+	
+	"UpgradeRocketLauncherDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeRocketLauncherClipSize"
+	{
+		"en" "Clip Size"
+	}
+	
+	"UpgradeRocketLauncherFireSpeed"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeRocketReloadSpeed"
+	{
+		"en" "Reload Speed"
+	}
+
+	"UpgradeDirectHitDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeRocketJumperClipSize"
+	{
+		"en" "Clip Size"
+	}
+	
+	"UpgradeSurviveGrenadeTaunt"
+	{
+		"en" "Survive Kamikaze Taunt"
+	}
+	
+	"UpgradeRocketLauncherBlast"
+	{
+		"en" "Blast Radius"
+	}
+	
+	/* SOLDIER SECONDARY WEAPON PHRASES */
+	
+	"UpgradeShotgunDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeShotgunReloadSpeed"
+	{
+		"en" "Reload Speed"
+	}
+	
+	"UpgradeShotgunFiringSpeed"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeShotgunClipSize"
+	{
+		"en" "Clip Size"
+	}
+	
+	"UpgradeBuffDuration"
+	{
+		"en" "Buff Duration"
+	}
+	
+	"UpgradeReducedFallDamage"
+	{
+		"en" "Reduced Fall Damage"
+	}
+	
+	"UpgradeBootDamage"
+	{
+		"en" "Boot Damage"
+	}
+	
+	"UpgradeBisonDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeParachuteDamageReduced"
+	{
+		"en" "Parachuting Damage Reduced"
+	}
+	
+	/* SOLDIER MELEE WEAPONS */
+	
+	"UpgradeMeleeDamage_DA"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeAttackSpeed_DA"
+	{
+		"en" "Attack Speed"
+	}
+	
+	/* PYRO CLASS UPGRADES */
+	
+	"UpgradeHealth_Pyro"
+	{
+		"en" "Max Health"
+	}
+	
+	"UpgradeJumpHeight_Pyro"
+	{
+		"en" "Jump Height"
+	}
+	
+	"UpgradeSpeed_Pyro"
+	{
+		"en" "Speed"
+	}
+	
+	/* PYRO PRIMARY WEAPONS */
+	
+	"UpgradeFlameThrowerDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeFlameThrowerAfterBurn"
+	{
+		"en" "After Burn Damage"
+	}
+	
+	"UpgradeAirBlastDelay"
+	{
+		"en" "Airblast Rate"
+	}
+	
+	"UpgradeAirBlastStrength"
+	{
+		"en" "Airblast Strength"
+	}
+	
+	"UpgradeFlameThrowerAmmo"
+	{
+		"en" "Max Ammo"
+	}
+	
+	"UpgradeAirBlastStrength_BB"
+	{
+		"en" "Airblast Strength"
+	}
+	
+	/* PYRO SECONDARY WEAPONS */
+	
+	"UpgradeFlaregunDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeFlaregunAfterBurn"
+	{
+		"en" "After Burn Duration"
+	}
+	
+	"UpgradeFlaregunAmmo"
+	{
+		"en" "Max Ammunition"
+	}
+	
+	"UpgradeFlaregunJump"
+	{
+		"en" "Flare Jump Force"
+	}
+	
+	/* PYRO MELEE WEAPONS */
+	
+	"UpgradeMeleeDamageVsBurning"
+	{
+		"en" "Damage Bonus vs Burning Players"
+	}
+	
+	"UpgradeMeleeCritVsPocketed"
+	{
+		"en" "Crit vs Pocketed Players"
+	}
+	
+	"UpgradeMeleeResistSentry"
+	{
+		"en" "Resist Sentry Gun Damage"
+	}
+	
+	/* DEMOMAN PRIMARY WEAPONS */
+	
+	"UpgradeGrenadeBlastRadius"
+	{
+		"en" "Blast Radius"
+	}
+	
+	"UpgradeGrenadeReloadSpeed"
+	{
+		"en" "Reload Speed"
+	}
+	
+	"UpgradeGrenadeMaxAmmo"
+	{
+		"en" "Max Ammunition"
+	}
+	
+	"UpgradeGrenadeFiringSpeed"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeGrenadeReload_Loch"
+	{
+		"en" "Reload Speed"
+	}
+	
+	"UpgradeCannonDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeResistStickyJumpDamage"
+	{
+		"en" "Reduced Sticky Jump Damage"
+	}
+	
+	"UpgradeBootsChargeControl"
+	{
+		"en" "Charge Turn Control"
+	}	
+	
+	"UpgradeReducedFallDamage_Demo"
+	{
+		"en" "Reduced Fall Damage"
+	}
+	
+	"UpgradeParachuteDamage_Demo"
+	{
+		"en" "Parachuting Damage Reduced"
+	}
+	
+	/* DEMOMAN SECONDARY WEAPONS */
+	
+	"UpgradeStickybombDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeStickybombReloadSpeed"
+	{
+		"en" "Reload Speed"
+	}
+	
+	"UpgradeStickybombFiringSpeed"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeStickybombClipSize"
+	{
+		"en" "Clip Size"
+	}
+	
+	"UpgradeStickybombBuildingDamage"
+	{
+		"en" "Building Damage"
+	}
+	
+	"UpgradeStickybombFiringSpeed_SR"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeStickybombMaxBombs_SR"
+	{
+		"en" "Max Stickies"
+	}
+	
+	"UpgradeStickyJumpReloadSpeed"
+	{
+		"en" "Reload Speed"
+	}
+	
+	"UpgradeStickyJumpFiringSpeed"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeShieldChargeRate"
+	{
+		"en" "Recharge Rate"
+	}
+	
+	"UpgradeShieldResistPushForce"
+	{
+		"en" "Resist Push Force"
+	}
+	
+	"UpgradeShieldDamage"
+	{
+		"en" "Shield Bash Damage"
+	}
+	
+	"UpgradeShieldDamage_Screen"
+	{
+		"en" "Shield Bash Damage"
+	}
+	
+	/* DEMOMAN MELEE WEAPONS */
+	
+	"UpgradeChargeLength"
+	{
+		"en" "Charge Duration"
+	}
+	
+	/* DEMOMAN CLASS UPGRADES */
+	
+	"UpgradeSpeed_Demo"
+	{
+		"en" "Speed"
+	}
+	
+	"UpgradeJumpHeight_Demo"
+	{
+		"en" "Jump Height"
+	}
+	
+	"UpgradeSelfDamage_Demo"
+	{
+		"en" "Self Damage Reduced"
+	}
+	
+	/* HEAVY PRIMARY WEAPONS */
+	
+	"UpgradeMinigunFiringSpeed"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeMinigunAmmo"
+	{
+		"en" "Max Ammunition"
+	}
+	
+	"UpgradeMinigunDeployedSpeed"
+	{
+		"en" "Deployed Movement Speed"
+	}
+	
+	"UpgradeMinigunDeployedSpeed_NAT"
+	{
+		"en" "Deployed Movement Speed"
+	}
+	
+	"UpgradeMinigunIgnite"
+	{
+		"en" "Ignite Enemies On Hit"
+	}
+	
+	/* HEAVY SECONADRY WEAPONS */
+	
+	"UpgradeRechargeRate_Sandvich"
+	{
+		"en" "Recharge Rate"
+	}
+	
+	"UpgradeRechargeRate_Steak"
+	{
+		"en" "Recharge Rate"
+	}
+	
+	/* HEAVY MELEE WEAPONS */
+	
+	"UpgradeEvictionNoticeBleed"
+	{
+		"en" "Bleed On Hit"
+	}
+	
+	/* HEAVY CLASS UPGRADES */
+	
+	"UpgradeJumpHeight_Heavy"
+	{
+		"en" "Jump Height"
+	}
+	
+	"UpgradeResistPushForce"
+	{
+		"en" "Resist Push Force"
+	}
+	
+	"UpgradeHealth_Heavy"
+	{
+		"en" "Max Health"
+	}
+	
+	/* ENGINEER PRIMARY WEAPONS */
+	
+	"UpgradeShotgunDamage_Engi"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeShotgunReloadSpeed_Engi"
+	{
+		"en" "Reload Speed"
+	}
+	
+	"UpgradeShotgunFiringSpeed_Engi"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeShotgunClipSize_Engi"
+	{
+		"en" "Clip Size"
+	}
+	
+	"UpgradeShotgunClipSize_RR"
+	{
+		"en" "Clip Size"
+	}
+	
+	"UpgradeRescueRangerDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradePomsonCloakDrain"
+	{
+		"en" "Drain Additional Cloak"
+	}
+	
+	/* ENGINEER SECONDARY WEAPONS */
+	
+	"UpgradeWranglerJump"
+	{
+		"en" "Reduced Self Damage"
+	}
+	
+	"UpgradeShortCircuitFiringSpeed"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeResistDamageWhileEating"
+	{
+		"en" "Resist Damage While Eating"
+	}
+	
+	/* ENGINEER MELEE WEAPONS */
+	
+	"UpgradeBleedLength_SH"
+	{
+		"en" "Bleed Duration"
+	}
+	
+	/* ENGINEER BUILDING UPGRADES */
+	
+	"UpgradeBuildingHealth"
+	{
+		"en" "Building Health"
+	}
+	
+	"UpgradeDispenserRange"
+	{
+		"en" "Dispenser Range"
+	}
+	
+	/* ENGINEER CLASS UPGRADES */
+	
+	"UpgradeMetalEngineer"
+	{
+		"en" "Carried Metal"
+	}
+	
+	/* MEDIC PRIMARY WEAPONS */
+	
+	"UpgradeSyringeGunReloadSpeed"
+	{
+		"en" "Reload Speed"
+	}
+	
+	"UpgradeSyringeGunFiringSpeed"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeSyringeGunMaxAmmo"
+	{
+		"en" "Max Ammunition"
+	}
+	
+	"UpgradeCrossbowRemoveDamaging"
+	{
+		"en" "Remove Damaging Effects"
+	}
+	
+	/* MEDIC SECONDARY WEAPONS */
+	
+	"UpgradeMediGunOverhealDuration"
+	{
+		"en" "Overheal Duration"
+	}
+	
+	"UpgradeMediGunUberDuration"
+	{
+		"en" "Uber Duration"
+	}
+	
+	"UpgradeMediGunHealRate"
+	{
+		"en" "Heal Rate"
+	}
+	
+	/* MEDIC MELEE WEAPONS */
+	
+	"UpgradeResistDamageWhileActive"
+	{
+		"en" "Resist Damage While Active"
+	}
+	
+	/* MEDIC CLASS UPGRADES */
+	
+	"UpgradeSpeed_Medic"
+	{
+		"en" "Speed"
+	}
+	
+	"UpgradeJumpHeight_Medic"
+	{
+		"en" "Jump Height"
+	}
+	
+	"UpgradeHealth_Medic"
+	{
+		"en" "Max Health"
+	}
+	
+	/* SNIPER PRIMARY WEAPONS */
+	
+	"UpgradeSniperRifleReloadSpeed"
+	{
+		"en" "Reload Speed"
+	}
+	
+	"UpgradeSniperRifleChargeSpeed"
+	{
+		"en" "Charge Rate"
+	}
+	
+	"UpgradeSniperRifleMaxAmmo"
+	{
+		"en" "Max Ammunition"
+	}
+	
+	"UpgradeSleeperExtinguish"
+	{
+		"en" "Extinguish Teammates"
+	}
+	
+	"UpgradeHuntsManPenetration"
+	{
+		"en" "Projectile Penetration"
+	}
+	
+	"UpgradeHuntsManReloadSpeed"
+	{
+		"en" "Draw Speed"
+	}
+	
+	"UpgradeHuntsManBleed"
+	{
+		"en" "Bleed On Hit"
+	}
+	
+	/* SNIPER SECONDARY WEAPONS */
+	
+	"UpgradeThrowableRegenRate_Pee"
+	{
+		"en" "Recharge Rate"
+	}
+	
+	"UpgradeReducedFallDamage_Sniper"
+	{
+		"en" "Reduced Fall Damage"
+	}
+	
+	"UpgradeCozyAmmoRegen"
+	{
+		"en" "Ammunition Regen"
+	}
+	
+	/* SNIPER MELEE WEAPONS */
+	
+	"UpgradeBleedLength_Shiv"
+	{
+		"en" "Bleed Length"
+	}
+	
+	"UpgradeKurkiHealthOnKill"
+	{
+		"en" "Health On Kill"
+	}
+	
+	/* SPY PRIMARY WEAPONS */
+	
+	"UpgradeRevolverDamage"
+	{
+		"en" "Damage"
+	}
+	
+	"UpgradeRevolverFiringSpeed"
+	{
+		"en" "Firing Speed"
+	}
+	
+	"UpgradeRevolverReloadSpeed"
+	{
+		"en" "Reload Speed"
+	}
+
+	/* SPY MELEE WEAPONS */
+	
+	"UpgradeWeaponSwitchTime_Melee"
+	{
+		"en" "Weapon Switch Time"
+	}
+	
+	"UpgradeCloakOnBackstab"
+	{
+		"en" "Cloak On Backstab"
+	}
+	
+	/* SPY WATCHES */
+	
+	"UpgradeCloakDuration"
+	{
+		"en" "Cloak Duration"
+	}
+	
+	"UpgradeCloakRegenRate"
+	{
+		"en" "Cloak Regen Rate"
+	}
+	
+	/* SPY CLASS UPGRADES */
+	
+	"UpgradeSpeed_Spy"
+	{
+		"en" "Speed"
+	}
+}

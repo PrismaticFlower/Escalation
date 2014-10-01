@@ -3,7 +3,7 @@
 #endif
 #define _escalation_weaponattributes_included
 
-#include<Escalation>
+#include<Escalation_Constants>
 #include<Escalation_CustomAttributes>
 #include<tf2attributes>
 #include<sdktools>

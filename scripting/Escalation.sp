@@ -607,7 +607,7 @@ bool:IsPluginDisabled ()
  *
  * @noreturn
  */
-ExecuteConfigs()
+ExecuteConfigs ()
 {
 	new Handle:hUpgrades = CreateKeyValues("escalation_upgradeinfo");
 	new Handle:hUpgradeWeaponInfo = CreateKeyValues("escalation_weaponinfo");
@@ -676,7 +676,7 @@ ExecuteConfigs()
  *
  * @noreturn
  */
-LoadWeaponInfo(Handle:hWeaponInfo)
+LoadWeaponInfo (Handle:hWeaponInfo)
 {
 	KvRewind(hWeaponInfo); //You never know, this may be handy for catching an error some day...
 	
@@ -740,7 +740,7 @@ LoadWeaponInfo(Handle:hWeaponInfo)
  *
  * @noreturn
  */
-LoadClassInfo(Handle:hClassInfo)
+LoadClassInfo (Handle:hClassInfo)
 {
 	for	(new iClass = 1; iClass <= 9; iClass++)
 	{
@@ -770,7 +770,7 @@ LoadClassInfo(Handle:hClassInfo)
  *
  * @noreturn
  */
-LoadUpgradeInfo(Handle:hUpgradeInfo)
+LoadUpgradeInfo (Handle:hUpgradeInfo)
 {
 	KvRewind(hUpgradeInfo);
 	
@@ -860,7 +860,7 @@ LoadUpgradeInfo(Handle:hUpgradeInfo)
  *
  * @noreturn
  */
-BuildUpgradeMenus(Handle:hWeaponInfo)
+BuildUpgradeMenus (Handle:hWeaponInfo)
 {
 	KvRewind(hWeaponInfo); //You never know, this may be handy for catching an error some day...
 	
@@ -1014,7 +1014,7 @@ BuildUpgradeMenus(Handle:hWeaponInfo)
  *
  * @noreturn
  */
-BuildClassUpgradeMenus(Handle:hClassInfo)
+BuildClassUpgradeMenus (Handle:hClassInfo)
 {
 	KvRewind(hClassInfo);
 
@@ -1481,10 +1481,10 @@ public Event_PlayerResupply (Handle:event, const String:name[], bool:dontBroadca
 		return;
 	}
 		
-	//Build the attribute lists.
+	//Process the upgrade queue.
 	for ( ; PlayerData_GetQueuePosition(g_PlayerData[client][0]) < PlayerData_GetUpgradeQueueSize(g_PlayerData[client][0], TF2_GetPlayerClass(client)); PlayerData_IncrementQueuePosition(g_PlayerData[client][0]) )
 	{
-		if (! (BuildUpgrade(client, PlayerData_GetQueuePosition(g_PlayerData[client][0]))))
+		if (! (ProcessQueueAtPosition(client, PlayerData_GetQueuePosition(g_PlayerData[client][0]))))
 		{
 			break;
 		}

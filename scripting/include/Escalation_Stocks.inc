@@ -4,8 +4,6 @@
 #define _escalation_stocks_included
 
 #include<SourceMod>
-#include<tf2attributes>
-//#include<Escalation>
 
 //Define the all class weapon indexes.
 #define ALLCLASS_WEAPONS 154,160,199,209,293,357,415,423,474,264,939,954,1013,1071,1101

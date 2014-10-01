@@ -1,2 +1,2 @@
-spcomp Escalation_CustomAttributes.sp -i:Escalation_Include/
+spcomp Escalation_CustomAttributes.sp -o:../plugins/Escalation_CustomAttributes.smx
 pause

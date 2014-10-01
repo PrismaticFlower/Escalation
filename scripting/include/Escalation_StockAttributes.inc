@@ -3,7 +3,7 @@
 #endif
 #define _escalation_stockattributes_included
 
-#include<Escalation>
+#include<Escalation_Constants>
 #include<adt>
 
 

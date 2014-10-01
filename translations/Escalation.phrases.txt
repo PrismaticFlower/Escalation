@@ -1,0 +1,547 @@
+"Phrases"
+{
+	"Escalation_Tag"
+	{
+		"en" "{royalblue}[Escalation]{silver}"
+	}
+	
+	"Escalation_Commands"
+	{
+		"en" "Escalation Commands"
+	}
+
+	"Select_Menu_Action"
+	{
+		"en" "Select an Action"
+	}
+
+	"Select_Upgrade"
+	{
+		"en" "Select an Upgrade"
+	}
+
+	"Select_Class"
+	{
+		"en" "Select a Class"
+	}
+
+	"Select_Class_All"
+	{
+		"en" "All Classes"
+	}
+
+	"Select_Class_Scout"
+	{
+		"en" "Scout"
+	}
+
+	"Select_Class_Soldier"
+	{
+	 	"en" "Soldier"
+	}
+	
+	"Select_Class_Pyro"
+	{
+		"en" "Pyro"
+	}
+
+	"Select_Class_Demoman"
+	{
+		"en" "Demoman"
+	}
+
+	"Select_Class_Heavy"
+	{	
+		"en" "Heavy"
+	}
+	
+	"Select_Class_Engineer"
+	{
+		"en" "Engineer"
+	}
+	
+	"Select_Class_Medic"
+	{
+		"en" "Medic"
+	}
+
+	"Select_Class_Spy"
+	{
+		"en" "Spy"
+	}
+
+	"Select_Class_Sniper" 
+	{
+		"en" "Sniper"
+	}
+
+	"Upgrade_Class"
+	{
+		"en" "Upgrade Class"
+	}
+
+	"Upgrade_Slot_0"
+	{
+		"en" "Upgrade Primary Weapon"
+	}
+
+	"Upgrade_Slot_1"
+	{
+		"en" "Upgrade Secondary Weapon"
+	}
+
+	"Upgrade_Slot_2"
+	{
+		"en" "Upgrade Melee Weapon"
+	}
+
+	"Menu_Action_Clear"
+	{
+		"en" "Clear Upgrade Queue"
+	}
+	
+	"Menu_Action_RemoveQueue"
+	{
+		"en" "Remove an Upgrade From Your Queue"
+	}
+
+	"Menu_Action_EditQueue"
+	{
+		"en" "Edit Upgrade Queue"
+	}
+	
+	"Menu_Action_BanUpgrade"
+	{
+		"en" "Ban an Upgrade"
+	}
+
+	"Menu_Action_UnbanUpgrade"
+	{
+		"en" "Unban an Upgrade"
+	}
+
+	"Menu_Action_ResetBanned"
+	{
+		"en" "Reset Banned Upgrades"
+	}
+	
+	"Menu_Select_Upgrade_Remove"
+	{
+		"en" "Select an Upgrade to Remove From Your Queue"
+	}
+	
+	"Menu_Select_Upgrade_Shift"
+	{
+		"en" "Select an Upgrade to Shift Up In Your Queue"
+	}
+
+	"Menu_Select_Upgrade_Ban"
+	{
+		"en" "Select an Upgrade to Ban"
+	}
+	
+	"Menu_Select_Upgrade_Unban"
+	{
+		"en" "Select an Upgrade to Unban"
+	}
+
+	"Weapon_Not_Found"
+	{
+		"en" "Unable to find your weapon in Escalation's database."
+	}
+
+	"Weapon_Not_Found_Possible_Cause"
+	{
+		"en" "A possible cause for this is that TF2 was just updated and this server has yet to update it's configuration files."
+	}
+
+	"Credits_From_Death"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for dying to {teamcolor}%s{silver}. You now have {dodgerblue}%i{silver} credits."
+	}
+
+	"Credits_From_Kill"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for killing {teamcolor}%s{silver}. You now have {dodgerblue}%i{silver} credits."
+	}
+	
+	"Credits_From_Assist"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for assisting {teamcolor}%s{silver}."
+	}
+
+	"Credits_From_MedicKilled"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for killing a medic."
+	}
+	
+	"Credits_From_UberDropped"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for dropping a medic's ubercharge."
+	}
+
+	"Credits_From_AmountHealed"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for healing {dodgerblue}%i{silver} health that life."
+	}
+	
+	"Credits_From_MedicDefended"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for defending a medic."
+	}
+	
+	"Credits_From_Dominated"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits to help you get revenge against {teamcolor}%s{silver}."
+	}
+	
+	"Credits_From_Domination"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for dominating {teamcolor}%s{silver}."
+	}
+	
+	"Credits_From_PointCapture"
+	{
+		"en" "Your team earned {dodgerblue}%i{silver} credits for capturing a control point."
+	}
+	
+	"Credits_From_PointLost"
+	{
+		"en" "Your team has been given {dodgerblue}%i{silver} credits to help recapture a control point."
+	}
+	
+	"Credits_From_CaptureBlocked"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for blocking the capture of a point."
+	}
+
+	"Credits_From_CaptureStarted"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for starting the capture of a point."
+	}
+
+	"Credits_From_Teleport"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for teleporting a teammate."
+	}
+
+	"Credits_From_BuildingUpgrade"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for upgrading a building."
+	}
+
+	"Credits_From_BuildingUpgradeOther"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for upgrading a teammate's building."
+	}
+	
+	"Credits_From_UberPopped"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for deploying an ubercharge."
+	}
+	
+	"Credits_From_Extinguished"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for extinguishing a teammate."
+	}
+	
+	"Credits_From_SentryDestroyed"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for destroying a sentry."
+	}
+	
+	"Credits_From_DispenserDestroyed"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for destroying a building."
+	}
+
+	"Credits_From_TeleporterDestroyed"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for destroying a teleporter."
+	}
+
+	"Credits_From_SapperDestroyed"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for destroying a sapper."
+	}
+
+	"Credits_From_HelpedSentryDestroyed"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for helping to destroying a sentry."
+	}
+
+	"Credits_From_HelpedDispenserDestroyed"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for helping to destroying a building."
+	}
+
+	"Credits_From_HelpedTeleporterDestroyed"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for helping to destroying a teleporter."
+	}
+
+	"Credits_From_HelpedSapperDestroyed"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for helping to destroying a sapper."
+	}
+
+	"Credits_Message"
+	{
+		"en" "You have a total of {dodgerblue}%i{silver} credits."
+	}
+
+	"Refunded_New_Credits"
+	{
+		"en" "You now have {dodgerblue}%i{silver} credits."
+	}
+
+	"Refund_Valid_Classnames"
+	{
+		"en" "Classnames are as follow."
+	}
+
+	"Refund_Invalid_Class"
+	{
+		"en" "Unable to recognize class {dodgerblue}%s{silver}. Make sure your spelling is correct!"
+	}
+
+	"Cleared_All_Classes"
+	{
+		"en" "Your upgrade queue for all classes has been reset."
+	}
+
+	"Clear_Empty_Queue"
+	{
+		"en" "This class's upgrade queue is empty!"
+	}
+
+	"Cleared_Success_Class"
+	{
+		"en" "Success your upgrade queue for that class has been reset."
+	}
+
+	"Upgrade_Not_Found"
+	{
+		"en" "Unable to find upgrade {dodgerblue}%s{silver}."
+	}
+
+	"Upgrade_Not_Found_Bug"
+	{
+		"en" "If you used the upgrade menu this is likely a bug. Feel free to tell the creator of the gamemode how naughty he has been."
+	}
+
+	"Upgrade_Highest_Level"
+	{
+		"en" "You've already got the highest level of this upgrade on your queue!"
+	}
+
+	"Upgrade_Weapon_Not_Allowed"
+	{
+		"en" "Your current weapon isn't allowed this upgrade."
+	}
+
+	"Upgrade_Class_Not_Allowed"
+	{
+		"en" "Your current class isn't allowed this upgrade'"
+	}
+
+	"Upgrade_Added_Success"
+	{
+		"en" "Success you have added {dodgerblue}%t{silver} upgrade to your queue at level {dodgerblue}%i{silver}."
+	}
+
+	"Upgrade_Removed"
+	{
+		"en" "You have removed {dodgerblue}%t{silver} upgrade from your queue."
+	}
+
+	"Upgrade_Removed_Credits"
+	{
+		"en" "You have removed {dodgerblue}%t{silver} upgrade from your queue and gained {dodgerblue}%i{silver} from it being refunded."
+	}
+
+	"Plugin_Disabled_Dependency"
+	{
+		"en" "A plugin dependency is missing and the plugin has been paused until it is reloaded."
+	}
+
+	"Plugin_Disabled_Admin"
+	{
+		"en" "The plugin has been disabled by the admin."
+	}
+
+	"Plugin_Disabled_Nosupport"
+	{
+		"en" "The plugin is unsupported on this map and has been disabled."
+	}
+
+	"Plugin_Started"
+	{
+		"en" "Plugin started and ready."
+	}
+
+	"Open_Menu_Reminder"
+	{
+		"en" "Type {dodgerblue}!upgrade{silver} or {dodgerblue}/upgrade{silver} into to chat to open up the upgrade menu!"
+	}
+
+	"Open_Menu_ReminderHud"
+	{
+		"en" "Type !upgrade or /upgrade into to chat to open up the upgrade menu!"
+	}
+
+	"Menu_Level"
+	{
+		"en" "Level: %i / %i"
+	}
+
+	"Menu_Cost"
+	{
+		"en" "Cost: %i"
+	}
+
+	"Menu_Credits"
+	{
+		"en" "Credits: %i"
+	}
+
+	"Menu_Queue_Level"
+	{
+		"en" "(Level: %i)"
+	}
+
+	"Menu_Queue_Credits"
+	{
+		"en" "(Credits: %i)"
+	}
+
+	"Class"
+	{
+		"en" "Class"
+	}
+
+	"Slot_Primary"
+	{
+		"en" "Primary Weapon"
+	}
+
+	"Slot_Secondary"
+	{
+		"en" "Secondary Weapon"
+	}
+
+	"Slot_Melee"
+	{
+		"en" "Melee Weapon"
+	}
+
+	"Upgrade_Does_Not_Exist"
+	{
+		"en" "Upgrade {dodgerblue}%s{silver} does not exist."
+	}
+
+	"Weapon_Does_Not_Exist"
+	{
+		"en" "Weapon {dodgerblue}%s{silver} does not exist in Escalation's config files or is invalid."
+	}
+	
+	"Upgrade_Not_Banned"
+	{
+		"en" "Upgrade {dodgerblue}%s{silver} is not banned."
+	}
+	
+	"Combo_Not_Banned"
+	{
+		"en" "Upgrade ({dodgerblue}%s{silver}) and weapon ({dodgerblue}%s{silver}) are not banned together."
+	}
+
+	"Upgrade_Banned_Admin"
+	{
+		"en" "Upgrade {dodgerblue}%s{silver} has been banned."
+	}
+
+	"Upgrade_Banned_Admin_Log"
+	{
+		"en" "\"%L\" banned upgrade \"%s\"."
+	}
+
+	"Upgrade_Unbanned_Admin"
+	{
+		"en" "Upgrade {dodgerblue}%s{silver} has been unbanned."
+	}
+
+	"Upgrade_Unbanned_Admin_Log"
+	{
+		"en" "\"%L\" unbanned upgrade \"%s\"."
+	}
+	
+	"Upgrade_BannedReset_Admin"
+	{
+		"en" "All upgrade bans have been reset."
+	}
+
+	"Upgrade_BannedReset_Admin_Log"
+	{
+		"en" "\"%L\" reset all upgrade bans."
+	}
+	
+	"UpgradeCombo_Banned_Admin"
+	{
+		"en" "Buying upgrade {dodgerblue}%s{silver} while using weapon {dodgerblue}%s{silver} has been banned."
+	}
+	
+	"UpgradeCombo_Banned_Admin_Log"
+	{
+		"en" "\"%L\" banned buying upgrade \"%s\" while using weapon \"%s\"."
+	}
+	
+	"UpgradeCombo_Unbanned_Admin"
+	{
+		"en" "Buying upgrade {dodgerblue}%s{silver} while using weapon {dodgerblue}%s{silver} has been unbanned."
+	}
+
+	"UpgradeCombo_Unbanned_Admin_Log"
+	{
+		"en" "\"%L\" unbanned buying upgrade \"%s\" while using weapon \"%s\"."
+	}
+
+	"UpgradeCombo_BannedReset_Admin"
+	{
+		"en" "All upgrade/weapon combination bans have been reset."
+	}
+
+	"UpgradeCombo_BannedReset_Admin_Log"
+	{
+		"en" "\"%L\" reset all upgrade/weapon combination bans."
+	}
+
+	"Configs_Reloaded_Admin"
+	{
+		"en" "All config files have been reloaded."
+	}
+
+	"Configs_Reloaded_Admin_Log"
+	{
+		"en" "\"%L\" reloaded all config files."
+	}
+	
+	"BanUpgrade_Usage"
+	{
+		"en" "Usage: sm_banupgrade <UpgradeName>"
+	}
+	
+	"UnbanUpgrade_Usage"
+	{
+		"en" "Usage: sm_unbanupgrade <UpgradeName>"
+	}
+
+	"BanUpgradeCombo_Usage"
+	{
+		"en" "Usage: sm_bancombo <UpgradeName> <Weapon Item Definition index>"
+	}
+
+	"UnbanUpgradeCombo_Usage"
+	{
+		"en" "Usage: sm_unbancombo <UpgradeName> <Weapon Item Definition index>"
+	}
+}

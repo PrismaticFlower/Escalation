@@ -12,9 +12,6 @@
 #undef REQUIRE_PLUGIN
 #include<adminmenu>
 
-//#define DEV_BUILD
-#define USE_OBJECT_SAFETY_CHECK
-
 #include<morecolors>
 #include<Escalation_Constants>
 #include<Escalation_Stocks>

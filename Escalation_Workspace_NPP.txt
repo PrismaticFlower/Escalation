@@ -1,0 +1,29 @@
+<NotepadPlus>
+    <Project name="Escalation">
+        <File name="Escalation.sp" />
+        <Folder name="Include">
+            <File name="include\Escalation_Objects.inc" />
+            <File name="include\Escalation_Stocks.inc" />
+            <File name="include\Escalation_Constants.inc" />
+        </Folder>
+        <Folder name="Custom Attributes">
+            <File name="Escalation_CustomAttributes.sp" />
+            <File name="include\Escalation_CustomAttributes.inc" />
+        </Folder>
+        <Folder name="Objects">
+            <File name="include\Escalation_WeaponInfo.inc" />
+            <File name="include\Escalation_WeaponInfoManager.inc" />
+            <File name="include\Escalation_UpgradeMenuCache.inc" />
+            <File name="include\Escalation_PlayerData.inc" />
+            <File name="include\Escalation_UpgradeData.inc" />
+            <File name="include\Escalation_UpgradeDataStore.inc" />
+            <File name="include\Escalation_ClassInfoStore.inc" />
+            <File name="include\Escalation_PlayerAttributeManager.inc" />
+            <File name="include\Escalation_WeaponAttributes.inc" />
+            <File name="include\Escalation_StockAttributes.inc" />
+            <File name="include\Escalation_UpgradeDescriptions.inc" />
+            <File name="include\Escalation_BannedUpgrades.inc" />
+            <File name="include\Escalation_LevelData.inc" />
+        </Folder>
+    </Project>
+</NotepadPlus>

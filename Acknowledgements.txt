@@ -1,3 +1,5 @@
+This file is outdated and in need of a refresh.
+
 Required/Used Plugins
 
 MoreColors - https://forums.alliedmods.net/showthread.php?t=185016?t=185016

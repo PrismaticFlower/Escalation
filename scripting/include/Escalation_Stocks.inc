@@ -8,9 +8,14 @@
 //Define the all class weapon indexes.
 #define ALLCLASS_WEAPONS 154,160,199,209,293,357,415,423,474,264,939,954,1013,1071,1101
 
-//! Tests if a weapon is a so called special weapon. (ones with the give while active attribute)
-/*! \param iWeaponIndex An item definition index.
-	\return True on the weapon being an all class weapon, false on it being a normal weapon. */
+
+/**
+ * Checks to see if a weapon is an all class weapon.
+ *
+ * @param iWeaponIndex					The item definition index of the weapon to check.
+ *
+ * @return								True if the weapon is an all class weapon, false if it isn't.
+ */
 bool:IsAllClassWeapon(iWeaponIndex)
 {	
 	switch (iWeaponIndex)
@@ -23,45 +28,49 @@ bool:IsAllClassWeapon(iWeaponIndex)
 	return false;
 }
 
-//! Takes the name of a class and returns the class ID. This function does try to account for common nicknames of classes. 
-/*! \param String:string[] The class to fetch the ID of.
-	\return The ID of the class. */
-TFClassType:GetClassID(const String:string[])
+/**
+ * Takes the name of a class and returns the class ID. This function does try to account for common nicknames of classes. 
+ *
+ * @param Class							The class to get the ID of.
+ *
+ * @return								The TFClassType of the class.
+ */
+TFClassType:GetClassID(const String:Class[])
 {
 	//Giant String Comparision Block!!!!
-	if (StrEqual("scout",string,false))
+	if (StrEqual("scout",Class,false))
 	{
 		return TFClass_Scout;
 	}
-	else if (StrEqual("sniper",string,false))
+	else if (StrEqual("sniper",Class,false))
 	{
 		return TFClass_Sniper;
 	}
-	else if (StrEqual("soldier",string,false) || StrEqual("solly",string,false)) //Account for nickname.
+	else if (StrEqual("soldier",Class,false) || StrEqual("solly",Class,false)) //Account for nickname.
 	{
 		return TFClass_Soldier;
 	}
-	else if (StrEqual("demoman",string,false) || StrEqual("demo",string,false)) //Also check against the commonly used "demo"
+	else if (StrEqual("demoman",Class,false) || StrEqual("demo",Class,false)) //Also check against the commonly used "demo"
 	{
 		return TFClass_DemoMan;
 	}
-	else if (StrEqual("medic",string,false) || StrEqual("med",string,false)) //You should be getting how this works by now...
+	else if (StrEqual("medic",Class,false) || StrEqual("med",Class,false)) //You should be getting how this works by now...
 	{
 		return TFClass_Medic;
 	}
-	else if (StrEqual("heavy",string,false))
+	else if (StrEqual("heavy",Class,false))
 	{
 		return TFClass_Heavy;
 	}
-	else if (StrEqual("pyro",string,false))
+	else if (StrEqual("pyro",Class,false))
 	{
 		return TFClass_Pyro;
 	}
-	else if (StrEqual("spy",string,false))
+	else if (StrEqual("spy",Class,false))
 	{
 		return TFClass_Spy;
 	}
-	else if (StrEqual("engineer",string,false) || StrEqual("engi",string,false) || StrEqual("engie",string,false))
+	else if (StrEqual("engineer",Class,false) || StrEqual("engi",Class,false) || StrEqual("engie",Class,false))
 	{
 		return TFClass_Engineer;
 	}
@@ -71,51 +80,55 @@ TFClassType:GetClassID(const String:string[])
 	}
 }
 
-//! Takes the ID of a class and stores the name of it an the array provided. Returns the result of strcopy or -1 on invalid class.
-/*! \param iClass The class to fetch the name of.
-	\param String:string[] The string to store the classname in.
-	\param iStringSize The max size of the string.
-*/
-ClassIDToName(TFClassType:iClass, String:string[], iStringSize)
+/**
+ * Takes the ID of a class and stores the name of it in the string buffer provided.
+ *
+ * @param iClass						The ID of the class to get the name of.
+ * @param Class							The buffer to store the class name in.
+ * @param iStringSize					The max size of Class.
+ *
+ * @return								The number of cells written to the buffer or -1 on invalid class.
+ */
+ClassIDToName(TFClassType:iClass, String:Class[], iStringSize)
 {
 	
 	switch(iClass)
 	{
 		case TFClass_Scout:
 		{			
-			return strcopy(string, iStringSize, "scout");
+			return strcopy(Class, iStringSize, "scout");
 		}
 		case TFClass_Sniper:
 		{
-			return strcopy(string, iStringSize, "sniper");
+			return strcopy(Class, iStringSize, "sniper");
 		}
 		case TFClass_Soldier:
 		{
-			return strcopy(string, iStringSize, "soldier");
+			return strcopy(Class, iStringSize, "soldier");
 		}
 		case TFClass_DemoMan:
 		{
-			return strcopy(string, iStringSize, "demoman");
+			return strcopy(Class, iStringSize, "demoman");
 		}
 		case TFClass_Medic:
 		{
-			return strcopy(string, iStringSize, "medic");
+			return strcopy(Class, iStringSize, "medic");
 		}
 		case TFClass_Heavy:
 		{
-			return strcopy(string, iStringSize, "heavy");
+			return strcopy(Class, iStringSize, "heavy");
 		}
 		case TFClass_Pyro:
 		{
-			return strcopy(string, iStringSize, "pyro");
+			return strcopy(Class, iStringSize, "pyro");
 		}
 		case TFClass_Spy:
 		{
-			return strcopy(string, iStringSize, "spy");
+			return strcopy(Class, iStringSize, "spy");
 		}
 		case TFClass_Engineer:
 		{
-			return strcopy(string, iStringSize, "engineer");
+			return strcopy(Class, iStringSize, "engineer");
 		}
 	}
 	
@@ -123,30 +136,54 @@ ClassIDToName(TFClassType:iClass, String:string[], iStringSize)
 }
 
 
-//! Finds all the clients on a team and stores them in iClients[]. Returns the size of the array or -1 if no clients exsist on the team.
-/*! \param iTeam The team to fetch the clients from.
-	\param iClients[] An array to store the clients on the team in. Should be the size of MaxClients
-*/
-GetClientsOnTeam (iTeam, iClients[])
+/**
+ * Finds all the clients on a team and stores them in iClients[].
+ *
+ * @param iTeam							The team to get the clients of.
+ * @param iClients						The array to store the client indexes in.
+ * @param iMaxSize						The max size of iClients.
+ *
+ * @error								Out of space in iClients.
+ * @return								The number of clients on the team.
+ */
+GetClientsOnTeam (iTeam, iClients[], iMaxSize)
 {
 
-	new iSize = -1;
+	new iSize = 0;
 
 	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (! IsClientConnected(i))
-			continue;
-		
-		if (GetClientTeam(i) == iTeam)
 		{
+			continue;
+		}
+
+		if (GetClientTeam(i) == iTeam)
+		{		
+			if (iSize == iMaxSize)
+			{
+				ThrowError("No space left in iClients.");
+			}
+			
+			iClients[iSize] = i;			
 			iSize++;
-			iClients[iSize] = i;
 		}
 	}
 
 	return iSize;
 }
 
+/**
+ * Splits a string in two at a sub-string. 
+ *
+ * @param Source						The source string.
+ * @param iSourceSize					The size of the source string.
+ * @param Split							The sub-string to split the string at.
+ * @param Part							The buffer to store the second half of the string in.
+ * @param iPartSize						The size of the buffer to store the second half of the string in. 
+ *
+ * @return								The location the string was split at or -1 on failure.
+ */
 SeperateString (String:Source[], iSourceSize, const String:Split[], String:Part[], iPartSize)
 {
 	new iIndex;
@@ -185,7 +222,16 @@ SeperateString (String:Source[], iSourceSize, const String:Split[], String:Part[
 	}
 }
 
-GetClientWearables (client, iWearables[], iSize)
+/**
+ * Splits a string in two at a sub-string. 
+ *
+ * @param iClient						The client to get the wearables of.
+ * @param iWearables					An array to store the entity indexes of a client's wearables in.
+ * @param iSize							The size of the aforementioned array.
+ *
+ * @return								The count of wearables on the player.
+ */
+GetClientWearables (iClient, iWearables[], iSize)
 {
 	new iWearableCount = 0;
 	
@@ -196,7 +242,7 @@ GetClientWearables (client, iWearables[], iSize)
 	
 		new iOwner = GetEntPropEnt(iEntity, Prop_Send, "m_hOwnerEntity");
 		
-		if (iOwner == client)
+		if (iOwner == iClient)
 		{
 			if (iWearableCount < iSize)
 			{
@@ -218,6 +264,15 @@ GetClientWearables (client, iWearables[], iSize)
 #define VPK2_VERSION 2
 #define VPK2_TREE_TERMINATOR 65535
 
+/**
+ * Extracts a file from a VPK2 file. 
+ *
+ * @param VPK_File						The name of the VPK file, excluding extension.
+ * @param File							The name of the file to extract.
+ * @param FileToExtractTo				The name of the file to extract the file to.
+ *
+ * @return								True if the file was extracted, false if it wasn't.
+ */
 bool:ExtractFileFromVPK2 (const String:VPK_File[], const String:File[], const String:FileToExtractTo[])
 {
 	new String:DirFileName[PLATFORM_MAX_PATH];

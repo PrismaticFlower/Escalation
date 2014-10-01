@@ -1,6 +1,5 @@
 #include<sourcemod>
 #include<sdktools>
-#include<profiler>
 
 #include<tf2>
 #include<tf2_stocks>
@@ -110,72 +109,101 @@ static g_iObjectDestroyed_SapperCredits = 5;
 static Float:g_fObjectDestroyed_WasBuildingScale = 0.5;
 
 /************************CREDIT VARIABLES************************/
- 
-//Name: g_iObjectiveCredits
-//Purpose: The amount of objective credits earned by each team up.
-//Setter Function: Set_iObjectiveCredits
-//Getter Function: Get_iObjectiveCredits
-//Index Arguments: team
-static g_iObjectiveCredits[4];
+
+/**
+ * The amount of objective credits earned by each team. 
+ * Use the setter/getter function to access this or I'll destroy you.
+ * Get_iObjectiveCredits, Set_iObjectiveCredits
+ */
+static g_iObjectiveCredits[4]; 
 
 /************************MENU VARIABLES************************/
 
-static Handle:g_hUpgradeMenuBase = INVALID_HANDLE; //The base menu for other menus.
+static Handle:g_hUpgradeMenuBase = INVALID_HANDLE; /**< The base menu handle for all the other menus. */
 
-static Handle:g_hClearMenu = INVALID_HANDLE; //The menu from which a client can clear their upgrade queue.
+static Handle:g_hClearMenu = INVALID_HANDLE; /**< The handle to the menu that a client can clear their upgrade queue. */
 
 /************************UTILITY VARIABLES************************/
 
-static bool:g_bForceLoadoutRefresh[MAXPLAYERS+1]; //Can be set to true for a specific client to force a loadout refresh.
+static bool:g_bForceLoadoutRefresh[MAXPLAYERS+1]; /**< Can be set to true for a specific client to force a loadout refresh. */
 
-static bool:g_bPluginDisabledForMap; //When set to true the plugin is disabled for the rest of the map.
+static bool:g_bPluginDisabledForMap; /**< When set to true the plugin is disabled for the rest of the map. */
 
-static bool:g_bPluginDisabledAdmin; //When set to true the plugin is disabled. When set to false the plugin is disabled, amazing!
+static bool:g_bPluginDisabledAdmin; /**< When set to true the plugin is disabled. When set to false the plugin is disabled, amazing! */
 
-static bool:g_bPluginStarted; //Set to true once StartPlugin has been called, it is set to false when the plugin is disabled for any reason.
+static bool:g_bPluginStarted; /**< Set to true once StartPlugin has been called, it is set to false when the plugin is disabled for any reason. */
 
-static Handle:g_hPointOwner = INVALID_HANDLE; //Enabled the plugin to know who previously owned a control point.
+static Handle:g_hPointOwner = INVALID_HANDLE; /**< Enabled the plugin to know who previously owned a control point. */
 
-static bool:g_bBuyUpgrades; //When set to true the plugin will buy upgrades, when set to false it won't.
+static bool:g_bBuyUpgrades; /**< When set to true the plugin will buy upgrades, when set to false it won't. */
 
-static bool:g_bGiveCredits; //When set to true the plugin will give players credits for doing stuff, when set to false it won't.
+static bool:g_bGiveCredits; /**< When set to true the plugin will give players credits for doing stuff, when set to false it won't. */
 
 /************************LIBRARY VARIABLES************************/
 
-static bool:g_bTF2ItemsBackupHooked;
-static bool:g_bSteamTools;
+static bool:g_bTF2ItemsBackupHooked; /**< Used to keep track of if the TF2Items fallback event has been hooked. */
+static bool:g_bSteamTools; /**< Used to keep track of if SteamTools is available. */
 
 /************************FORWARD VARIABLES************************/
 
-static Handle:g_hClientCreditsChanged = INVALID_HANDLE;
+static Handle:g_hClientCreditsChanged = INVALID_HANDLE; /**< Handle to the forward that is called when a client's credits change. */
 
 /************************CVAR VARIABLES************************/
 
-static Handle:CVar_Enabled = INVALID_HANDLE;
+static Handle:CVar_Enabled = INVALID_HANDLE; /**< A handle to the cvar the server admin can use to disable the plugin. */
 
 /************************OBJECTS************************/
 
-//Insert Description Here
+/**
+ * Holds and manages all information about a weapon.
+ * Includeing the upgrades it is allowed and the weapon slot it takes up.
+ */
 static g_WeaponInfoManager[WeaponInfoManager];
-//Insert Another Description Here
+
+/**
+ * Stores the upgrade menus for each weapon.
+ * This will hopefully be replaced with code that generates the menus on demand,
+ * at some point in the future.
+ */
 static g_UpgradeMenuCache[UpgradeMenuCache];
-//Insert More Descriptive Description Here
+
+/**
+ * Handles almost all the information about a player, 
+ * such as their upgrade queue and credit count.
+ */
 static g_PlayerData[MAXPLAYERS + 1][PlayerData];
-//Insert a Phantasmagorical Description Here
+
+/**
+ * Stores the data about each upgrade,
+ * except for descriptions which are owned by g_UpgradeDescriptions. 
+ */
 static g_UpgradeDataStore[UpgradeDataStore];
-//Insert an Exceptionally Amazing Description Here
+
+/**
+ * Stores which upgrades each class is allowed. 
+ */
 static g_ClassInfoStore[ClassInfoStore];
-//Insert Something Here
+
+/**
+ * Stores the translation keys for each upgrades descriptions. 
+ */
 static g_UpgradeDescriptions[UpgradeDescriptions];
-//Insert Hopefully Final Description here
+
+/**
+ * Stores which upgrades have been banned, both by config files
+ * and admins. 
+ */
 static g_BannedUpgrades[BannedUpgrades];
-//Insert Yet Another Final Description Here
+
+/**
+ * Stores the stock attributes of each weapon in the game.
+ */
 static g_StockAttributes[StockAttributes];
 
 
 /************************ADMIN MENU VARIABLES************************/
 
-static Handle:g_hAdminMenu = INVALID_HANDLE;
+static Handle:g_hAdminMenu = INVALID_HANDLE; /**< A handle to the SourceMod admin menu. */
 static TopMenuObject:g_AdminMenuCommands;
 static TopMenuObject:g_AdminMenuBanUpgrades;
 static TopMenuObject:g_AdminMenuUnbanUpgrades;
@@ -231,7 +259,7 @@ public OnPluginStart()
 	#if defined DEV_BUILD
 		RegConsoleCmd("sm_givecredits", Command_GiveCredits, "Gives you X amount of credits.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
 		RegConsoleCmd("sm_forceupgrade", Command_ForceUpgrade, "Forces an upgrade to be put onto a client's upgrade queue.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
-		RegConsoleCmd("sm_printcredits", Command_PrintCredits, "Prints out all connected client's credits to the console.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
+		RegConsoleCmd("sm_printcredits", Command_PrintCredits, "Prints out all connected iClient's credits to the console.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
 		RegConsoleCmd("sm_printteamcredits", Command_PrintTeamCredits, "Prints out the credits of all clients on the team.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
 		RegConsoleCmd("sm_printearnedcredits", Command_PrintTotalCredits, "Prints out the total earned credits of all clients.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
 		RegConsoleCmd("sm_forcemenu", Command_ForceMenuDisplay, "Forces an upgrade menu to be displayed", FCVAR_UNREGISTERED | FCVAR_CHEAT);
@@ -1347,80 +1375,80 @@ public CVar_Enable_Changed(Handle:cvar, const String:oldVal[], const String:newV
 /**
  * Creates a PlayerData object for newly connected players and creates timers for reminding the player to open the upgrade menu.
  *
- * @param client		The index of the client connecting.
+ * @param iClient		The index of the client connecting.
  *
  * @noreturn
  */
-public OnClientConnected (client)
+public OnClientConnected (iClient)
 {
 	if (IsPluginDisabled() || ! g_bPluginStarted)
 	{
 		return;
 	}
 
-	if (IsClientReplay(client))
+	if (IsClientReplay(iClient))
 	{
 		return;
 	}
 	
 	//Create the client's data object.
-	PlayerData_ConstructFull(g_PlayerData[client][0], client);	
-	
+	PlayerData_ConstructFull(g_PlayerData[iClient][0], iClient);
+
 	//Set their starting credits.
-	Set_iClientCredits(g_iClientConnected_StartingCredits, SET_ABSOLUTE, client, ESC_CREDITS_STARTING);
+	Set_iClientCredits(g_iClientConnected_StartingCredits, SET_ABSOLUTE, iClient, ESC_CREDITS_STARTING);
 	
 	if (g_iPlayerChangeTeam_CompensateObjectiveCredits == 1)
 	{
-		PlayerData_SetGiveObjectiveCredits(g_PlayerData[client][0], true);
+		PlayerData_SetGiveObjectiveCredits(g_PlayerData[iClient][0], true);
 	}
 	
 	if (g_iClientConnected_CompensateCredits == 1)
 	{
-		Set_iClientCredits(GetAverageCredits(client), SET_ABSOLUTE, client, ESC_CREDITS_COMPENSATE);
+		Set_iClientCredits(GetAverageCredits(iClient), SET_ABSOLUTE, iClient, ESC_CREDITS_COMPENSATE);
 	}
 	else if (g_iClientConnected_CompensateCredits == 2)
 	{
-		new iAverage = GetAverageCredits(client);
-		Set_iClientCredits(iAverage - (iAverage/4), SET_ABSOLUTE, client, ESC_CREDITS_COMPENSATE);
+		new iAverage = GetAverageCredits(iClient);
+		Set_iClientCredits(iAverage - (iAverage/4), SET_ABSOLUTE, iClient, ESC_CREDITS_COMPENSATE);
 	}
 	
-	CreateTimer(15.0, Timer_MenuReminder, GetClientUserId(client), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(60.0, Timer_AnnoyingMenuReminder, GetClientUserId(client), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(15.0, Timer_MenuReminder, GetClientUserId(iClient), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(60.0, Timer_AnnoyingMenuReminder, GetClientUserId(iClient), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 }
 
 /**
  * Cleans up a player's data when they disconnect.
  *
- * @param client		The index of the client disconnecting.
+ * @param iClient		The index of the client disconnecting.
  *
  * @noreturn
  */
-public OnClientDisconnect (client)
+public OnClientDisconnect (iClient)
 {
 	if (IsPluginDisabled() || ! g_bPluginStarted)
 	{
 		return;	
 	}
 
-	if (IsClientReplay(client))
+	if (IsClientReplay(iClient))
 	{
 		return;
 	}
 	
 	//Destroy the client's data object.
-	PlayerData_Destroy(g_PlayerData[client][0]);
-
+	PlayerData_Destroy(g_PlayerData[iClient][0]);
+	
 	//Clear the attributes.
-	PlayerAttributeManager_ClearAttributes(client);
-	WeaponAttributes_ResetData(client);
+	PlayerAttributeManager_ClearAttributes(iClient);
+	WeaponAttributes_ResetData(iClient);
 
 	//Reset the death counters of the other clients.
 	for (new i = 1; i <= MaxClients; i++)
 	{
 		//Reset the death trackers.
-		if (i != client && IsClientConnected(i) && ! IsClientReplay(i))
+		if (i != iClient && IsClientConnected(i) && ! IsClientReplay(i))
 		{
-			PlayerData_ResetDeathCounter(g_PlayerData[i][0], client);
+			PlayerData_ResetDeathCounter(g_PlayerData[i][0], iClient);
 		}
 	}
 }
@@ -1432,47 +1460,47 @@ public OnClientDisconnect (client)
  */
 public Event_PlayerResupply (Handle:event, const String:name[], bool:dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 
-	if (client == 0)
+	if (iClient == 0)
 	{
 		return;
 	}
 
 	//Bit of a hack here we use to force a client's loadout to be refreshed. If there is a better way (I hope so) please enlighten me.
-	if (g_bForceLoadoutRefresh[client])
+	if (g_bForceLoadoutRefresh[iClient])
 	{
 		//These need to be called here otherwise if the client doesn't actually change his loadout the call to PlayerData_HaveWeaponsChanged-
 		//-will return false and result in the client having attributes they aren't actually allowed.
-		PlayerAttributeManager_ClearAttributes(client);
-		WeaponAttributes_Clear(client);
-		PlayerData_ResetQueuePosition(g_PlayerData[client][0]);
+		PlayerAttributeManager_ClearAttributes(iClient);
+		WeaponAttributes_Clear(iClient);
+		PlayerData_ResetQueuePosition(g_PlayerData[iClient][0]);
 		
-		TF2_RemoveAllWeapons(client);
-		g_bForceLoadoutRefresh[client] = false;
-		TF2_RegeneratePlayer(client);
+		TF2_RemoveAllWeapons(iClient);
+		g_bForceLoadoutRefresh[iClient] = false;
+		TF2_RegeneratePlayer(iClient);
 		
 		return;
 	}
 
-	if (PlayerData_HaveWeaponsChanged(g_PlayerData[client][0]))
+	if (PlayerData_HaveWeaponsChanged(g_PlayerData[iClient][0]))
 	{
-		PlayerAttributeManager_ClearAttributes(client);
-		WeaponAttributes_Clear(client);
+		PlayerAttributeManager_ClearAttributes(iClient);
+		WeaponAttributes_Clear(iClient);
 		
 		for (new i = 0; i < UPGRADABLE_SLOTS; i ++)
 		{
 			decl iAttributes[ENTITY_MAX_ATTRIBUTES];
 			decl Float:fValues[ENTITY_MAX_ATTRIBUTES];
 		
-			if (StockAttributes_GetItemAttributes(g_StockAttributes[0], PlayerData_GetWeaponID(g_PlayerData[client][0], i), iAttributes, fValues))
+			if (StockAttributes_GetItemAttributes(g_StockAttributes[0], PlayerData_GetWeaponID(g_PlayerData[iClient][0], i), iAttributes, fValues))
 			{
-				WeaponAttributes_SetAttributes(client, i, iAttributes, fValues);
+				WeaponAttributes_SetAttributes(iClient, i, iAttributes, fValues);
 			}
 		}
 		
 
-		PlayerData_ResetQueuePosition(g_PlayerData[client][0]);
+		PlayerData_ResetQueuePosition(g_PlayerData[iClient][0]);
 	}
 	
 	//This has to come after PlayerData_HaveWeaponsChanged to allow it to cache the player's weapon indexes.
@@ -1482,17 +1510,17 @@ public Event_PlayerResupply (Handle:event, const String:name[], bool:dontBroadca
 	}
 		
 	//Process the upgrade queue.
-	for ( ; PlayerData_GetQueuePosition(g_PlayerData[client][0]) < PlayerData_GetUpgradeQueueSize(g_PlayerData[client][0], TF2_GetPlayerClass(client)); PlayerData_IncrementQueuePosition(g_PlayerData[client][0]) )
+	for ( ; PlayerData_GetQueuePosition(g_PlayerData[iClient][0]) < PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient)); PlayerData_IncrementQueuePosition(g_PlayerData[iClient][0]) )
 	{
-		if (! (ProcessQueueAtPosition(client, PlayerData_GetQueuePosition(g_PlayerData[client][0]))))
+		if (! (ProcessQueueAtPosition(iClient, PlayerData_GetQueuePosition(g_PlayerData[iClient][0]))))
 		{
 			break;
 		}
 	}
 	
 
-	WeaponAttributes_Apply(client);
-	PlayerAttributeManager_ApplyAttributes(client);
+	WeaponAttributes_Apply(iClient);
+	PlayerAttributeManager_ApplyAttributes(iClient);
 }
 
 /**
@@ -1503,28 +1531,28 @@ public Event_PlayerResupply (Handle:event, const String:name[], bool:dontBroadca
 public Event_PlayerChangeTeam (Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new iUserID = GetEventInt(event, "userid");
-	new client = GetClientOfUserId(client);
+	new iClient = GetClientOfUserId(iClient);
 	new iTeam = GetEventInt(event, "team");
 	new iOldTeam = GetEventInt(event, "oldteam");
 	new bool:bClientDisconnected = GetEventBool(event, "disconnect");
 	
 	//Safety shibboleth to make sure stuff stays securely snug.
-	if (bClientDisconnected || client == 0)
+	if (bClientDisconnected || iClient == 0)
 	{
 		return;
 	}
 	
-	if (PlayerData_GetGiveObjectiveCredits(g_PlayerData[client][0]))
+	if (PlayerData_GetGiveObjectiveCredits(g_PlayerData[iClient][0]))
 	{
-		Set_iClientCredits(Get_iObjectiveCredits(iTeam), SET_ADD, client, ESC_CREDITS_OBJECTIVE);
-		PlayerData_SetGiveObjectiveCredits(g_PlayerData[client][0], true);
+		Set_iClientCredits(Get_iObjectiveCredits(iTeam), SET_ADD, iClient, ESC_CREDITS_OBJECTIVE);
+		PlayerData_SetGiveObjectiveCredits(g_PlayerData[iClient][0], true);
 	}
 	
 	if (g_iPlayerChangeTeam_SwapObjectiveCredits == 1)
 	{	
-		RefundUpgrades(client);
-		Set_iClientCredits(Get_iObjectiveCredits(iOldTeam), SET_SUBTRACT, client, ESC_CREDITS_OBJECTIVE);
-		Set_iClientCredits(Get_iObjectiveCredits(iTeam), SET_ADD, client, ESC_CREDITS_OBJECTIVE);
+		RefundUpgrades(iClient);
+		Set_iClientCredits(Get_iObjectiveCredits(iOldTeam), SET_SUBTRACT, iClient, ESC_CREDITS_OBJECTIVE);
+		Set_iClientCredits(Get_iObjectiveCredits(iTeam), SET_ADD, iClient, ESC_CREDITS_OBJECTIVE);
 	}
 	
 	CreateTimer(0.25, Timer_ForceHUDTextUpdate, iUserID);
@@ -1538,14 +1566,14 @@ public Event_PlayerChangeTeam (Handle:event, const String:name[], bool:dontBroad
 public Event_PlayerChangeClass (Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new iUserID = GetEventInt(event, "userid");
-	new client = GetClientOfUserId(iUserID);
+	new iClient = GetClientOfUserId(iUserID);
 
-	if (client == 0)
+	if (iClient == 0)
 	{
 		return;
 	}
 
-	RefundUpgrades(client);
+	RefundUpgrades(iClient);
 
 	CreateTimer(0.25, Timer_ForceHUDTextUpdate, iUserID);
 }
@@ -1558,9 +1586,9 @@ public Event_PlayerChangeClass (Handle:event, const String:name[], bool:dontBroa
 public Event_PlayerSpawn (Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new iUserID = GetEventInt(event, "userid");
-	new client = GetClientOfUserId(iUserID);
+	new iClient = GetClientOfUserId(iUserID);
 	
-	if (client == 0)
+	if (iClient == 0)
 	{
 		return;
 	}
@@ -1577,20 +1605,20 @@ public Event_PlayerSpawn (Handle:event, const String:name[], bool:dontBroadcast)
  */
 public Action:Timer_MenuReminder (Handle:timer, any:data)
 {
-	new client = GetClientOfUserId(data);
+	new iClient = GetClientOfUserId(data);
 
-	if (client == 0 || ! IsClientInGame(client) || IsPluginDisabled())
+	if (iClient == 0 || ! IsClientInGame(iClient) || IsPluginDisabled())
 	{
 		return Plugin_Stop;
 	}
 
-	if (PlayerData_GetHasOpenedMenu(g_PlayerData[client][0]))
+	if (PlayerData_GetHasOpenedMenu(g_PlayerData[iClient][0]))
 	{
 		return Plugin_Stop;
 	}
 	else
 	{
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Open_Menu_Reminder");
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Open_Menu_Reminder");
 
 		return Plugin_Continue;
 	}
@@ -1603,20 +1631,20 @@ public Action:Timer_MenuReminder (Handle:timer, any:data)
  */
 public Action:Timer_AnnoyingMenuReminder (Handle:timer, any:data)
 {
-	new client = GetClientOfUserId(data);
+	new iClient = GetClientOfUserId(data);
 
-	if (client == 0 || ! IsClientInGame(client) || IsPluginDisabled())
+	if (iClient == 0 || ! IsClientInGame(iClient) || IsPluginDisabled())
 	{
 		return Plugin_Stop;
 	}
 
-	if (PlayerData_GetHasOpenedMenu(g_PlayerData[client][0]))
+	if (PlayerData_GetHasOpenedMenu(g_PlayerData[iClient][0]))
 	{
 		return Plugin_Stop;
 	}
 	else
 	{
-		PlayerData_DisplayHudReminder(g_PlayerData[client][0]);
+		PlayerData_DisplayHudReminder(g_PlayerData[iClient][0]);
 
 		return Plugin_Continue;
 	}
@@ -1629,11 +1657,11 @@ public Action:Timer_AnnoyingMenuReminder (Handle:timer, any:data)
  */
 public Action:Timer_ForceHUDTextUpdate (Handle:timer, any:data)
 {
-	new client = GetClientOfUserId(data);
+	new iClient = GetClientOfUserId(data);
 
-	if (client != 0 && IsClientInGame(client) && ! IsPluginDisabled())
+	if (iClient != 0 && IsClientInGame(iClient) && ! IsPluginDisabled())
 	{
-		PlayerData_ForceHudTextUpdate(g_PlayerData[client][0]);
+		PlayerData_ForceHudTextUpdate(g_PlayerData[iClient][0]);
 	}
 	else
 	{
@@ -1648,23 +1676,23 @@ public Action:Timer_ForceHUDTextUpdate (Handle:timer, any:data)
 /**
  * Updates a client's cached weapon entities and item definition indexes.
  *
- * @param client				The index of the client that got the item.
- * @param classname				The classname of the item the client was just given.
- * @param itemDefinitionIndex	The item definition index of the item the client was given.
- * @param itemLevel				The level of the item the client was just given.
- * @param itemQuality			The quality of the item the client was just given.
- * @param entityIndex			The entity index of the item the client was given.
+ * @param iClient				The index of the client that got the item.
+ * @param ClassName				The classname of the item the client was just given.
+ * @param iItemDefinitionIndex	The item definition index of the item the client was given.
+ * @param iItemLevel			The level of the item the client was just given.
+ * @param iItemQuality			The quality of the item the client was just given.
+ * @param iEntityIndex			The entity index of the item the client was given.
  *
  * @noreturn
  */
-public TF2Items_OnGiveNamedItem_Post (client, String:classname[], itemDefinitionIndex, itemLevel, itemQuality, entityIndex)
+public TF2Items_OnGiveNamedItem_Post (iClient, String:ClassName[], iItemDefinitionIndex, iItemLevel, iItemQuality, iEntityIndex)
 {
-	new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], itemDefinitionIndex, TF2_GetPlayerClass(client));
+	new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(iClient));
 
 	if (iSlot != WEAPONINFO_INVALID_SLOT)
 	{
-		PlayerData_UpdateWeapon(g_PlayerData[client][0], iSlot, itemDefinitionIndex);
-		WeaponAttributes_UpdateWeaponEnt(client, iSlot, entityIndex);
+		PlayerData_UpdateWeapon(g_PlayerData[iClient][0], iSlot, iItemDefinitionIndex);
+		WeaponAttributes_UpdateWeaponEnt(iClient, iSlot, iEntityIndex);
 	}
 }
 
@@ -1675,9 +1703,9 @@ public TF2Items_OnGiveNamedItem_Post (client, String:classname[], itemDefinition
  */
 public Event_PlayerInventoryCheck (Handle:event, const String:name[], bool:dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 
-	if (client == 0)
+	if (iClient == 0)
 	{
 		return;
 	}
@@ -1686,25 +1714,25 @@ public Event_PlayerInventoryCheck (Handle:event, const String:name[], bool:dontB
 	
 	for (new i = 0; i < UPGRADABLE_SLOTS; i++)
 	{
-		new iEntity = GetPlayerWeaponSlot(client, i);
+		new iEntity = GetPlayerWeaponSlot(iClient, i);
 		
 		//Handle the wearables.
 		if (! IsValidEntity(iEntity) && ! bHandledWearables)
 		{
 			decl iWearables[PLAYER_MAX_WEARABLES];
 
-			new iWearableCount = GetClientWearables(client, iWearables, sizeof(iWearables));
+			new iWearableCount = GetClientWearables(iClient, iWearables, sizeof(iWearables));
 			
 			for (new iWearableIndex = 0; iWearableIndex < iWearableCount; iWearableIndex ++)
 			{
 				new iItemDefinitionIndex = GetEntProp(iWearables[iWearableIndex], Prop_Send, "m_iItemDefinitionIndex");
 				
-				new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(client));
+				new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(iClient));
 		
 				if (iSlot != WEAPONINFO_INVALID_SLOT)
 				{
-					PlayerData_UpdateWeapon(g_PlayerData[client][0], iSlot, iItemDefinitionIndex);
-					WeaponAttributes_UpdateWeaponEnt(client, iSlot, iWearables[iWearableIndex]);
+					PlayerData_UpdateWeapon(g_PlayerData[iClient][0], iSlot, iItemDefinitionIndex);
+					WeaponAttributes_UpdateWeaponEnt(iClient, iSlot, iWearables[iWearableIndex]);
 				}
 			}
 			
@@ -1715,12 +1743,12 @@ public Event_PlayerInventoryCheck (Handle:event, const String:name[], bool:dontB
 		
 		new iItemDefinitionIndex = GetEntProp(iEntity, Prop_Send, "m_iItemDefinitionIndex");
 		
-		new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(client));
+		new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(iClient));
 		
 		if (iSlot != WEAPONINFO_INVALID_SLOT)
 		{
-			PlayerData_UpdateWeapon(g_PlayerData[client][0], iSlot, iItemDefinitionIndex);
-			WeaponAttributes_UpdateWeaponEnt(client, iSlot, iEntity);
+			PlayerData_UpdateWeapon(g_PlayerData[iClient][0], iSlot, iItemDefinitionIndex);
+			WeaponAttributes_UpdateWeaponEnt(iClient, iSlot, iEntity);
 		}
 	}
 }
@@ -1756,14 +1784,14 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 
 	if (bFullReset)
 	{
-		for (new client = 1; client <= MaxClients; client++)
+		for (new iClient = 1; iClient <= MaxClients; iClient++)
 		{
-			if (! IsClientConnected(client) || IsClientReplay(client))
+			if (! IsClientConnected(iClient) || IsClientReplay(iClient))
 			{
 				continue;
 			}
 				
-			Set_iClientCredits(g_iClientConnected_StartingCredits, SET_ABSOLUTE, client, ESC_CREDITS_STARTING);
+			Set_iClientCredits(g_iClientConnected_StartingCredits, SET_ABSOLUTE, iClient, ESC_CREDITS_STARTING);
 		}
 	}
 	
@@ -1805,25 +1833,25 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 	if (bResetCredits)
 	{
-		for (new client = 1; client <= MaxClients; client++)
+		for (new iClient = 1; iClient <= MaxClients; iClient++)
 		{
-			if (! IsClientConnected(client) || IsClientReplay(client))
+			if (! IsClientConnected(iClient) || IsClientReplay(iClient))
 			{
 				continue;
 			}
 			
-			Set_iClientCredits(g_iClientConnected_StartingCredits, SET_ABSOLUTE, client, ESC_CREDITS_STARTING);
+			Set_iClientCredits(g_iClientConnected_StartingCredits, SET_ABSOLUTE, iClient, ESC_CREDITS_STARTING);
 		
 			for (new TFClassType:iClass = TFClassType:1; iClass <= TFClassType:9; iClass ++) 
 			{
-				for (new iIndex = 0; iIndex < PlayerData_GetUpgradeQueueSize(g_PlayerData[client][0], iClass); iIndex++)
+				for (new iIndex = 0; iIndex < PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClass); iIndex++)
 				{
 					decl tmpUpgradeQueue[UpgradeQueue];
-					PlayerData_GetUpgradeOnQueue(g_PlayerData[client][0], iClass, iIndex,  tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
+					PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex,  tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
 					
 					tmpUpgradeQueue[_bOwned] = false;
 					
-					PlayerData_SetUpgradeOnQueue(g_PlayerData[client][0], iClass, iIndex, tmpUpgradeQueue[0]);
+					PlayerData_SetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue[0]);
 				}
 			}
 		}
@@ -1858,21 +1886,21 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 	
 
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	
 	new iFlags =  GetEventInt(event, "death_flags");
 	
 	//Increase the death counter count on the client.
-	PlayerData_IncrementDeathCounter(g_PlayerData[client][0], attacker);
+	PlayerData_IncrementDeathCounter(g_PlayerData[iClient][0], attacker);
 	//Also reset the attacker's death counter on the client.
-	PlayerData_ResetDeathCounter(g_PlayerData[attacker][0], client);
+	PlayerData_ResetDeathCounter(g_PlayerData[attacker][0], iClient);
 	
 	//Even though these share the same values at the start they can have a different limit set in escalation_gameinfo. For the sake of clean code we store them separately to account for this.
-	new iDeathCount = PlayerData_GetDeathCounter(g_PlayerData[client][0], attacker);
+	new iDeathCount = PlayerData_GetDeathCounter(g_PlayerData[iClient][0], attacker);
 	new iKillCount = iDeathCount;
 	
-	if (client == 0 || attacker == 0 || client == attacker) //Invalid client, killed by the world or themself? No reason to continue.
+	if (iClient == 0 || attacker == 0 || iClient == attacker) //Invalid iClient, killed by the world or themself? No reason to continue.
 		return;
 
 	//Check to see if we're at the limit on the amount of times a person will get extra credits from dying to someone else.
@@ -1884,26 +1912,26 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
 	//Grab the name of the client that died.		
 	decl String:clientName[MAX_NAME_LENGTH];
-	GetClientName(client, clientName, sizeof(clientName));		
+	GetClientName(iClient, clientName, sizeof(clientName));		
 	//Same for the attacker.
 	decl String:attackerName[MAX_NAME_LENGTH];
 	GetClientName(attacker, attackerName, sizeof(attackerName));
 	
 	
 	//Store the old credit count of both players. 
-	new iOldCreditsClient = PlayerData_GetCredits(g_PlayerData[client][0]);
+	new iOldCreditsClient = PlayerData_GetCredits(g_PlayerData[iClient][0]);
 	new iOldCreditsAttacker = PlayerData_GetCredits(g_PlayerData[attacker][0]);
 	
 	//Determine how much to scale the amount of credits being given to the client.
 	new Float:fScaleClient = 1.0 / g_iOnDeath_MaxStreak * iDeathCount;
 	new Float:fScaleAttacker = (g_iOnKill_MaxStreak - (iKillCount - 1.0)) / g_iOnKill_MaxStreak;
 	
-	//Finally we figure out how many credits to give each client.
+	//Finally we figure out how many credits to give each iClient.
 	new iCreditsForClient = RoundFloat(float(g_iOnDeath_Credits) * fScaleClient);
 	new iCreditsForAttacker = RoundFloat(float(g_iOnKill_Credits) * fScaleAttacker);
 	
 	//Increase the credits of the player.
-	new iNewCreditsClient = Set_iClientCredits(iCreditsForClient, SET_ADD, client, ESC_CREDITS_KILLED);
+	new iNewCreditsClient = Set_iClientCredits(iCreditsForClient, SET_ADD, iClient, ESC_CREDITS_KILLED);
 	new iNewCreditsAttacker = Set_iClientCredits(iCreditsForAttacker, SET_ADD, attacker, ESC_CREDITS_KILL);
 	
 	//If the players earned some credits we inform them of it.
@@ -1911,22 +1939,22 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	//Was this a domination kill?
 	if (iFlags & TF_DEATHFLAG_KILLERDOMINATION != 0)
 	{
-		Set_iClientCredits(g_iOnDominated_Credits, SET_ADD, client, ESC_CREDITS_DOMINATED);
+		Set_iClientCredits(g_iOnDominated_Credits, SET_ADD, iClient, ESC_CREDITS_DOMINATED);
 		Set_iClientCredits(g_iOnDomination_Credits, SET_ADD, attacker, ESC_CREDITS_DOMINATION);
 	
-		CPrintToChatEx(client, attacker, "%t %t", "Escalation_Tag", "Credits_From_Dominated", g_iOnDominated_Credits, attackerName);
-		CPrintToChatEx(attacker, client, "%t %t", "Escalation_Tag", "Credits_From_Domination", g_iOnDomination_Credits, clientName);
+		CPrintToChatEx(iClient, attacker, "%t %t", "Escalation_Tag", "Credits_From_Dominated", g_iOnDominated_Credits, attackerName);
+		CPrintToChatEx(attacker, iClient, "%t %t", "Escalation_Tag", "Credits_From_Domination", g_iOnDomination_Credits, clientName);
 	}
 	
 	if (iOldCreditsClient != iNewCreditsClient)
 	{
-		CPrintToChatEx(client, attacker, "%t %t", "Escalation_Tag", "Credits_From_Death", (iNewCreditsClient-iOldCreditsClient), attackerName, iNewCreditsClient);
+		CPrintToChatEx(iClient, attacker, "%t %t", "Escalation_Tag", "Credits_From_Death", (iNewCreditsClient-iOldCreditsClient), attackerName, iNewCreditsClient);
 		
 	}
 	
 	if (iOldCreditsAttacker != iNewCreditsAttacker)
 	{
-		CPrintToChatEx(attacker, client, "%t %t", "Escalation_Tag", "Credits_From_Kill", (iNewCreditsAttacker-iOldCreditsAttacker), clientName, iNewCreditsAttacker);
+		CPrintToChatEx(attacker, iClient, "%t %t", "Escalation_Tag", "Credits_From_Kill", (iNewCreditsAttacker-iOldCreditsAttacker), clientName, iNewCreditsAttacker);
 
 	}
 	
@@ -1944,11 +1972,11 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	
 	if (iFlags & TF_DEATHFLAG_ASSISTERDOMINATION != 0)
 	{
-		Set_iClientCredits(g_iOnDominated_Credits, SET_ADD, client, ESC_CREDITS_DOMINATED);
+		Set_iClientCredits(g_iOnDominated_Credits, SET_ADD, iClient, ESC_CREDITS_DOMINATED);
 		Set_iClientCredits(g_iOnDomination_Credits, SET_ADD, assister, ESC_CREDITS_DOMINATION);
 	
-		CPrintToChatEx(client, assister, "%t %t", "Escalation_Tag", "Credits_From_Dominated", g_iOnDominated_Credits, assisterName);
-		CPrintToChatEx(assister, client, "%t %t", "Escalation_Tag", "Credits_From_Domination", g_iOnDomination_Credits, clientName);
+		CPrintToChatEx(iClient, assister, "%t %t", "Escalation_Tag", "Credits_From_Dominated", g_iOnDominated_Credits, assisterName);
+		CPrintToChatEx(assister, iClient, "%t %t", "Escalation_Tag", "Credits_From_Domination", g_iOnDomination_Credits, clientName);
 	}
 	
 	new iOldAssisterCredits = PlayerData_GetCredits(g_PlayerData[assister][0]);
@@ -1976,13 +2004,13 @@ public Event_MedicDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 	
 
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	new iAmountHealed = GetEventInt(event, "healing");
 	new bool:bHadCharge = GetEventBool(event, "charged");
 	
 	//Make sure the person will be gaining credits and that the client is valid.
-	if (g_iOnMedicKilled_BonusCredits > 0 && attacker != 0 && attacker != client)
+	if (g_iOnMedicKilled_BonusCredits > 0 && attacker != 0 && attacker != iClient)
 	{
 		Set_iClientCredits(g_iOnMedicKilled_BonusCredits, SET_ADD, attacker, ESC_CREDITS_KILL | ESC_CREDITS_TEAMPLAY);
 		
@@ -1990,21 +2018,21 @@ public Event_MedicDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 	
 	//Same as above.
-	if (bHadCharge && g_iOnMedicKilled_UberDroppedCredits > 0 && attacker != 0 && attacker != client)
+	if (bHadCharge && g_iOnMedicKilled_UberDroppedCredits > 0 && attacker != 0 && attacker != iClient)
 	{
 		Set_iClientCredits(g_iOnMedicKilled_UberDroppedCredits, SET_ADD, attacker, ESC_CREDITS_KILL | ESC_CREDITS_TEAMPLAY);
 		
 		CPrintToChat(attacker, "%t %t", "Escalation_Tag", "Credits_From_UberDropped", g_iOnMedicKilled_UberDroppedCredits);
 	}
 	
-	if (iAmountHealed >= g_iOnMedicDeath_AmountHealed && g_iOnMedicDeath_CreditsPerAmountHealed > 0 && client != 0)
+	if (iAmountHealed >= g_iOnMedicDeath_AmountHealed && g_iOnMedicDeath_CreditsPerAmountHealed > 0 && iClient != 0)
 	{
 		new iCreditPackects = iAmountHealed / g_iOnMedicDeath_AmountHealed;
 		new iCreditsGiven = iCreditPackects * g_iOnMedicDeath_CreditsPerAmountHealed;
 		
-		Set_iClientCredits(iCreditsGiven, SET_ADD, client, ESC_CREDITS_HEALED);
+		Set_iClientCredits(iCreditsGiven, SET_ADD, iClient, ESC_CREDITS_HEALED);
 		
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Credits_From_AmountHealed", iCreditsGiven, iAmountHealed);
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_AmountHealed", iCreditsGiven, iAmountHealed);
 	}
 	
 	
@@ -2028,13 +2056,13 @@ public Event_MedicDefended(Handle:event, const String:name[], bool:dontBroadcast
 	}
 	
 
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));	
+	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));	
 	
-	if (g_iOnMedicDefended_Credits > 0 && client != 0)
+	if (g_iOnMedicDefended_Credits > 0 && iClient != 0)
 	{
-		Set_iClientCredits(g_iOnMedicDefended_Credits, SET_ADD, client, ESC_CREDITS_TEAMPLAY);
+		Set_iClientCredits(g_iOnMedicDefended_Credits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
 		
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Credits_From_MedicDefended", g_iOnMedicDefended_Credits);		
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_MedicDefended", g_iOnMedicDefended_Credits);		
 	}
 }
 
@@ -2055,15 +2083,15 @@ public Event_CaptureBlocked(Handle:event, const String:name[], bool:dontBroadcas
 		return;
 	}
 	
-	new client = GetEventInt(event, "blocker");
+	new iClient = GetEventInt(event, "blocker");
 	
-	if (client == 0)
+	if (iClient == 0)
 	{
 		return;
 	}
 
-	Set_iClientCredits(g_iOnDefendedPoint_Credits, SET_ADD, client, ESC_CREDITS_TEAMPLAY);
-	CPrintToChat(client, "%t %t", "Escalation_Tag", "Credits_From_CaptureBlocked", g_iOnDefendedPoint_Credits);
+	Set_iClientCredits(g_iOnDefendedPoint_Credits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_CaptureBlocked", g_iOnDefendedPoint_Credits);
 }
 
 /**
@@ -2083,16 +2111,16 @@ public Event_PlayerTeleported(Handle:event, const String:name[], bool:dontBroadc
 		return;
 	}
 	
-	new client = GetClientOfUserId(GetEventInt(event, "builderid"));
+	new iClient = GetClientOfUserId(GetEventInt(event, "builderid"));
 	
-	if (client == 0)
+	if (iClient == 0)
 	{
 		return;
 	}
 
 	
-	Set_iClientCredits(g_iPlayerTeleported_Credits, SET_ADD, client, ESC_CREDITS_TEAMPLAY);
-	CPrintToChat(client, "%t %t", "Escalation_Tag", "Credits_From_Teleport", g_iPlayerTeleported_Credits);
+	Set_iClientCredits(g_iPlayerTeleported_Credits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_Teleport", g_iPlayerTeleported_Credits);
 }
 
 /**
@@ -2112,23 +2140,23 @@ public Event_PlayerUpgradedBuilding(Handle:event, const String:name[], bool:dont
 		return;
 	}
 	
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 	new bool:bIsBuilder = GetEventBool(event, "isbuilder");
 	
-	if (client == 0)
+	if (iClient == 0)
 	{
 		return;
 	}
 	
 	if (bIsBuilder)
 	{
-		Set_iClientCredits(g_iUpgradedBuilding_Credits, SET_ADD, client, ESC_CREDITS_TEAMPLAY);
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Credits_From_BuildingUpgrade", g_iUpgradedBuilding_Credits);
+		Set_iClientCredits(g_iUpgradedBuilding_Credits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_BuildingUpgrade", g_iUpgradedBuilding_Credits);
 	}
 	else
 	{
-		Set_iClientCredits(g_iUpgradedBuilding_OtherCredits, SET_ADD, client, ESC_CREDITS_TEAMPLAY);
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Credits_From_BuildingUpgradeOther", g_iUpgradedBuilding_OtherCredits);
+		Set_iClientCredits(g_iUpgradedBuilding_OtherCredits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_BuildingUpgradeOther", g_iUpgradedBuilding_OtherCredits);
 	}
 }
 
@@ -2149,15 +2177,15 @@ public Event_ChargeDeployed(Handle:event, const String:name[], bool:dontBroadcas
 		return;
 	}
 	
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 	
-	if (client == 0)
+	if (iClient == 0)
 	{
 		return;
 	}
 
 	new Float:fCreditsToGive = float(g_iChargeDeployed_Credits);
-	new iMediGunIndex = PlayerData_GetWeaponID(g_PlayerData[client][0], 1);
+	new iMediGunIndex = PlayerData_GetWeaponID(g_PlayerData[iClient][0], 1);
 	
 	switch (iMediGunIndex)
 	{
@@ -2175,8 +2203,8 @@ public Event_ChargeDeployed(Handle:event, const String:name[], bool:dontBroadcas
 		}
 	}
 	
-	Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, client, ESC_CREDITS_TEAMPLAY);
-	CPrintToChat(client, "%t %t", "Escalation_Tag", "Credits_From_UberPopped", RoundFloat(fCreditsToGive));
+	Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_UberPopped", RoundFloat(fCreditsToGive));
 }
 
 /**
@@ -2366,15 +2394,15 @@ public Event_PointContested(Handle:event, const String:name[], bool:dontBroadcas
 	
 	while (Cappers[i] != '\0')
 	{
-		new client = Cappers[i];
+		new iClient = Cappers[i];
 		
-		if (IsClientInGame(client))
+		if (IsClientInGame(iClient))
 		{
-			if (PlayerData_GetTimeStartedCapture(g_PlayerData[client][0]) >= g_iOnCaptureStarted_Timeout)
+			if (PlayerData_GetTimeStartedCapture(g_PlayerData[iClient][0]) >= g_iOnCaptureStarted_Timeout)
 			{
-				Set_iClientCredits(g_iOnCaptureStarted_Credits, SET_ADD, client, ESC_CREDITS_TEAMPLAY);
-				CPrintToChat(client, "%t %t", "Escalation_Tag", "Credits_From_CaptureStarted", g_iOnCaptureStarted_Credits);
-				PlayerData_SetTimeStartedCapture(g_PlayerData[client][0]);
+				Set_iClientCredits(g_iOnCaptureStarted_Credits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+				CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_CaptureStarted", g_iOnCaptureStarted_Credits);
+				PlayerData_SetTimeStartedCapture(g_PlayerData[iClient][0]);
 			}
 		}
 		
@@ -2407,10 +2435,10 @@ public Event_CapturedPoint(Handle:event, const String:name[], bool:dontBroadcast
 	GetEventString(event, "cpname", point_name, sizeof(point_name));
 	
 	decl iClients[MaxClients + 1];
-	new iNumClients = GetClientsOnTeam(iTeam, iClients);
+	new iNumClients = GetClientsOnTeam(iTeam, iClients, sizeof(iClients));
 	
 	
-	for (new i = 0; i <= iNumClients; i++)
+	for (new i = 0; i < iNumClients; i++)
 	{
 		Set_iClientCredits(g_iOnCapturePoint_Credits, SET_ADD, iClients[i], ESC_CREDITS_OBJECTIVE);
 		CPrintToChat(iClients[i], "%t %t", "Escalation_Tag", "Credits_From_PointCapture", g_iOnCapturePoint_Credits);
@@ -2427,9 +2455,9 @@ public Event_CapturedPoint(Handle:event, const String:name[], bool:dontBroadcast
 		return;
 	
 	//Since we don't need it anymore we can just reuse our old array.
-	iNumClients = GetClientsOnTeam(iTeam, iClients);
+	iNumClients = GetClientsOnTeam(iTeam, iClients, sizeof(iClients));
 	
-	for (new i = 0; i <= iNumClients; i++)
+	for (new i = 0; i < iNumClients; i++)
 	{
 		Set_iClientCredits(g_iOnLosePoint_Credits, SET_ADD, iClients[i], ESC_CREDITS_OBJECTIVE);
 		CPrintToChat(iClients[i], "%t %t", "Escalation_Tag", "Credits_From_PointLost", g_iOnLosePoint_Credits);
@@ -2445,20 +2473,20 @@ public Event_CapturedPoint(Handle:event, const String:name[], bool:dontBroadcast
  *
  * @return An Action value.
  */
-public Action:Command_MyCredits(client, args)
+public Action:Command_MyCredits(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		return Plugin_Handled;
 	}
 	
-	CReplyToCommand(client, "%t %t", "Escalation_Tag", "Credits_Message", PlayerData_GetCredits(g_PlayerData[client][0]));
+	CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Credits_Message", PlayerData_GetCredits(g_PlayerData[iClient][0]));
 	
 	return Plugin_Handled;
 }
@@ -2468,23 +2496,23 @@ public Action:Command_MyCredits(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_ClearUpgrades(client, args)
+public Action:Command_ClearUpgrades(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		return Plugin_Handled;
 	}
  	
 	decl String:arg1[16];	
 	GetCmdArg(1,arg1,sizeof(arg1));
 	
-	return ClearUpgrades(client, arg1);
+	return ClearUpgrades(iClient, arg1);
 }
 
 /**
@@ -2492,23 +2520,23 @@ public Action:Command_ClearUpgrades(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_Upgrade(client, args)
+public Action:Command_Upgrade(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		return Plugin_Handled;
 	}
  
 	//Check for errors first.
 	if (args < 1)
 	{
-		ReplyToCommand(client,"Usage: sm_buyupgrade <upgrade name>");
+		ReplyToCommand(iClient,"Usage: sm_buyupgrade <upgrade name>");
 		return Plugin_Handled;
 	}
 	
@@ -2516,7 +2544,7 @@ public Action:Command_Upgrade(client, args)
 	new String:arg1[32];	
 	GetCmdArg(1,arg1,sizeof(arg1));
 	
-	return PushUpgrade(client, arg1);
+	return PushUpgrade(iClient, arg1);
 }
 
 /**
@@ -2524,22 +2552,22 @@ public Action:Command_Upgrade(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_UpgradeMenu(client, args)
+public Action:Command_UpgradeMenu(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		return Plugin_Handled;
 	}
  
-	PlayerData_SetHasOpenedMenu(g_PlayerData[client][0]);
+	PlayerData_SetHasOpenedMenu(g_PlayerData[iClient][0]);
 
-	DisplayMenu(g_hUpgradeMenuBase, client, MENU_DISPLAY_DURATION);
+	DisplayMenu(g_hUpgradeMenuBase, iClient, MENU_DISPLAY_DURATION);
 
 	return Plugin_Handled;
 }
@@ -2551,29 +2579,29 @@ public Action:Command_UpgradeMenu(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_ReloadConfigs(client, args)
+public Action:Command_ReloadConfigs(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		
 		return Plugin_Handled;
@@ -2584,8 +2612,8 @@ public Action:Command_ReloadConfigs(client, args)
 	decl String:Tag[64];
 	Format(Tag, sizeof(Tag), "%T ", "Escalation_Tag", LANG_SERVER);
 	
-	CShowActivity2(client, Tag, "{silver}%t", "Configs_Reloaded_Admin");
-	LogAction(client, -1, "%t", "Configs_Reloaded_Admin_Log", client);
+	CShowActivity2(iClient, Tag, "{silver}%t", "Configs_Reloaded_Admin");
+	LogAction(iClient, -1, "%t", "Configs_Reloaded_Admin_Log", iClient);
 	
 	return Plugin_Handled;
 }
@@ -2595,29 +2623,29 @@ public Action:Command_ReloadConfigs(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_BanUpgrade(client, args)
+public Action:Command_BanUpgrade(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		
 		return Plugin_Handled;
@@ -2625,13 +2653,13 @@ public Action:Command_BanUpgrade(client, args)
 
 	if (args < 1)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t", "BanUpgrade_Usage");
 		}
 		else
 		{
-			CReplyToCommand(client, "{silver}%t", "BanUpgrade_Usage");
+			CReplyToCommand(iClient, "{silver}%t", "BanUpgrade_Usage");
 		}
 
 		return Plugin_Handled;
@@ -2644,13 +2672,13 @@ public Action:Command_BanUpgrade(client, args)
 	
 	if (! UpgradeDataStore_UpgradeExists(g_UpgradeDataStore[0], Upgrade))
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
 		}
 		
 		return Plugin_Handled;
@@ -2661,8 +2689,8 @@ public Action:Command_BanUpgrade(client, args)
 	decl String:Tag[64];
 	Format(Tag, sizeof(Tag), "%T ", "Escalation_Tag", LANG_SERVER);
 	
-	CShowActivity2(client, Tag, "{silver}%t", "Upgrade_Banned_Admin", Upgrade);
-	LogAction(client, -1, "%t", "Upgrade_Banned_Admin_Log", client, Upgrade);
+	CShowActivity2(iClient, Tag, "{silver}%t", "Upgrade_Banned_Admin", Upgrade);
+	LogAction(iClient, -1, "%t", "Upgrade_Banned_Admin_Log", iClient, Upgrade);
 	
 	//Force the player's upgrade queues to be reprocessed so the upgrade can't be owned by anyone.
 	for (new i = 1; i <= MaxClients; i++)
@@ -2681,29 +2709,29 @@ public Action:Command_BanUpgrade(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_BanCombo(client, args)
+public Action:Command_BanCombo(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		
 		return Plugin_Handled;
@@ -2711,13 +2739,13 @@ public Action:Command_BanCombo(client, args)
 
 	if (args < 2)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t", "BanUpgradeCombo_Usage");
 		}
 		else
 		{
-			CReplyToCommand(client, "{silver}%t", "BanUpgradeCombo_Usage");
+			CReplyToCommand(iClient, "{silver}%t", "BanUpgradeCombo_Usage");
 		}
 
 		return Plugin_Handled;
@@ -2729,13 +2757,13 @@ public Action:Command_BanCombo(client, args)
 
 	if (! UpgradeDataStore_UpgradeExists(g_UpgradeDataStore[0], Upgrade))
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
 		}
 		
 		return Plugin_Handled;
@@ -2747,13 +2775,13 @@ public Action:Command_BanCombo(client, args)
 
 	if (! WeaponInfoManager_DoesWeaponExist(g_WeaponInfoManager[0], StringToInt(Weapon)))
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Weapon_Does_Not_Exist", Weapon);
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Weapon_Does_Not_Exist", Weapon);
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Weapon_Does_Not_Exist", Weapon);
 		}
 
 		return Plugin_Handled;
@@ -2764,8 +2792,8 @@ public Action:Command_BanCombo(client, args)
 	decl String:Tag[64];
 	Format(Tag, sizeof(Tag), "%T ", "Escalation_Tag", LANG_SERVER);
 	
-	CShowActivity2(client, Tag, "{silver}%t", "UpgradeCombo_Banned_Admin", Upgrade, Weapon);
-	LogAction(client, -1, "%t", "UpgradeCombo_Banned_Admin_Log", client, Upgrade, Weapon);
+	CShowActivity2(iClient, Tag, "{silver}%t", "UpgradeCombo_Banned_Admin", Upgrade, Weapon);
+	LogAction(iClient, -1, "%t", "UpgradeCombo_Banned_Admin_Log", iClient, Upgrade, Weapon);
 	
 	//Force the player's upgrade queues to be reprocessed so the upgrade can't be owned by anyone.
 	for (new i = 1; i <= MaxClients; i++)
@@ -2784,29 +2812,29 @@ public Action:Command_BanCombo(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_UnbanUpgrade(client, args)
+public Action:Command_UnbanUpgrade(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		
 		return Plugin_Handled;
@@ -2814,13 +2842,13 @@ public Action:Command_UnbanUpgrade(client, args)
 
 	if (args < 1)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t", "UnbanUpgrade_Usage");
 		}
 		else
 		{
-			CReplyToCommand(client, "{silver}%t", "UnbanUpgrade_Usage");
+			CReplyToCommand(iClient, "{silver}%t", "UnbanUpgrade_Usage");
 		}
 
 		return Plugin_Handled;
@@ -2833,13 +2861,13 @@ public Action:Command_UnbanUpgrade(client, args)
 
 	if (! UpgradeDataStore_UpgradeExists(g_UpgradeDataStore[0], Upgrade))
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
 		}
 
 		return Plugin_Handled;
@@ -2847,13 +2875,13 @@ public Action:Command_UnbanUpgrade(client, args)
 
 	if (! BannedUpgrades_IsUpgradeBanned(g_BannedUpgrades[0], Upgrade))
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Upgrade_Not_Banned", Upgrade);
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Upgrade_Not_Banned", Upgrade);
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Upgrade_Not_Banned", Upgrade);
 		}
 
 		return Plugin_Handled;
@@ -2864,8 +2892,8 @@ public Action:Command_UnbanUpgrade(client, args)
 	decl String:Tag[64];
 	Format(Tag, sizeof(Tag), "%T ", "Escalation_Tag", LANG_SERVER);
 
-	CShowActivity2(client, Tag, "{silver}%t", "Upgrade_Unbanned_Admin", Upgrade);
-	LogAction(client, -1, "%t", "Upgrade_Unbanned_Admin_Log", client, Upgrade);
+	CShowActivity2(iClient, Tag, "{silver}%t", "Upgrade_Unbanned_Admin", Upgrade);
+	LogAction(iClient, -1, "%t", "Upgrade_Unbanned_Admin_Log", iClient, Upgrade);
 	
 	return Plugin_Handled;
 }
@@ -2875,29 +2903,29 @@ public Action:Command_UnbanUpgrade(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_UnbanCombo(client, args)
+public Action:Command_UnbanCombo(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		
 		return Plugin_Handled;
@@ -2905,13 +2933,13 @@ public Action:Command_UnbanCombo(client, args)
 
 	if (args < 2)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t", "UnbanUpgradeCombo_Usage");
 		}
 		else
 		{
-			CReplyToCommand(client, "{silver}%t", "BanUpgradeCombo_Usage");
+			CReplyToCommand(iClient, "{silver}%t", "BanUpgradeCombo_Usage");
 		}
 
 		return Plugin_Handled;
@@ -2923,13 +2951,13 @@ public Action:Command_UnbanCombo(client, args)
 
 	if (! UpgradeDataStore_UpgradeExists(g_UpgradeDataStore[0], Upgrade))
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Upgrade_Does_Not_Exist", Upgrade);
 		}
 		
 		return Plugin_Handled;
@@ -2941,13 +2969,13 @@ public Action:Command_UnbanCombo(client, args)
 
 	if (! WeaponInfoManager_DoesWeaponExist(g_WeaponInfoManager[0], StringToInt(Weapon)))
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Weapon_Does_Not_Exist", Weapon);
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Weapon_Does_Not_Exist", Weapon);
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Weapon_Does_Not_Exist", Weapon);
 		}
 
 		return Plugin_Handled;
@@ -2955,13 +2983,13 @@ public Action:Command_UnbanCombo(client, args)
 
 	if (! BannedUpgrades_IsComboBanned(g_BannedUpgrades[0], StringToInt(Weapon), Upgrade))
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Combo_Not_Banned", Upgrade, Weapon);
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Combo_Not_Banned", Upgrade, Weapon);
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Combo_Not_Banned", Upgrade, Weapon);
 		}
 
 		return Plugin_Handled;
@@ -2972,8 +3000,8 @@ public Action:Command_UnbanCombo(client, args)
 	decl String:Tag[64];
 	Format(Tag, sizeof(Tag), "%T ", "Escalation_Tag", LANG_SERVER);
 	
-	CShowActivity2(client, Tag, "{silver}%t", "UpgradeCombo_Unbanned_Admin", Upgrade, Weapon);
-	LogAction(client, -1, "%t", "UpgradeCombo_Unbanned_Admin_Log", client, Upgrade, Weapon);
+	CShowActivity2(iClient, Tag, "{silver}%t", "UpgradeCombo_Unbanned_Admin", Upgrade, Weapon);
+	LogAction(iClient, -1, "%t", "UpgradeCombo_Unbanned_Admin_Log", iClient, Upgrade, Weapon);
 	
 	
 	return Plugin_Handled;
@@ -2984,29 +3012,29 @@ public Action:Command_UnbanCombo(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_ResetBannedUpgrades(client, args)
+public Action:Command_ResetBannedUpgrades(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		
 		return Plugin_Handled;
@@ -3017,8 +3045,8 @@ public Action:Command_ResetBannedUpgrades(client, args)
 	decl String:Tag[64];
 	Format(Tag, sizeof(Tag), "%T ", "Escalation_Tag", LANG_SERVER);
 
-	CShowActivity2(client, Tag, "{silver}%t", "Upgrade_BannedReset_Admin");
-	LogAction(client, -1, "%t", "Upgrade_BannedReset_Admin_Log", client);
+	CShowActivity2(iClient, Tag, "{silver}%t", "Upgrade_BannedReset_Admin");
+	LogAction(iClient, -1, "%t", "Upgrade_BannedReset_Admin_Log", iClient);
 
 	return Plugin_Handled;
 }
@@ -3028,29 +3056,29 @@ public Action:Command_ResetBannedUpgrades(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_ResetBannedCombos(client, args)
+public Action:Command_ResetBannedCombos(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		
 		return Plugin_Handled;
@@ -3061,8 +3089,8 @@ public Action:Command_ResetBannedCombos(client, args)
 	decl String:Tag[64];
 	Format(Tag, sizeof(Tag), "%T ", "Escalation_Tag", LANG_SERVER);
 
-	CShowActivity2(client, Tag, "{silver}%t", "UpgradeCombo_BannedReset_Admin");
-	LogAction(client, -1, "%t", "UpgradeCombo_BannedReset_Admin_Log", client);
+	CShowActivity2(iClient, Tag, "{silver}%t", "UpgradeCombo_BannedReset_Admin");
+	LogAction(iClient, -1, "%t", "UpgradeCombo_BannedReset_Admin_Log", iClient);
 
 	return Plugin_Handled;
 }
@@ -3072,30 +3100,30 @@ public Action:Command_ResetBannedCombos(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_BanUpgradeMenu(client, args)
+public Action:Command_BanUpgradeMenu(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 
 		return Plugin_Handled;
@@ -3104,9 +3132,9 @@ public Action:Command_BanUpgradeMenu(client, args)
 	new Handle:hMenu = UpgradeDataStore_GetMenuOfUpgrades(g_UpgradeDataStore[0], Menu_BanUpgrade, 
 	MenuAction_Select | MenuAction_DrawItem | MenuAction_DisplayItem | MenuAction_Cancel | MenuAction_End, ITEMDRAW_DEFAULT);
 
-	SetMenuTitle(hMenu, "%T", "Menu_Select_Upgrade_Ban", client);
+	SetMenuTitle(hMenu, "%T", "Menu_Select_Upgrade_Ban", iClient);
 	
-	DisplayMenu(hMenu, client, MENU_DISPLAY_DURATION);
+	DisplayMenu(hMenu, iClient, MENU_DISPLAY_DURATION * 12);
 
 	return Plugin_Handled;
 }
@@ -3116,30 +3144,30 @@ public Action:Command_BanUpgradeMenu(client, args)
  *
  * @return An Action value.
  */
-public Action:Command_UnbanUpgradeMenu(client, args)
+public Action:Command_UnbanUpgradeMenu(iClient, args)
 {
 	if (g_bPluginDisabledAdmin)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
 		}
 
 		return Plugin_Handled;
 	}
 	else if (g_bPluginDisabledForMap)
 	{
-		if (client == 0)
+		if (iClient == 0)
 		{
 			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 		else
 		{
-			CReplyToCommand(client, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		}
 
 		return Plugin_Handled;
@@ -3148,9 +3176,9 @@ public Action:Command_UnbanUpgradeMenu(client, args)
 	new Handle:hMenu = UpgradeDataStore_GetMenuOfUpgrades(g_UpgradeDataStore[0], Menu_UnbanUpgrade, 
 	MenuAction_Select | MenuAction_DrawItem | MenuAction_DisplayItem | MenuAction_Cancel | MenuAction_End, ITEMDRAW_DEFAULT);
 
-	SetMenuTitle(hMenu, "%T", "Menu_Select_Upgrade_Unban", client);
+	SetMenuTitle(hMenu, "%T", "Menu_Select_Upgrade_Unban", iClient);
 	
-	DisplayMenu(hMenu, client, MENU_DISPLAY_DURATION);
+	DisplayMenu(hMenu, iClient, MENU_DISPLAY_DURATION);
 
 	return Plugin_Handled;
 }
@@ -3904,20 +3932,20 @@ public Menu_UnbanUpgrade(Handle:menu, MenuAction:action, param1, param2)
 /**
  * Refunds a client's upgrades.
  *
- * @param client				The index of the client to refund.
+ * @param iClient				The index of the client to refund.
  *
  * @noreturn
  */
-RefundUpgrades(client)
+RefundUpgrades(iClient)
 {
 	new iCreditsToRefund;
 
 	for (new TFClassType:iClass = TFClassType:1; iClass <= TFClassType:9; iClass ++) //Iterate through the classes
 	{			
-		for (new iIndex; iIndex < PlayerData_GetUpgradeQueueSize(g_PlayerData[client][0], iClass); iIndex++) //Iterate through the upgrades themselves now. 
+		for (new iIndex; iIndex < PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClass); iIndex++) //Iterate through the upgrades themselves now. 
 		{
 			decl tmpUpgradeQueue[UpgradeQueue];
-			PlayerData_GetUpgradeOnQueue(g_PlayerData[client][0], iClass, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
+			PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
 			
 			if (tmpUpgradeQueue[_bOwned] == true)
 			{
@@ -3925,22 +3953,22 @@ RefundUpgrades(client)
 				tmpUpgradeQueue[_bOwned] = false; //Set the upgrade we're refunding to not purchased.
 			}
 			
-			PlayerData_SetUpgradeOnQueue(g_PlayerData[client][0], iClass, iIndex, tmpUpgradeQueue[0]);
+			PlayerData_SetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue[0]);
 		}
 	}
 
-	Set_iClientCredits(iCreditsToRefund, SET_ADD, client, ESC_CREDITS_REFUND_FULL);
+	Set_iClientCredits(iCreditsToRefund, SET_ADD, iClient, ESC_CREDITS_REFUND_FULL);
 }
 
 /**
  * Clears a client's upgrade queue.
  *
- * @param client				The index of the client to clear the upgrade queue.
+ * @param iClient				The index of the client to clear the upgrade queue.
  * @param Class					If not empty only the classname here will be refunded.
  *
  * @noreturn
  */
-Action:ClearUpgrades(client, String:Class[] = "")
+Action:ClearUpgrades(iClient, String:Class[] = "")
 {	
 	if (StrEqual("", Class, true)) //If no args were sent we clear all the client's upgrades.
 	{
@@ -3948,10 +3976,10 @@ Action:ClearUpgrades(client, String:Class[] = "")
 		
 		for (new TFClassType:iClass = TFClassType:1; iClass < TFClassType:9; iClass ++) //Iterate through the classes
 		{
-			for (new iIndex; iIndex < PlayerData_GetUpgradeQueueSize(g_PlayerData[client][0], iClass); iIndex ++) //Iterate through the upgrades themselves now. 
+			for (new iIndex; iIndex < PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClass); iIndex ++) //Iterate through the upgrades themselves now. 
 			{
 				decl tmpUpgradeQueue[UpgradeQueue];
-				PlayerData_GetUpgradeOnQueue(g_PlayerData[client][0], iClass, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
+				PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
 			
 				if (tmpUpgradeQueue[_bOwned] == true)
 				{
@@ -3960,17 +3988,17 @@ Action:ClearUpgrades(client, String:Class[] = "")
 			}
 			
 			//Reset the upgrade queue itself so it is empty.
-			PlayerData_ResetUpgradeQueue(g_PlayerData[client][0], iClass);
+			PlayerData_ResetUpgradeQueue(g_PlayerData[iClient][0], iClass);
 		}
 		
 		//Now that we have the total cost of their upgrades we can give them their credits.
-		new iNewCredits = Set_iClientCredits(iCreditsToGive, SET_ADD, client, ESC_CREDITS_REFUND_FULL);
+		new iNewCredits = Set_iClientCredits(iCreditsToGive, SET_ADD, iClient, ESC_CREDITS_REFUND_FULL);
 		
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Cleared_All_Classes");
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Refunded_New_Credits", iNewCredits);
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Cleared_All_Classes");
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Refunded_New_Credits", iNewCredits);
 		
 		//If the client's loadout isn't refreshed they would end up with upgrades they didn't actually own on their weapons.
-		g_bForceLoadoutRefresh[client] = true;
+		g_bForceLoadoutRefresh[iClient] = true;
 		
 		return Plugin_Handled;
 	}
@@ -3980,16 +4008,16 @@ Action:ClearUpgrades(client, String:Class[] = "")
 	
 	if (StrEqual("list", Class, false))
 	{
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Refund_Valid_Classnames");
-		CPrintToChat(client, "{silver}scout");
-		CPrintToChat(client, "{silver}sniper");		
-		CPrintToChat(client, "{silver}soldier");		
-		CPrintToChat(client, "{silver}demoman");
-		CPrintToChat(client, "{silver}medic");		
-		CPrintToChat(client, "{silver}heavy");	
-		CPrintToChat(client, "{silver}pyro");
-		CPrintToChat(client, "{silver}spy");		
-		CPrintToChat(client, "{silver}engineer");		
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Refund_Valid_Classnames");
+		CPrintToChat(iClient, "{silver}scout");
+		CPrintToChat(iClient, "{silver}sniper");		
+		CPrintToChat(iClient, "{silver}soldier");		
+		CPrintToChat(iClient, "{silver}demoman");
+		CPrintToChat(iClient, "{silver}medic");		
+		CPrintToChat(iClient, "{silver}heavy");	
+		CPrintToChat(iClient, "{silver}pyro");
+		CPrintToChat(iClient, "{silver}spy");		
+		CPrintToChat(iClient, "{silver}engineer");		
 		return Plugin_Handled;
 	}
 	
@@ -3998,27 +4026,27 @@ Action:ClearUpgrades(client, String:Class[] = "")
 	//Make sure they've specified a valid class.
 	if (iClassToRefund == TFClass_Unknown)
 	{
-		CPrintToChat(client,"%t %t", "Escalation_Tag", "Refund_Invalid_Class", Class);
+		CPrintToChat(iClient,"%t %t", "Escalation_Tag", "Refund_Invalid_Class", Class);
 		return Plugin_Handled;
 	}
 	
 	//Check if this is the class the client is currently playing as, if so set their loadout to needing a refresh.
-	if (iClassToRefund == TF2_GetPlayerClass(client))
+	if (iClassToRefund == TF2_GetPlayerClass(iClient))
 	{
-		g_bForceLoadoutRefresh[client] = true;
+		g_bForceLoadoutRefresh[iClient] = true;
 	}
 	
 	//Make sure there are actually some upgrades on this class.
-	if (PlayerData_GetUpgradeQueueSize(g_PlayerData[client][0], iClassToRefund) == 0)
+	if (PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClassToRefund) == 0)
 	{
-		CPrintToChat(client,"%t %t", "Escalation_Tag", "Clear_Empty_Queue")
+		CPrintToChat(iClient,"%t %t", "Escalation_Tag", "Clear_Empty_Queue")
 		return Plugin_Handled;
 	}
 	
-	for (new iIndex = 0; iIndex < PlayerData_GetUpgradeQueueSize(g_PlayerData[client][0], iClassToRefund); iIndex ++) //Now we can go through the upgrades themselves.
+	for (new iIndex = 0; iIndex < PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClassToRefund); iIndex ++) //Now we can go through the upgrades themselves.
 	{
 			decl tmpUpgradeQueue[UpgradeQueue];
-			PlayerData_GetUpgradeOnQueue(g_PlayerData[client][0], iClassToRefund, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
+			PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClassToRefund, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
 			
 			if (tmpUpgradeQueue[_bOwned] == true)
 			{
@@ -4026,13 +4054,13 @@ Action:ClearUpgrades(client, String:Class[] = "")
 			}
 	}
 	
-	new iNewCredits = Set_iClientCredits(iCreditsToGive, SET_ADD, client, ESC_CREDITS_REFUND_FULL);
+	new iNewCredits = Set_iClientCredits(iCreditsToGive, SET_ADD, iClient, ESC_CREDITS_REFUND_FULL);
 	
 	//Reset the upgrade queue itself so it is empty.
-	PlayerData_ResetUpgradeQueue(g_PlayerData[client][0], iClassToRefund);
+	PlayerData_ResetUpgradeQueue(g_PlayerData[iClient][0], iClassToRefund);
 	
-	CPrintToChat(client, "%t %t", "Escalation_Tag", "Cleared_Success_Class");
-	CPrintToChat(client, "%t %t", "Escalation_Tag", "Refunded_New_Credits", iNewCredits);
+	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Cleared_Success_Class");
+	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Refunded_New_Credits", iNewCredits);
 	
 	return Plugin_Handled;
 }
@@ -4040,12 +4068,12 @@ Action:ClearUpgrades(client, String:Class[] = "")
 /**
  * Pushes an upgrade onto the client's upgrade queue.
  *
- * @param client				The index of the client wanting the upgrade.
+ * @param iClient				The index of the client wanting the upgrade.
  * @param Upgrade				The name of the upgrade to push onto the queue..
  *
  * @noreturn
  */
-Action:PushUpgrade(client, String:Upgrade[])
+Action:PushUpgrade(iClient, String:Upgrade[])
 {
 	//Allocate the memory to store a copy of the upgrade's object.
 	decl tmpUpgradeData[UpgradeData];
@@ -4053,8 +4081,8 @@ Action:PushUpgrade(client, String:Upgrade[])
 	//Try to get the upgrade the user wants.
 	if (! UpgradeDataStore_GetUpgrade(g_UpgradeDataStore[0], Upgrade, tmpUpgradeData[0], sizeof(tmpUpgradeData)))
 	{
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Upgrade_Not_Found", Upgrade);
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Upgrade_Not_Found_Bug");
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Not_Found", Upgrade);
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Not_Found_Bug");
 		
 		return Plugin_Handled;		
 	}
@@ -4066,36 +4094,36 @@ Action:PushUpgrade(client, String:Upgrade[])
 	new iMaxLevel = UpgradeData_GetLevelCount(tmpUpgradeData[0]);
 	new iNextLevel;
 
-	new iClientWeaponIndex = PlayerData_GetWeaponID(g_PlayerData[client][0], iSlot);
+	new iClientWeaponIndex = PlayerData_GetWeaponID(g_PlayerData[iClient][0], iSlot);
 	
 
 	//Check to see if the upgrade is passive, if it was we treat it as a clas upgrade.
 	if (! UpgradeData_IsPassive(tmpUpgradeData[0]))
 	{
 		//Check to see if da weapon is allowed the upgrade.
-		if (! IsWeaponAllowedUpgrade(client, iClientWeaponIndex, Upgrade, TF2_GetPlayerClass(client)))
+		if (! IsWeaponAllowedUpgrade(iClient, iClientWeaponIndex, Upgrade, TF2_GetPlayerClass(iClient)))
 		{
-			CPrintToChat(client, "%t %t", "Escalation_Tag", "Upgrade_Weapon_Not_Allowed");	
+			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Weapon_Not_Allowed");	
 			return Plugin_Handled;
 		}
 	}
 	else
 	{
-		if (! ClassInfoStore_IsUpgradeAllowed(g_ClassInfoStore[0], TF2_GetPlayerClass(client), Upgrade))
+		if (! ClassInfoStore_IsUpgradeAllowed(g_ClassInfoStore[0], TF2_GetPlayerClass(iClient), Upgrade))
 		{
-			CPrintToChat(client, "%t %t", "Escalation_Tag", "Upgrade_Class_Not_Allowed");	
+			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Class_Not_Allowed");	
 			return Plugin_Handled;
 		}
 	}
 	
 	// PlayerData_PushUpgradeOntoQueue returns false when an upgrade already is at iMaxLevel on the queue.
-	if (! PlayerData_PushUpgradeToQueue(g_PlayerData[client][0], TF2_GetPlayerClass(client), Upgrade, iMaxLevel, iNextLevel))
+	if (! PlayerData_PushUpgradeToQueue(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient), Upgrade, iMaxLevel, iNextLevel))
 	{
-		CPrintToChat(client, "%t %t", "Escalation_Tag", "Upgrade_Highest_Level");	
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Highest_Level");	
 		return Plugin_Handled;
 	}
 	
-	CPrintToChat(client, "%t %t", "Escalation_Tag", "Upgrade_Added_Success", Upgrade, iNextLevel);
+	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Added_Success", Upgrade, iNextLevel);
 	
 	return Plugin_Handled;
 }
@@ -4103,24 +4131,24 @@ Action:PushUpgrade(client, String:Upgrade[])
 /**
  * Creates a Remove Upgrade Queue menu for a client.
  *
- * @param client				The index of the client wanting the menu.
+ * @param iClient				The index of the client wanting the menu.
  *
  * @noreturn
  */
-Handle:GetRemoveUpgradeQueueMenu(client)
+Handle:GetRemoveUpgradeQueueMenu(iClient)
 {
 	new Handle:hMenu = CreateMenu(Menu_RemoveUpgradeQueue, MenuAction_Select | MenuAction_DisplayItem | MenuAction_Cancel | MenuAction_End);
 
-	for (new i = 0; i < PlayerData_GetUpgradeQueueSize(g_PlayerData[client][0], TF2_GetPlayerClass(client)); i ++)
+	for (new i = 0; i < PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient)); i ++)
 	{
 		decl tmpUpgradeQueue[UpgradeQueue];
 	
-		PlayerData_GetUpgradeOnQueue(g_PlayerData[client][0], TF2_GetPlayerClass(client), i, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
+		PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient), i, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
 	
 		AddMenuItem(hMenu, tmpUpgradeQueue[_Upgrade], "UNFORMATTED_UPGRADE_TEXT");
 	}
 	
-	SetMenuTitle(hMenu, "%T", "Menu_Select_Upgrade_Remove", client)
+	SetMenuTitle(hMenu, "%T", "Menu_Select_Upgrade_Remove", iClient)
 	SetMenuExitBackButton(hMenu, true);
 
 	return hMenu;
@@ -4129,19 +4157,19 @@ Handle:GetRemoveUpgradeQueueMenu(client)
 /**
  * Creates a Edit Upgrade Queue menu for a client.
  *
- * @param client				The index of the client wanting the menu.
+ * @param iClient				The index of the client wanting the menu.
  *
  * @noreturn
  */
-Handle:GetEditUpgradeQueueMenu(client)
+Handle:GetEditUpgradeQueueMenu(iClient)
 {
 	new Handle:hMenu = CreateMenu(Menu_EditUpgradeQueue, MenuAction_Select | MenuAction_DisplayItem | MenuAction_Cancel | MenuAction_End);
 
-	for (new i = 0; i < PlayerData_GetUpgradeQueueSize(g_PlayerData[client][0], TF2_GetPlayerClass(client)); i ++)
+	for (new i = 0; i < PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient)); i ++)
 	{
 		decl tmpUpgradeQueue[UpgradeQueue];
 	
-		PlayerData_GetUpgradeOnQueue(g_PlayerData[client][0], TF2_GetPlayerClass(client), i, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
+		PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient), i, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
 
 		if (tmpUpgradeQueue[_bOwned])
 		{
@@ -4153,7 +4181,7 @@ Handle:GetEditUpgradeQueueMenu(client)
 		}
 	}
 
-	SetMenuTitle(hMenu, "%T", "Menu_Select_Upgrade_Shift", client)
+	SetMenuTitle(hMenu, "%T", "Menu_Select_Upgrade_Shift", iClient)
 	SetMenuExitBackButton(hMenu, true);
 
 	return hMenu;
@@ -4165,15 +4193,15 @@ Handle:GetEditUpgradeQueueMenu(client)
  * Processes an upgrade on a client's queue, buying it if possible
  * and adding it's attributes to the client if it was brought.
  *
- * @param client				The index of the client of whose upgrade queue to process.
+ * @param iClient				The index of the client of whose upgrade queue to process.
  * @param iIndex				The index of the upgrade on the queue to process.
  *
  * @noreturn
  */
-ProcessQueueAtPosition(client, iIndex)
+ProcessQueueAtPosition(iClient, iIndex)
 {    
 	decl tmpUpgradeQueue[UpgradeQueue];
-	PlayerData_GetUpgradeOnQueue(g_PlayerData[client][0], TF2_GetPlayerClass(client), iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue)); //Fetch the upgrade from the queue.
+	PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient), iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue)); //Fetch the upgrade from the queue.
 	
 	//Allocate the memory to store a copy of the upgrade's object.
 	decl tmpUpgradeData[UpgradeData];
@@ -4187,14 +4215,14 @@ ProcessQueueAtPosition(client, iIndex)
 	new iUpgradeCost = UpgradeData_GetCost(tmpUpgradeData[0]);
 	new iUpgradeSlot = UpgradeData_GetSlot(tmpUpgradeData[0]);
 	new bool:bIsPassive = UpgradeData_IsPassive(tmpUpgradeData[0]);
-	new iClientWeaponIndex = PlayerData_GetWeaponID(g_PlayerData[client][0], iUpgradeSlot);
+	new iClientWeaponIndex = PlayerData_GetWeaponID(g_PlayerData[iClient][0], iUpgradeSlot);
 	
 	//Check to see if the client is allowed the upgrade. 
-	new bool:bIsAllowedUpgrade = IsWeaponAllowedUpgrade(client, iClientWeaponIndex, tmpUpgradeQueue[_Upgrade], TF2_GetPlayerClass(client));
+	new bool:bIsAllowedUpgrade = IsWeaponAllowedUpgrade(iClient, iClientWeaponIndex, tmpUpgradeQueue[_Upgrade], TF2_GetPlayerClass(iClient));
 	
 	if (! bIsAllowedUpgrade)
 	{
-		bIsAllowedUpgrade = ClassInfoStore_IsUpgradeAllowed(g_ClassInfoStore[0], TF2_GetPlayerClass(client), tmpUpgradeQueue[_Upgrade]);
+		bIsAllowedUpgrade = ClassInfoStore_IsUpgradeAllowed(g_ClassInfoStore[0], TF2_GetPlayerClass(iClient), tmpUpgradeQueue[_Upgrade]);
 	}
 	
 
@@ -4203,9 +4231,9 @@ ProcessQueueAtPosition(client, iIndex)
 		//If the client isn't allowed the upgrade the odds are they have done some trickery and switched loadouts, thus we need to refund their credits.
 		if (tmpUpgradeQueue[_bOwned] == true)
 		{		
-			Set_iClientCredits(iUpgradeCost, SET_ADD, client, ESC_CREDITS_REFUNDED); //Refund the credits.
+			Set_iClientCredits(iUpgradeCost, SET_ADD, iClient, ESC_CREDITS_REFUNDED); //Refund the credits.
 			tmpUpgradeQueue[_bOwned] = false; //Set the upgrade to not owned.
-			PlayerData_SetUpgradeOnQueue(g_PlayerData[client][0], TF2_GetPlayerClass(client), iIndex, tmpUpgradeQueue[0]); //Store the modified upgrade.
+			PlayerData_SetUpgradeOnQueue(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient), iIndex, tmpUpgradeQueue[0]); //Store the modified upgrade.
 		}
 	
 		return true; //Return from the function.
@@ -4213,14 +4241,14 @@ ProcessQueueAtPosition(client, iIndex)
 	
 	if (tmpUpgradeQueue[_bOwned] == false) //Check to see if the client owns this upgrade. If they don't we try to buy it, if they can't afford it we return false.
 	{
-		if (iUpgradeCost > PlayerData_GetCredits(g_PlayerData[client][0]))
+		if (iUpgradeCost > PlayerData_GetCredits(g_PlayerData[iClient][0]))
 		{
 			return false; //Not enough money for this upgrade yet, so sad.
 		}
 		
-		Set_iClientCredits(iUpgradeCost, SET_SUBTRACT, client, ESC_CREDITS_PURCHASE);//The player can afford the upgrade! HUZZAH!			
+		Set_iClientCredits(iUpgradeCost, SET_SUBTRACT, iClient, ESC_CREDITS_PURCHASE);//The player can afford the upgrade! HUZZAH!			
 		tmpUpgradeQueue[_bOwned] = true; //Set the upgrade to owned.
-		PlayerData_SetUpgradeOnQueue(g_PlayerData[client][0], TF2_GetPlayerClass(client), iIndex, tmpUpgradeQueue[0]); //Store the modified upgrade on the queue.		
+		PlayerData_SetUpgradeOnQueue(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient), iIndex, tmpUpgradeQueue[0]); //Store the modified upgrade on the queue.		
 	}
 
 	//Fetch the LevelData object containing the attributes.
@@ -4237,11 +4265,11 @@ ProcessQueueAtPosition(client, iIndex)
 		//Check to see if the upgrade is passive, if it is we apply it to the player directly.
 		if (bIsPassive)
 		{
-			PlayerAttributeManager_AddAttribute(client, tmpAttributeInfo[_iAttribute], tmpAttributeInfo[_fValue], tmpAttributeInfo[_bIsPercent]);
+			PlayerAttributeManager_AddAttribute(iClient, tmpAttributeInfo[_iAttribute], tmpAttributeInfo[_fValue], tmpAttributeInfo[_bIsPercent]);
 		}
 		else //Else we use apply it the weapon.
 		{
-			WeaponAttributes_Add(client, iUpgradeSlot, tmpAttributeInfo[_iAttribute], tmpAttributeInfo[_fValue], tmpAttributeInfo[_bIsPercent]);
+			WeaponAttributes_Add(iClient, iUpgradeSlot, tmpAttributeInfo[_iAttribute], tmpAttributeInfo[_fValue], tmpAttributeInfo[_bIsPercent]);
 		}
 	}
 
@@ -4254,14 +4282,14 @@ ProcessQueueAtPosition(client, iIndex)
 /**
  * Checks to see if a weapon is allowed an upgrade.
  *
- * @param client				The index of the client to see if they're allowed the upgrade.
+ * @param iClient				The index of the client to see if they're allowed the upgrade.
  * @param iClientWeaponIndex	The index of the weapon to check.
  * @param Upgrade				The name of the upgrade to check.
  * @param iClass				The class the client is currently playing as.
  *
  * @return						True if the weapon is allowed the upgrade, false if it isn't.
  */
-bool:IsWeaponAllowedUpgrade(client, iClientWeaponIndex, const String:Upgrade[], TFClassType:iClass)
+bool:IsWeaponAllowedUpgrade(iClient, iClientWeaponIndex, const String:Upgrade[], TFClassType:iClass)
 {
 	//First see if the upgrade has been outright banned by the server admin.
 	if (BannedUpgrades_IsUpgradeBanned(g_BannedUpgrades[0], Upgrade))
@@ -4272,7 +4300,7 @@ bool:IsWeaponAllowedUpgrade(client, iClientWeaponIndex, const String:Upgrade[], 
 	//After we've checked that the server admin is fine with the upgrade we check it against the weapons the client has equiped.
 	for (new iSlot; iSlot < UPGRADABLE_SLOTS; iSlot ++)
 	{
-		if (BannedUpgrades_IsComboBanned(g_BannedUpgrades[0], PlayerData_GetWeaponID(g_PlayerData[client][0], iSlot), Upgrade))
+		if (BannedUpgrades_IsComboBanned(g_BannedUpgrades[0], PlayerData_GetWeaponID(g_PlayerData[iClient][0], iSlot), Upgrade))
 		{
 			return false;
 		}
@@ -4287,12 +4315,12 @@ bool:IsWeaponAllowedUpgrade(client, iClientWeaponIndex, const String:Upgrade[], 
  * This, unlike IsWeaponAllowedUpgrade does not require any pre-existing knowledge of the client.
  * And performs checks against the class and all the client's weapons as well.
  *
- * @param client				The index of the client to see if they're allowed the upgrade.
+ * @param iClient				The index of the client to see if they're allowed the upgrade.
  * @param Upgrade				The name of the upgrade to check.
  *
  * @return						True if the client is allowed the upgrade, false if they aren't.
  */
-bool:IsClientAllowedUpgrade(client, const String:Upgrade[])
+bool:IsClientAllowedUpgrade(iClient, const String:Upgrade[])
 {
 	decl tmpUpgradeData[UpgradeData];
 	
@@ -4302,7 +4330,7 @@ bool:IsClientAllowedUpgrade(client, const String:Upgrade[])
 	}
 
 	new iSlot = UpgradeData_GetSlot(tmpUpgradeData[0]);
-	new iClientWeaponIndex = PlayerData_GetWeaponID(g_PlayerData[client][0], iSlot);
+	new iClientWeaponIndex = PlayerData_GetWeaponID(g_PlayerData[iClient][0], iSlot);
 	
 	//First see if the upgrade has been outright banned by the server admin.
 	if (BannedUpgrades_IsUpgradeBanned(g_BannedUpgrades[0], Upgrade))
@@ -4313,13 +4341,13 @@ bool:IsClientAllowedUpgrade(client, const String:Upgrade[])
 	//After we've checked that the server admin is fine with the upgrade we check it against the weapons the client has equiped.
 	for (new i; i < UPGRADABLE_SLOTS; i ++)
 	{
-		if (BannedUpgrades_IsComboBanned(g_BannedUpgrades[0], PlayerData_GetWeaponID(g_PlayerData[client][0], i), Upgrade))
+		if (BannedUpgrades_IsComboBanned(g_BannedUpgrades[0], PlayerData_GetWeaponID(g_PlayerData[iClient][0], i), Upgrade))
 		{
 			return false;
 		}
 	}
 
-	new TFClassType:iClass = TF2_GetPlayerClass(client);
+	new TFClassType:iClass = TF2_GetPlayerClass(iClient);
 	
 	new bool:bResult = WeaponInfoManager_IsWeaponAllowedUpgrade(g_WeaponInfoManager[0], iClientWeaponIndex, Upgrade, iClass);
 	
@@ -4334,11 +4362,11 @@ bool:IsClientAllowedUpgrade(client, const String:Upgrade[])
 /************************UTILITY FUNCTIONS************************/
 
 /**
- * Gets the average earned credits of client's in the game.
+ * Gets the average earned credits of iClient's in the game.
  *
  * @param exclude				The index of the client to to exclude from averaging the credits.
  *
- * @return						The average credits of client's in the game.
+ * @return						The average credits of iClient's in the game.
  */
 GetAverageCredits(exclude = 0)
 {
@@ -4385,14 +4413,22 @@ GetAverageCredits(exclude = 0)
 //Getters and Setters will sometimes share a varying amount of index arguments when the variable being set is an array.
 //indexes - If the variable is an array you'll be required to supply a varying amount of indexes for it.
 
-//Special Case, takes one additional argument iFlags that is used in a forward it calls.
-//See Escalation.inc for a list of valid ones.
-Set_iClientCredits(iValue, Set_Operation:iOperation, client, iFlags)
+/**
+ * Sets the credit count of a client.
+ *
+ * @param iValue				The value to use with the set operation.
+ * @param iOperation			The set operation to take.
+ * @param iClient				the client to set the credits of.
+ * @param iFlags				The flags containing the reason the client is getting these credits.
+ *
+ * @return						the client's new credit count.
+ */
+Set_iClientCredits(iValue, Set_Operation:iOperation, iClient, iFlags)
 {
 	//Call the Forward
 	Call_StartForward(g_hClientCreditsChanged); //Esc_ClientCreditsChanged
 	
-	Call_PushCell(client);
+	Call_PushCell(iClient);
 	Call_PushCell(iOperation);
 	Call_PushCell(iFlags);
 	Call_PushCellRef(iValue);
@@ -4402,7 +4438,7 @@ Set_iClientCredits(iValue, Set_Operation:iOperation, client, iFlags)
 	//Handle that there total earned credits.
 	if (iFlags & ESC_CREDITS_RESET)
 	{
-		PlayerData_SetEarnedCredits(g_PlayerData[client][0], 0, iOperation);
+		PlayerData_SetEarnedCredits(g_PlayerData[iClient][0], 0, iOperation);
 	}	
 	else if (iFlags & ESC_CREDITS_STARTING || iFlags & ESC_CREDITS_PURCHASE || iFlags & ESC_CREDITS_REFUNDED || iFlags & ESC_CREDITS_REFUND_FULL || iFlags & ESC_CREDITS_OBJECTIVE || iFlags & ESC_CREDITS_NOAVERAGE)
 	{
@@ -4410,17 +4446,33 @@ Set_iClientCredits(iValue, Set_Operation:iOperation, client, iFlags)
 	}
 	else
 	{
-		PlayerData_SetEarnedCredits(g_PlayerData[client][0], iValue, iOperation);
+		PlayerData_SetEarnedCredits(g_PlayerData[iClient][0], iValue, iOperation);
 	}
 
-	return PlayerData_SetCredits(g_PlayerData[client][0], iValue, iOperation);
+	return PlayerData_SetCredits(g_PlayerData[iClient][0], iValue, iOperation);
 }
 
+/**
+ * Gets the objective credits of a team.
+ *
+ * @param team					The team to get the credits of.
+ *
+ * @return						The team's credit count.
+ */
 Get_iObjectiveCredits(team)
 {
 	return g_iObjectiveCredits[team];
 }	
-	
+
+/**
+ * Sets the objective credits of a team.
+ *
+ * @param iValue				The value to use with the set operation.
+ * @param iOperation			The set operation to take.
+ * @param team					The team to set the credits of.
+ *
+ * @return						The team's new credit count.
+ */
 Set_iObjectiveCredits(iValue, Set_Operation:iOperation, team)
 {
 	if (iOperation == SET_ABSOLUTE) //Check to see if the user wants an Absolute Set on the variable.
@@ -4466,28 +4518,33 @@ Set_iObjectiveCredits(iValue, Set_Operation:iOperation, team)
 
 #if defined DEV_BUILD
 
-//Grants credits to whoever uses the command.
-public Action:Command_GiveCredits(client, args)
+/**
+ * Grants credits to the client that uses the command.
+ * Can also be used to give other clients credits.
+ *
+ * @return An Action value.
+ */
+public Action:Command_GiveCredits(iClient, args)
 {
 	new String:arg1[32];
 	new String:arg2[32];
 	
 	if (args < 1)
 	{
-		CReplyToCommand(client,"Usage: sm_givecredits <target> <credits>");
+		CReplyToCommand(iClient,"Usage: sm_givecredits <target> <credits>");
 		return Plugin_Handled;
 	}
 	
 	if (args < 2)
 	{
 		GetCmdArg(1,arg1,sizeof(arg1));	
-		Set_iClientCredits(StringToInt(arg1), SET_ADD, client, ESC_CREDITS_PLUGIN);
+		Set_iClientCredits(StringToInt(arg1), SET_ADD, iClient, ESC_CREDITS_PLUGIN);
 	
 		decl String:clientName[MAX_NAME_LENGTH];
-		GetClientName(client, clientName, sizeof(clientName));
+		GetClientName(iClient, clientName, sizeof(clientName));
 		
 		
-		CShowActivity2(client, "{royalblue}[Escalation]{silver} ", "{silver}Someone has given %s {dodgerblue}%i{silver} credits.", clientName, StringToInt(arg1));
+		CShowActivity2(iClient, "{royalblue}[Escalation]{silver} ", "{silver}Someone has given %s {dodgerblue}%i{silver} credits.", clientName, StringToInt(arg1));
 	}
 	else if (args < 3)
 	{
@@ -4497,7 +4554,7 @@ public Action:Command_GiveCredits(client, args)
 		new iCreditsToGive = StringToInt(arg1);
 		
 		//Grab the lucky man getting these credits.
-		new iTarget = FindTarget(client, arg2);
+		new iTarget = FindTarget(iClient, arg2);
 		if (iTarget == -1)
 			return Plugin_Handled;
 		
@@ -4506,33 +4563,41 @@ public Action:Command_GiveCredits(client, args)
 		decl String:targetName[MAX_NAME_LENGTH];
 		GetClientName(iTarget, targetName, sizeof(targetName));
 		
-		CShowActivity2(client, "{royalblue}[Escalation]{silver} ", "{silver}Someone has given %s {dodgerblue}%i{silver} credits.", targetName, iCreditsToGive);		
+		CShowActivity2(iClient, "{royalblue}[Escalation]{silver} ", "{silver}Someone has given %s {dodgerblue}%i{silver} credits.", targetName, iCreditsToGive);		
 		
 	}
 	
 	return Plugin_Handled;
 }
 
-//Acts as a wrapper around Command_Upgrade calling it as if the target used the command.
-public Action:Command_ForceUpgrade(client, args)
+/**
+ * Acts as a wrapper around Command_Upgrade calling it as if the target used the command.
+ *
+ * @return An Action value.
+ */
+public Action:Command_ForceUpgrade(iClient, args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "Usage: sm_forceupgrade <upgrade> <target>");
+		ReplyToCommand(iClient, "Usage: sm_forceupgrade <upgrade> <target>");
 		return Plugin_Handled;
 	}
 
 	new String:arg2[32];
 	GetCmdArg(2, arg2, sizeof(arg2));
 		
-	new iTarget = FindTarget(client, arg2);
+	new iTarget = FindTarget(iClient, arg2);
 		
 	//Hand control over to Command_Upgrade
 	return Command_Upgrade(iTarget, args);
 }
 
-//Prints out the credits of all clients to the console.
-public Action:Command_PrintCredits(client, args)
+/**
+ * Prints out the credits of all clients to the console.
+ *
+ * @return An Action value.
+ */
+public Action:Command_PrintCredits(iClient, args)
 {
 	decl String:buffer1[MAX_NAME_LENGTH];
 
@@ -4543,14 +4608,18 @@ public Action:Command_PrintCredits(client, args)
 			
 		GetClientName(i, buffer1, sizeof(buffer1));	
 			
-		PrintToConsole(client, "Client - %i Name - %s Credits - %i", i, buffer1, PlayerData_GetCredits(g_PlayerData[i][0]));	
+		PrintToConsole(iClient, "iClient - %i Name - %s Credits - %i", i, buffer1, PlayerData_GetCredits(g_PlayerData[i][0]));	
 	}
 
 	return Plugin_Handled;
 }
 
-//Prints out the credits of all clients on a team to the console.
-public Action:Command_PrintTeamCredits(client, args)
+/**
+ * Prints out the credits of all clients on a team to the console.
+ *
+ * @return An Action value.
+ */
+public Action:Command_PrintTeamCredits(iClient, args)
 {
 	decl String:arg1[4];
 	decl String:buffer1[MAX_NAME_LENGTH];
@@ -4567,14 +4636,18 @@ public Action:Command_PrintTeamCredits(client, args)
 	for (new i = 0; i <= iSize; i++)
 	{
 		GetClientName(iClients[i], buffer1, sizeof(buffer1));				
-		PrintToConsole(client, "Client - %i Name - %s Credits - %i", iClients[i], buffer1, PlayerData_GetCredits(g_PlayerData[i][0]));		
+		PrintToConsole(iClient, "iClient - %i Name - %s Credits - %i", iClients[i], buffer1, PlayerData_GetCredits(g_PlayerData[i][0]));		
 	}
 	
 	return Plugin_Handled;
 }
 
-//Prints out the earned credits of all clients to the console.
-public Action:Command_PrintTotalCredits(client, args)
+/**
+ * Prints out the earned credits of all clients to the console.
+ *
+ * @return An Action value.
+ */
+public Action:Command_PrintTotalCredits(iClient, args)
 {
 	decl String:buffer1[MAX_NAME_LENGTH];
 
@@ -4585,18 +4658,22 @@ public Action:Command_PrintTotalCredits(client, args)
 			
 		GetClientName(i, buffer1, sizeof(buffer1));	
 			
-		PrintToConsole(client, "Client - %i Name - %s Credits - %i", i, buffer1, Get_iClientTotalCredits(i));	
+		PrintToConsole(iClient, "iClient - %i Name - %s Credits - %i", i, buffer1, Get_iClientTotalCredits(i));	
 	}
 
 	return Plugin_Handled;
 }
 
-//Displays the upgrade menu of the specified weapon to the client.
-public Action:Command_ForceMenuDisplay(client, args)
+/**
+ * Displays the upgrade menu of the specified weapon to the client.
+ *
+ * @return An Action value.
+ */
+public Action:Command_ForceMenuDisplay(iClient, args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "Usage: sm_forcemenu <weaponID> <classID (optional)>");
+		ReplyToCommand(iClient, "Usage: sm_forcemenu <weaponID> <classID (optional)>");
 		return Plugin_Handled;
 	}
 
@@ -4622,22 +4699,26 @@ public Action:Command_ForceMenuDisplay(client, args)
 				
 	if (hMenuToDisplay == INVALID_HANDLE)
 	{
-		CReplyToCommand(client, "{royalblue}[Escalation]{silver} So sorry good Developer but this command can't display a menu for a weapon you haven't implemented yet.");
+		CReplyToCommand(iClient, "{royalblue}[Escalation]{silver} So sorry good Developer but this command can't display a menu for a weapon you haven't implemented yet.");
 	}
 	else
 	{
-		DisplayMenu(hMenuToDisplay, client, 60);
+		DisplayMenu(hMenuToDisplay, iClient, 60);
 	}
 	
 	return Plugin_Handled;
 }
 
-//Forces a custom attribute onto the client using the command.
-public Action:Command_ForceAttribute(client, args)
+/**
+ * Forces a custom attribute onto the client using the command.
+ *
+ * @return An Action value.
+ */
+public Action:Command_ForceAttribute(iClient, args)
 {
-	if (client == 0)
+	if (iClient == 0)
 	{
-		ReplyToCommand(client, "You can't use this command as server.");
+		ReplyToCommand(iClient, "You can't use this command as server.");
 		
 		return Plugin_Handled;
 	}
@@ -4651,15 +4732,19 @@ public Action:Command_ForceAttribute(client, args)
 	new iAttribute = StringToInt(buffer1);
 	new Float:fValue = StringToFloat(buffer2);
 	
-	Esc_ApplyCustomAttribute(client, iAttribute, fValue);
+	Esc_ApplyCustomAttribute(iClient, iAttribute, fValue);
 	
-	ReplyToCommand(client, "Forced attribute %i onto client %N with value %f", iAttribute, client, fValue);
+	ReplyToCommand(iClient, "Forced attribute %i onto iClient %N with value %f", iAttribute, iClient, fValue);
 	
 	return Plugin_Handled;
 }
 
-//Forces the plugin to enable itself on non-supported maps.
-public Action:Command_ForceSupport(client, args)
+/**
+ * Forces the plugin to enable itself on non-supported maps.
+ *
+ * @return An Action value.
+ */
+public Action:Command_ForceSupport(iClient, args)
 {
 	g_bPluginDisabledForMap = false;
 
@@ -4671,8 +4756,12 @@ public Action:Command_ForceSupport(client, args)
 	return Plugin_Handled;
 }
 
-//Destroys all global objects in order to test for memory leaks. This breaks the plugin.
-public Action:Command_DestroyObjects(client, args)
+/**
+ * Destroys all global objects in order to test for memory leaks. This breaks the plugin.
+ *
+ * @return An Action value.
+ */
+public Action:Command_DestroyObjects(iClient, args)
 {
 	WeaponInfoManager_Destroy(g_WeaponInfoManager[0]);
 	UpgradeMenuCache_Destroy(g_UpgradeMenuCache[0]);
@@ -4682,7 +4771,7 @@ public Action:Command_DestroyObjects(client, args)
 	StockAttributes_Destroy(g_StockAttributes[0]);
 	BannedUpgrades_Destroy(g_BannedUpgrades[0]);
 	
-	ReplyToCommand(client, "All objects have been destroyed. The plugin is now broken until you reload it.");
+	ReplyToCommand(iClient, "All objects have been destroyed. The plugin is now broken until you reload it.");
 	
 	return Plugin_Handled;
 }

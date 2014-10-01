@@ -69,6 +69,8 @@ vector.inc
 version.inc
 version_auto.inc
 
+#Ignore .smx files
+*.smx
 
 
 # Windows image file caches

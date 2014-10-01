@@ -6,20 +6,28 @@
 #include<adt>
 #include<Escalation_WeaponInfo>
 
-#define WeaponInfoManagerID (2 << _:WeaponInfoManager) //!< Each object recieves it's own ID. As a rule it is i << ObjectEnum. With i being the order the object's code was written in.
-#define ALL_CLASS_WEAPON_OFFSET 100000
 
-//! Acts as a container for WeaponInfo objects and also as an abstract interface between the plugin and the objects.
+#define ALL_CLASS_WEAPON_OFFSET 100000 /**< Used to offset all class weapon indexes in the hash map. */
+
+/**
+ * Acts as a container for WeaponInfo objects and also as an abstract interface between the plugin and the objects.
+ */
 enum WeaponInfoManager
 {
-	m_iObjectType, //!< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.)
-	Handle:m_hWeapons, //!< A SourceMod trie (hashmap since 1.6) used to store the weapons.
-	Handle:m_hWeaponsIndex //!< A SourceMod array of the keys in m_hWeapons.
+	m_iObjectType, /**< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.) */
+	Handle:m_hWeapons, /**< A hashmap used to store the weapons. */
+	Handle:m_hWeaponsIndex /**< An array of the keys in m_hWeapons. */
 }
 
-//! Constructs an empty WeaponInfoManager object in the array provided.
-/*! \param this[] An array that is created with WeaponInfoManager being the size.
-	\sa WeaponInfoManager_Destroy */
+static const WeaponInfoManagerID = (2 << _:WeaponInfoManager) /**< Each object recieves it's own ID. As a rule it is i << ObjectEnum. With i being the order the object's code was written in. */
+
+/**
+ * Constructs a WeaponInfoManager object in the array provided. 
+ *
+ * @param this				An array to construct the object in. 
+ *
+ * @noreturn
+ */
 WeaponInfoManager_Construct (this[])
 {
 	this[WeaponInfoManager:m_iObjectType] = WeaponInfoManagerID;	
@@ -28,9 +36,14 @@ WeaponInfoManager_Construct (this[])
 	this[m_hWeaponsIndex] = CreateArray();
 }
 
-//! Destroys a WeaponInfoManager object so that it's array can safely go out of scope.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\sa WeaponInfoManager_Construct */
+/**
+ * Destroys a WeaponInfoManager object so that it can safely go out of scope. 
+ *
+ * @param this				A WeaponInfoManager object to destroy. 
+ *
+ * @error					Invalid Object.
+ * @noreturn
+ */
 WeaponInfoManager_Destroy (this[])
 {
 	if (this[WeaponInfoManager:m_iObjectType] != WeaponInfoManagerID)
@@ -43,9 +56,13 @@ WeaponInfoManager_Destroy (this[])
 	WeaponInfoManager_DestroyHandles(this);
 }
 
-//! Safely destroys a WeaponInfoManager handles so that no memory leaks occur.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\sa WeaponInfoManager_Destroy */
+/**
+ * Close's a WeaponInfoManager's handles safely so no memory leaks occure.
+ *
+ * @param this				A WeaponInfoManager object to close the handles of. 
+ *
+ * @noreturn
+ */
 static WeaponInfoManager_DestroyHandles(this[])
 {
 	for(new i = 0; i < GetArraySize(this[m_hWeaponsIndex]); i++)
@@ -70,10 +87,14 @@ static WeaponInfoManager_DestroyHandles(this[])
 	this[m_hWeaponsIndex] = INVALID_HANDLE;
 }
 
-//! Removes a weapon from the container so it can be replaced with a new one.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\param iWeaponID The weapon to remove from the container.
-	\sa WeaponInfoManager_Destroy */
+/**
+ * Removes a single weapon from the container so it can be replaced with a new one.
+ *
+ * @param this				A WeaponInfoManager object. 
+ * @param iWeaponID			The ID of the weapon to remove.
+ *
+ * @noreturn
+ */
 static WeaponInfoManager_RemoveWeapon(this[], iWeaponID)
 {	
 	new iPosition = FindValueInArray(this[m_hWeaponsIndex], iWeaponID);
@@ -98,12 +119,18 @@ static WeaponInfoManager_RemoveWeapon(this[], iWeaponID)
 	RemoveFromTrie(this[m_hWeapons], WeaponID);
 }
 
-//! Adds a weapon to the container.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\param iWeaponID The item definition index of the weapon.
-	\param iParent The parent to use when checking if an upgrade is allowed. (If you're adding an all class weapon pass WEAPONINFO_NO_PARENT if you don't want the weapon having a parent.)
-	\param iSlot The slot the weapon takes up in a player's loadout.
-	\param TFClassType:iClass An optional class to add this weapon to the container under. You should only use this on all class weapons. (The value should be from TFClassType from tf2_stocks)	*/
+/**
+ * Adds a weapon to the container.
+ *
+ * @param this				A WeaponInfoManager object. 
+ * @param iWeaponID			The ID of the weapon to add.
+ * @param iParent			The ID of the weapon's parent, pass WEAPONINFO_NO_PARENT to stop the weapon having a parent.
+ * @param iSlot				The slot the weapon occupies.
+ * @param iClass			The class to add the weapon under. (Only done if the weapon is an all class weapon.)
+ *
+ * @error					Invalid Object.
+ * @noreturn
+ */
 WeaponInfoManager_AddWeapon(this[], iWeaponID, iParent, iSlot, TFClassType:iClass = TFClass_Unknown)
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -136,12 +163,17 @@ WeaponInfoManager_AddWeapon(this[], iWeaponID, iParent, iSlot, TFClassType:iClas
 	PushArrayCell(this[m_hWeaponsIndex], iWeaponID);
 }
 
-//! Tests if a weapon is allowed an upgrade.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\param iWeaponID The item definition index of the weapon.
-	\param String:Upgrade The upgrade to check for.
-	\param TFClassType:iClass The class of the player as returned by TF2_GetPlayerClass.
-	\return True on the weapon being allowed the upgrade, false if it isn't. */
+/**
+ * Tests if a weapon is allowed an upgrade.
+ *
+ * @param this				A WeaponInfoManager object. 
+ * @param iWeaponID			The ID of the weapon to check.
+ * @param Upgrade			The name of the upgrade to check.
+ * @param iClass			If the weapon is an all class weapon it'll be checked against this class's version of the weapon.
+ *
+ * @error					Invalid Object.
+ * @return					True if the weapon is allowed the upgrade, false if it isn't.
+ */
 bool:WeaponInfoManager_IsWeaponAllowedUpgrade(this[], iWeaponID, const String:Upgrade[], TFClassType:iClass = TFClass_Unknown)
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -191,11 +223,16 @@ bool:WeaponInfoManager_IsWeaponAllowedUpgrade(this[], iWeaponID, const String:Up
 	return true;
 }
 
-//! Tests if a weapon is exists in the container.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\param iWeaponID The item definition index of the weapon.
-	\param TFClassType:iClass The class of the player as returned by TF2_GetPlayerClass.
-	\return True on the weapon existing in the container, false if it doesn't. */
+/**
+ * Tests if a weapon exists in the container.
+ *
+ * @param this				A WeaponInfoManager object. 
+ * @param iWeaponID			The ID of the weapon to check.
+ * @param iClass			If the weapon is an all class weapon it'll be checked against this class's version of the weapon.
+ *
+ * @error					Invalid Object.
+ * @return					True if the weapon is exists, false if it doesn't.
+ */
 bool:WeaponInfoManager_DoesWeaponExist(this[], iWeaponID, TFClassType:iClass = TFClass_Unknown)
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -219,14 +256,18 @@ bool:WeaponInfoManager_DoesWeaponExist(this[], iWeaponID, TFClassType:iClass = T
 	return GetTrieArray(this[m_hWeapons], WeaponID, tmpWeaponInfo[0], sizeof(tmpWeaponInfo));
 }
 
-//! Sets the permissions of an upgrade on a weapon in the container.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\param iWeaponID The item definition index of the weapon.
-	\param String:Upgrade The upgrade to check for.
-	\param WeaponUpgradePermissions:iPermissions A value from the enum WeaponUpgradePermissions defining the permissions of the weapon.
-	\param TFClassType:iClass An optional class to look for this weapon in the container under. You should only use this on all class weapons. (The value should be from TFClassType from tf2_stocks)
-	\return True on the weapon being allowed the upgrade, false if it isn't.
-	\sa WeaponUpgradePermissions */
+/**
+ * Sets the permissions of an upgrade on the weapon in the container.
+ *
+ * @param this				A WeaponInfoManager object. 
+ * @param iWeaponID			The ID of the weapon to set the upgrade permissions on.
+ * @param Upgrade			The name of the upgrade to set the permissions of.
+ * @param iPermissions		The permissions to set the upgrade as having.
+ * @param iClass			If the weapon is an all class weapon the permissions will be set against this class's version of the weapon.
+ *
+ * @error					Invalid Object.
+ * @noreturn
+ */
 WeaponInfoManager_SetWeaponPermissions(this[], iWeaponID, const String:Upgrade[], WeaponUpgradePermissions:iPermissions, TFClassType:iClass = TFClass_Unknown)
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -255,6 +296,16 @@ WeaponInfoManager_SetWeaponPermissions(this[], iWeaponID, const String:Upgrade[]
 	SetTrieArray(this[m_hWeapons], WeaponID, tmpWeaponInfo[0], _:WeaponInfo)
 }
 
+/**
+ * Gets the slot of a weapon in the container.
+ *
+ * @param this				A WeaponInfoManager object. 
+ * @param iWeaponID			The ID of the weapon to get the slot of.
+ * @param iClass			If the weapon is an all class weapon the slot will be fetched from this class's version of the weapon.
+ *
+ * @error					Invalid Object.
+ * @noreturn
+ */
 WeaponInfoManager_GetSlot(this[], iWeaponID, TFClassType:iClass = TFClass_Unknown)
 {
 #if defined USE_OBJECT_SAFETY_CHECK

@@ -3,7 +3,6 @@
 #endif
 #define _escalation_objects_included
 
-#include<Escalation_WeaponInfo>
 #include<Escalation_WeaponInfoManager>
 #include<Escalation_UpgradeMenuCache>
 #include<Escalation_PlayerData>

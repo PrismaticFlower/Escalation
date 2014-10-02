@@ -165,7 +165,7 @@ static g_WeaponInfoManager[WeaponInfoManager];
  * This will hopefully be replaced with code that generates the menus on demand,
  * at some point in the future.
  */
-static g_UpgradeMenuCache[UpgradeMenuCache];
+static g_UpgradeMenuCache[MenuCache];
 
 /**
  * Handles almost all the information about a player, 
@@ -406,7 +406,7 @@ StartPlugin ()
 
 	//Construct the objects.
 	WeaponInfoManager_Construct(g_WeaponInfoManager[0]);
-	UpgradeMenuCache_Construct(g_UpgradeMenuCache[0]);
+	MenuCache_Construct(g_UpgradeMenuCache[0]);
 	UpgradeDataStore_Construct(g_UpgradeDataStore[0]);
 	ClassInfoStore_Construct(g_ClassInfoStore[0]);
 	UpgradeDescriptions_Construct(g_UpgradeDescriptions[0]);
@@ -487,7 +487,7 @@ StopPlugin ()
 
 	//Destroy the objects.
 	WeaponInfoManager_Destroy(g_WeaponInfoManager[0]);
-	UpgradeMenuCache_Destroy(g_UpgradeMenuCache[0]);
+	MenuCache_Destroy(g_UpgradeMenuCache[0]);
 	UpgradeDataStore_Destroy(g_UpgradeDataStore[0]);
 	ClassInfoStore_Destroy(g_ClassInfoStore[0]);
 	UpgradeDescriptions_Destroy(g_UpgradeDescriptions[0]);
@@ -672,8 +672,8 @@ ExecuteConfigs ()
 	WeaponInfoManager_Destroy(g_WeaponInfoManager[0]);
 	WeaponInfoManager_Construct(g_WeaponInfoManager[0]);
 	
-	UpgradeMenuCache_Destroy(g_UpgradeMenuCache[0]);
-	UpgradeMenuCache_Construct(g_UpgradeMenuCache[0]);
+	MenuCache_Destroy(g_UpgradeMenuCache[0]);
+	MenuCache_Construct(g_UpgradeMenuCache[0]);
 	
 	UpgradeDataStore_Destroy(g_UpgradeDataStore[0]);
 	UpgradeDataStore_Construct(g_UpgradeDataStore[0]);
@@ -1024,7 +1024,7 @@ BuildUpgradeMenus (Handle:hWeaponInfo)
 		SetMenuExitBackButton(menu, true);
 
 		//Store the menu in the cache.
-		UpgradeMenuCache_AddMenu(g_UpgradeMenuCache[0], menu, iWeaponID);
+		MenuCache_AddMenu(g_UpgradeMenuCache[0], menu, iWeaponID);
 		
 		CloseHandle(hAllowedUpgrades);
 		CloseHandle(hBannedUpgrades);
@@ -1080,7 +1080,7 @@ BuildClassUpgradeMenus (Handle:hClassInfo)
 		SetMenuExitBackButton(menu, true);
 		
 		//Store the menu in the cache.
-		UpgradeMenuCache_AddMenu(g_UpgradeMenuCache[0], menu, iClass * CLASS_MENU_OFFSET);
+		MenuCache_AddMenu(g_UpgradeMenuCache[0], menu, iClass * CLASS_MENU_OFFSET);
 		
 		KvRewind(hClassInfo);
 	}
@@ -3294,7 +3294,7 @@ public Menu_UpgradeMenuBase(Handle:menu, MenuAction:action, param1, param2)
 			
 			if (StrEqual("Upgrade_Class", buffer, true))
 			{
-				new Handle:hMenuToDisplay = UpgradeMenuCache_GetMenu(g_UpgradeMenuCache[0], _:TF2_GetPlayerClass(param1) * CLASS_MENU_OFFSET);
+				new Handle:hMenuToDisplay = MenuCache_GetMenu(g_UpgradeMenuCache[0], _:TF2_GetPlayerClass(param1) * CLASS_MENU_OFFSET);
 				DisplayMenu(hMenuToDisplay, param1, MENU_DISPLAY_DURATION);				
 			}
 			else if (StrEqual("Upgrade_Slot_0", buffer, true))
@@ -3306,7 +3306,7 @@ public Menu_UpgradeMenuBase(Handle:menu, MenuAction:action, param1, param2)
 					iClientWeaponIndex += (ALL_CLASS_WEAPON_OFFSET * _:TF2_GetPlayerClass(param1));
 				}
 				
-				new Handle:hMenuToDisplay = UpgradeMenuCache_GetMenu(g_UpgradeMenuCache[0], iClientWeaponIndex);
+				new Handle:hMenuToDisplay = MenuCache_GetMenu(g_UpgradeMenuCache[0], iClientWeaponIndex);
 				
 				if (hMenuToDisplay == INVALID_HANDLE)
 				{
@@ -3329,7 +3329,7 @@ public Menu_UpgradeMenuBase(Handle:menu, MenuAction:action, param1, param2)
 					iClientWeaponIndex += (ALL_CLASS_WEAPON_OFFSET * _:TF2_GetPlayerClass(param1));
 				}
 
-				new Handle:hMenuToDisplay = UpgradeMenuCache_GetMenu(g_UpgradeMenuCache[0], iClientWeaponIndex);
+				new Handle:hMenuToDisplay = MenuCache_GetMenu(g_UpgradeMenuCache[0], iClientWeaponIndex);
 				
 				if (hMenuToDisplay == INVALID_HANDLE)
 				{
@@ -3352,7 +3352,7 @@ public Menu_UpgradeMenuBase(Handle:menu, MenuAction:action, param1, param2)
 					iClientWeaponIndex += (ALL_CLASS_WEAPON_OFFSET * _:TF2_GetPlayerClass(param1));
 				}
 
-				new Handle:hMenuToDisplay = UpgradeMenuCache_GetMenu(g_UpgradeMenuCache[0], iClientWeaponIndex);
+				new Handle:hMenuToDisplay = MenuCache_GetMenu(g_UpgradeMenuCache[0], iClientWeaponIndex);
 				
 				if (hMenuToDisplay == INVALID_HANDLE)
 				{
@@ -4695,7 +4695,7 @@ public Action:Command_ForceMenuDisplay(iClient, args)
 		iClientWeaponIndex += 100000 * iClass;
 	}
 				
-	new Handle:hMenuToDisplay = UpgradeMenuCache_GetMenu(g_UpgradeMenuCache[0], iClientWeaponIndex);
+	new Handle:hMenuToDisplay = MenuCache_GetMenu(g_UpgradeMenuCache[0], iClientWeaponIndex);
 				
 	if (hMenuToDisplay == INVALID_HANDLE)
 	{
@@ -4764,7 +4764,7 @@ public Action:Command_ForceSupport(iClient, args)
 public Action:Command_DestroyObjects(iClient, args)
 {
 	WeaponInfoManager_Destroy(g_WeaponInfoManager[0]);
-	UpgradeMenuCache_Destroy(g_UpgradeMenuCache[0]);
+	MenuCache_Destroy(g_UpgradeMenuCache[0]);
 	UpgradeDataStore_Destroy(g_UpgradeDataStore[0]);
 	ClassInfoStore_Destroy(g_ClassInfoStore[0]);
 	UpgradeDescriptions_Destroy(g_UpgradeDescriptions[0]);

@@ -4,7 +4,7 @@
 #define _escalation_objects_included
 
 #include<Escalation_WeaponInfoManager>
-#include<Escalation_UpgradeMenuCache>
+#include<Escalation_MenuCache>
 #include<Escalation_PlayerData>
 #include<Escalation_UpgradeData>
 #include<Escalation_UpgradeDataStore>

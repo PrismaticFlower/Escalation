@@ -6,16 +6,6 @@
 #include<adt>
 #include<Escalation_Constants>
 
-/** 
- * A data struct used to make up each player's upgrade queue.
- * All the symbols are prefixed with _ so they can still be used in other parts of the code. 
- */ 
-enum UpgradeQueue
-{
-	String:_Upgrade[UPGRADE_NAME_MAXLENGTH], /**< The name of the upgrade. */
-	_iLevel, /**< The level of the upgrade on the queue. */
-	bool:_bOwned /**< Is the upgrade owned or not? */
-};
 
 /**
  * Stores all a client's variables so they're all nice and encapsulated.

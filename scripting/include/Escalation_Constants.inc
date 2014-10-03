@@ -66,3 +66,16 @@ new const String:WeaponSlotKeys[UPGRADABLE_SLOTS][] =
 	"Slot_Secondary",
 	"Slot_Melee"
 };
+
+/** 
+ * A data struct used to make up each player's upgrade queue.
+ * All the symbols are prefixed with _ so they can still be used in other parts of the code. 
+ *
+ * To declare one simply make an array with UpgradeQueue as the size.
+ */
+enum UpgradeQueue
+{
+	String:_Upgrade[UPGRADE_NAME_MAXLENGTH], /**< The name of the upgrade. */
+	_iLevel, /**< The level of the upgrade on the queue. */
+	bool:_bOwned /**< Is the upgrade owned or not? */
+};

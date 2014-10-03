@@ -72,6 +72,8 @@ version_auto.inc
 #Ignore .smx files
 *.smx
 
+#Ignore Any Exe Files
+.exe
 
 # Windows image file caches
 Thumbs.db

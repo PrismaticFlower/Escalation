@@ -5,18 +5,25 @@
 
 #include<adt>
 
-#define UpgradeDescriptionsID (8 << _:UpgradeDescriptions)
-
-//! Stores the translation strings and values of the descriptions for the upgarde menu of each upgrade.
+/**
+ * Stores the translation strings and values of the descriptions for the upgarde menu of each upgrade.
+ */
 enum UpgradeDescriptions
 {
-	m_iObjectType, //!< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.)
-	Handle:m_hDescriptions, //!< A SourceMod trie (hashmap since 1.6) used to store the descriptions.
+	m_iObjectType, /**< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.) */
+	Handle:m_hDescriptions, /**< A hashmap used to store the descriptions. */
 }
 
-//! Constructs an empty UpgradeDescriptions object in the array provided.
-/*! \param this[] An array that is created with UpgradeDescriptions being the size.
-	\sa UpgradeDescriptions_Destroy */
+static const UpgradeDescriptionsID = (8 << _:UpgradeDescriptions);
+
+
+/**
+ * Constructs an UpgradeDescriptions object in the array provided. 
+ *
+ * @param this				An array to construct the object in.
+ *
+ * @noreturn
+ */
 UpgradeDescriptions_Construct (this[])
 {
 	this[UpgradeDescriptions:m_iObjectType] = UpgradeDescriptionsID;	
@@ -24,9 +31,14 @@ UpgradeDescriptions_Construct (this[])
 	this[m_hDescriptions] = CreateTrie();
 }
 
-//! Destroys a UpgradeDescriptions object so that it's array can safely go out of scope.
-/*! \param this[] An array containing a constructed UpgradeDescriptions object.
-	\sa UpgradeDescriptions_Construct */
+/**
+ * Destroys an UpgradeDescriptions object so it can safely go out of scope. 
+ *
+ * @param this				An UpgradeDescriptions object to destroy.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 UpgradeDescriptions_Destroy (this[])
 {
 	if (this[UpgradeDescriptions:m_iObjectType] != UpgradeDescriptionsID)
@@ -41,13 +53,17 @@ UpgradeDescriptions_Destroy (this[])
 	this[m_hDescriptions] = INVALID_HANDLE;
 }
 
-
-//! Adds a string to the container.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\param String:Upgrade[] The upgrade to add the translation key under.
-	\param iIndex The index of description (upgrades have multiple ones describing each attribute)
-	\param String:Description[] The translation key to add to the container.
-*/
+/**
+ * Adds a description's translation key to an upgrade. 
+ *
+ * @param this				An UpgradeDescriptions object.
+ * @param Upgrade			The name of the upgrade to add the description under.
+ * @param iIndex			The index of the description.
+ * @param Description		The translation key of the description.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 UpgradeDescriptions_AddDescription(this[], const String:Upgrade[], iIndex, const String:Description[])
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -68,14 +84,18 @@ UpgradeDescriptions_AddDescription(this[], const String:Upgrade[], iIndex, const
 	SetTrieString(this[m_hDescriptions], Key, Description);
 }
 
-//! Adds a value to the container.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\param String:Upgrade[] The upgrade to add the value under.
-	\param iIndex The index of value (upgrades have multiple ones describing each attribute)
-	\param iLevel The level to add the value under.
-	\param iValue The value itself to add to the container.
-	\param String:Description[] The translation key to add to the container.
-*/
+/**
+ * Adds a description's value to an upgrade. 
+ *
+ * @param this				An UpgradeDescriptions object.
+ * @param Upgrade			The name of the upgrade to add the value under.
+ * @param iIndex			The index of the description.
+ * @param iLevel			The level to add the value under.
+ * @param iValue			The value to add.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 UpgradeDescriptions_AddValue(this[], const String:Upgrade[], iIndex, iLevel, iValue)
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -100,13 +120,18 @@ UpgradeDescriptions_AddValue(this[], const String:Upgrade[], iIndex, iLevel, iVa
 }
 
 
-//! Gets a string from the container.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\param String:Upgrade[] The upgrade to get the translation key of.
-	\param iIndex The index of key (upgrades have multiple ones describing each attribute)
-	\param String:Description[] The buffer to store the translation key in.
-	\param iSize The size of aforementioned buffer.
-*/
+/**
+ * Gets a description's translation key for an upgrade. 
+ *
+ * @param this				An UpgradeDescriptions object.
+ * @param Upgrade			The name of the upgrade to get the description of.
+ * @param iIndex			The index of the description.
+ * @param Description		The buffer to store the translation key in.
+ * @param iSize				The max size of the above buffer.
+ *
+ * @error					Invalid object or attempt to fetch invalid description.
+ * @noreturn
+ */
 UpgradeDescriptions_GetDescription(this[], const String:Upgrade[], iIndex, String:Description[], iSize)
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -131,13 +156,17 @@ UpgradeDescriptions_GetDescription(this[], const String:Upgrade[], iIndex, Strin
 	}
 }
 
-//! Gets a value from the container.
-/*! \param this[] An array containing a constructed WeaponInfo object.
-	\param String:Upgrade[] The upgrade to get the translation key of.
-	\param iIndex The index of key (upgrades have multiple ones describing each attribute)
-	\param iLevel The level to get the value of.
-	\return The value from the container.
-*/
+/**
+ * Gets a description's value for an upgrade. 
+ *
+ * @param this				An UpgradeDescriptions object.
+ * @param Upgrade			The name of the upgrade to get the value of.
+ * @param iIndex			The index of the description.
+ * @param iLevel			The level to get the value of.
+ *
+ * @error					Invalid object or attempt to fetch invalid description.
+ * @return					The value associated with the description
+ */
 UpgradeDescriptions_GetValue(this[], const String:Upgrade[], iIndex, iLevel)
 {
 	new iValue;

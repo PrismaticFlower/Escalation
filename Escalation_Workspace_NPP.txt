@@ -5,6 +5,7 @@
             <File name="scripting\include\Escalation_Objects.inc" />
             <File name="scripting\include\Escalation_Stocks.inc" />
             <File name="scripting\include\Escalation_Constants.inc" />
+            <File name="scripting\include\Escalation.inc" />
         </Folder>
         <Folder name="Custom Attributes">
             <File name="scripting\Escalation_CustomAttributes.sp" />
@@ -13,7 +14,7 @@
         <Folder name="Objects">
             <File name="scripting\include\Escalation_WeaponInfo.inc" />
             <File name="scripting\include\Escalation_WeaponInfoManager.inc" />
-            <File name="scripting\include\Escalation_UpgradeMenuCache.inc" />
+            <File name="scripting\include\Escalation_MenuCache.inc" />
             <File name="scripting\include\Escalation_PlayerData.inc" />
             <File name="scripting\include\Escalation_UpgradeData.inc" />
             <File name="scripting\include\Escalation_UpgradeDataStore.inc" />

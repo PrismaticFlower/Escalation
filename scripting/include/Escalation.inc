@@ -1,7 +1,9 @@
-#if defined _escalation_constants_included
+#if defined _escalation_included
 #endinput
 #endif
-#define _escalation_constants_included
+#define _escalation_included
+
+#include<escalation_constants>
 
 /**
  * Called whenever a client's credits change.

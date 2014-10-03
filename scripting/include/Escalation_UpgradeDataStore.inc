@@ -6,19 +6,26 @@
 #include<adt>
 #include<Escalation_UpgradeData>
 
-#define UpgradeDataStoreID (6 << _:UpgradeDataStore)
-
+/**
+ * Acts as a container for UpgradeData objects.
+ */ 
 enum UpgradeDataStore
 {
-	m_iObjectType, //!< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.)
-	Handle:m_hUpgrades, //!< A SourceMod Trie containing the upgrade objects.
-	Handle:m_hUpgradeKeys //!< A SourceMod Array containing all the keys that have been assigned an object in m_hUpgrades.
+	m_iObjectType, /**< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.) */
+	Handle:m_hUpgrades, /**< A SourceMod Trie containing the upgrade objects. */
+	Handle:m_hUpgradeKeys /**< A SourceMod Array containing all the keys that have been assigned an object in m_hUpgrades. */
 };
 
 
-//! Constructs a UpgradeDataStore object in the array provided. 
-/*! \param this[] An array that has been created with UpgradeDataStore as the size.
-	\sa UpgradeDataStore_Destroy */
+static const UpgradeDataStoreID = (6 << _:UpgradeDataStore);
+
+/**
+ * Constructs an UpgradeDataStore object in the array provided. 
+ *
+ * @param this				An array to construct the object in.
+ *
+ * @noreturn
+ */
 UpgradeDataStore_Construct (this[])
 {
 	this[UpgradeDataStore:m_iObjectType] = UpgradeDataStoreID;
@@ -27,9 +34,14 @@ UpgradeDataStore_Construct (this[])
 	this[m_hUpgradeKeys] = CreateArray(UPGRADE_NAME_MAXLENGTH / 4);
 }
 
-//! Detsroys a UpgradeDataStore object so it can safely go out of scope.
-/*! \param this[] An array that has been created with UpgradeDataStore as the size.
-	\sa UpgradeDataStore_Destroy */
+/**
+ * Destroys an UpgradeDataStore object so it can safely go out of scope. 
+ *
+ * @param this				An UpgradeDataStore object to destroy.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 UpgradeDataStore_Destroy (this[])
 {
 	if (this[UpgradeDataStore:m_iObjectType] != UpgradeDataStoreID)
@@ -42,9 +54,13 @@ UpgradeDataStore_Destroy (this[])
 	this[UpgradeDataStore:m_iObjectType] = 0;
 }
 
-//! A private function used to close the handles of the object safely.
-/*! \param this[] An array that has been created with UpgradeDataStore as the size.
-	\sa UpgradeDataStore_Destroy */
+/**
+ * Safley closes an UpgradeDataStore's handles. 
+ *
+ * @param this				An UpgradeDataStore to close the handles of.
+ *
+ * @noreturn
+ */
 static UpgradeDataStore_CloseHandles (this[])
 {
 	for (new i; i < GetArraySize(this[m_hUpgradeKeys]); i ++)
@@ -65,9 +81,14 @@ static UpgradeDataStore_CloseHandles (this[])
 	this[m_hUpgradeKeys] = INVALID_HANDLE;
 }
 
-//! Removes a UpgradeData object from the container.
-/*! \param this[] An array that has been created with UpgradeDataStore as the size.
-	\param String:Upgrade[] The upgrade to remove from the container. */
+/**
+ * Removes a single upgrade from the container.
+ *
+ * @param this				An UpgradeDataStore object.
+ * @param Upgrade			The name of the upgrade to remove.
+ *
+ * @noreturn
+ */
 static UpgradeDataStore_RemoveUpgrade (this[], const String:Upgrade[])
 {
 	new iPosition = FindStringInArray(this[m_hUpgradeKeys], Upgrade);
@@ -89,12 +110,18 @@ static UpgradeDataStore_RemoveUpgrade (this[], const String:Upgrade[])
 	RemoveFromTrie(this[m_hUpgrades], Upgrade);
 }
 
-//! Adds an UpgradeData object to the container.
-/*! \param this[] An array that has been created with UpgradeDataStore as the size.
-	\param String:Upgrade[] A string that will serve as the name of the upgrade.
-	\param UpgradeInfo An already constructed UpgradeData object to store in the container.
-	\sa UpgradeDataStore_GetUpgrade */
-UpgradeDataStore_AddUpgrade (this[], const String:Upgrade[], UpgradeInfo[], iMaxSize)
+/**
+ * Adds an UpgradeData object to the container. 
+ *
+ * @param this				An UpgradeDataStore object.
+ * @param Upgrade			The name of the upgrade being added.
+ * @param UpgradeInfo		The UpgradeData object to be added to the container.
+ * @param iMaxSize			The max size of the UpgradeData object's array.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
+UpgradeDataStore_AddUpgrade (this[], const String:Upgrade[], const UpgradeInfo[], iMaxSize)
 {
 #if defined USE_OBJECT_SAFETY_CHECK
 	if (this[UpgradeDataStore:m_iObjectType] != UpgradeDataStoreID)
@@ -114,12 +141,17 @@ UpgradeDataStore_AddUpgrade (this[], const String:Upgrade[], UpgradeInfo[], iMax
 	PushArrayString(this[m_hUpgradeKeys], Upgrade);
 }
 
-//! Gets a UpgradeData object from the container.
-/*! \param this[] An array that has been created with UpgradeDataStore as the size.
-	\param String:Upgrade[] The name of the upgrade to get from the container.
-	\param UpgradeInfo An array created with UpgradeData as the size to store the object in. 
-	\return True on the upgrade being fetched, false if it did not exist in the container.
-	\sa UpgradeDataStore_AddUpgrade */
+/**
+ * Gets an UpgradeData object from the container. 
+ *
+ * @param this				An UpgradeDataStore object.
+ * @param Upgrade			The name of the upgrade to fetch.
+ * @param UpgradeInfo		The UpgradeData object to store the object being fetched in.
+ * @param iMaxSize			The max size of the above array.
+ *
+ * @error					Invalid object.
+ * @return					True if the upgrade existed and was fetched, false if it didn't exist.
+ */
 bool:UpgradeDataStore_GetUpgrade (this[], const String:Upgrade[], UpgradeInfo[], iMaxSize)
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -133,9 +165,15 @@ bool:UpgradeDataStore_GetUpgrade (this[], const String:Upgrade[], UpgradeInfo[],
 	return GetTrieArray(this[m_hUpgrades], Upgrade, UpgradeInfo, iMaxSize);
 }
 
-//! Fetches if an upgrade exists in the container.
-/*! \param this[] An array that has been created with UpgradeDataStore as the size.
-	\return True if the upgrade exists, false if it doesn't. */
+/**
+ * Checks to see if an upgrade exists in the container. 
+ *
+ * @param this				An UpgradeDataStore object.
+ * @param Upgrade			The name of the upgrade to check for.
+ *
+ * @error					Invalid object.
+ * @return					True if the upgrade exists, false if it doesn't exist.
+ */
 bool:UpgradeDataStore_UpgradeExists (this[], const String:Upgrade[])
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -150,10 +188,15 @@ bool:UpgradeDataStore_UpgradeExists (this[], const String:Upgrade[])
 	return GetTrieArray(this[m_hUpgrades], Upgrade, tmpUpgradeData[0], sizeof(tmpUpgradeData));
 }
 
-//! Gets a the cost of an upgrade.
-/*! \param this[] An array that has been created with UpgradeDataStore as the size.
-	\param String:Upgrade[] The name of the upgrade to get from the container. 
-	\return The cost of the upgrade or -1 on the upgrade not being found. */
+/**
+ * Gets the cost of an upgrade
+ *
+ * @param this				An UpgradeDataStore object.
+ * @param Upgrade			The name of the upgrade to get the cost of.
+ *
+ * @error					Invalid object or attempting to get the cost of a non-exsistent upgrade.
+ * @return					The cost of the upgrade.
+ */
 UpgradeDataStore_GetUpgradeCost (this[], const String:Upgrade[])
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -174,10 +217,15 @@ UpgradeDataStore_GetUpgradeCost (this[], const String:Upgrade[])
 	return UpgradeData_GetCost(tmpUpgradeData[0]);
 }
 
-//! Gets a the max level of an upgrade.
-/*! \param this[] An array that has been created with UpgradeDataStore as the size.
-	\param String:Upgrade[] The name of the upgrade to get from the container. 
-	\return The max level of the upgrade or -1 on it not being found. */
+/**
+ * Gets the max level of an upgrade
+ *
+ * @param this				An UpgradeDataStore object.
+ * @param Upgrade			The name of the upgrade to get the max level if of.
+ *
+ * @error					Invalid object or attempting to get the max level of a non-exsistent upgrade.
+ * @return					The max level of the upgrade.
+ */
 UpgradeDataStore_GetUpgradeMaxLevel (this[], const String:Upgrade[])
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -199,8 +247,18 @@ UpgradeDataStore_GetUpgradeMaxLevel (this[], const String:Upgrade[])
 	return UpgradeData_GetLevelCount(tmpUpgradeData[0]);
 }
 
-
-Handle:UpgradeDataStore_GetMenuOfUpgrades (this[], MenuHandler:Handler, MenuAction:iMenuActions, iFlags)
+/**
+ * Creates a menu where each item is the name of an upgrade.
+ *
+ * @param this				An UpgradeDataStore object.
+ * @param fnHandler			A pointer to a function to use as the callback handle.
+ * @param iMenuActions		The menu actions you want available in the callback.
+ * @param iFlags			The default item draw flags to apply to each item.
+ *
+ * @error					Invalid object.
+ * @return					The handle to the menu. You're responsible for the lifetime of the handle.
+ */
+Handle:UpgradeDataStore_GetMenuOfUpgrades (this[], MenuHandler:fnHandler, MenuAction:iMenuActions, iFlags)
 {
 #if defined USE_OBJECT_SAFETY_CHECK
 	if (this[UpgradeDataStore:m_iObjectType] != UpgradeDataStoreID)
@@ -209,7 +267,7 @@ Handle:UpgradeDataStore_GetMenuOfUpgrades (this[], MenuHandler:Handler, MenuActi
 	}
 #endif
 
-	new Handle:hMenu = CreateMenu(Handler, iMenuActions);
+	new Handle:hMenu = CreateMenu(fnHandler, iMenuActions);
 
 	for (new i = 0; i < GetArraySize(this[m_hUpgradeKeys]); i++)
 	{

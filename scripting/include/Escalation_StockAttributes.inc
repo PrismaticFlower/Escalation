@@ -6,29 +6,43 @@
 #include<Escalation_Constants>
 #include<adt>
 
-
-#define StockAttributesID (11 << _:StockAttributes)
-
+/**
+ * Reads through items_game.txt and caches the stock attributes of weapons.
+ */ 
 enum StockAttributes
 {
-	m_iObjectType, //!< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.)
-	Handle:m_hStockAttributes //!< A trie containing the stock attributes of all the weapons.
+	m_iObjectType, /**< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.) */
+	Handle:m_hStockAttributes /**< A trie containing the stock attributes of all the weapons. */
 }
 
-//! Constructs an empty StockAttributes object in the array provided.
-/*! \param this[] An array that is created with StockAttributes being the size.
-	\param String:ItemsGamePath[] A string containing the path to items_game.
-	\sa StockAttributes_Destroy */
+static const StockAttributesID  = (11 << _:StockAttributes);
+
+/**
+ * Constructs a StockAttributes object in the array provided. 
+ *
+ * @param this				An array to construct the object in.
+ * @param ItemsGamePath		A string containing the path to items_game.txt
+ *
+ * @noreturn
+ */
 StockAttributes_ConstructFull (this[], const String:ItemsGamePath[])
 {
 	this[StockAttributes:m_iObjectType] = StockAttributesID;
 	
 	this[m_hStockAttributes] = CreateTrie();
 	
-	StockAttributes_ParseItemsGame(this, ItemsGamePath);
+	StockAttributes_ReadItemsGame(this, ItemsGamePath);
 }
 
-static StockAttributes_ParseItemsGame (this[], const String:ItemsGamePath[])
+/**
+ * Reads through items_game.txt and caches the attributes of the weapons. 
+ *
+ * @param this				A StockAttributes object.
+ * @param ItemsGamePath		A string containing the path to items_game.txt
+ *
+ * @noreturn
+ */
+static StockAttributes_ReadItemsGame (this[], const String:ItemsGamePath[])
 {
 	new Handle:hItems = CreateKeyValues("items_game");
 	FileToKeyValues(hItems, ItemsGamePath);
@@ -140,9 +154,14 @@ static StockAttributes_ParseItemsGame (this[], const String:ItemsGamePath[])
 	CloseHandle(hItemSlots);
 }
 
-//! Destroys a StockAttributes object so it can go out of scope.
-/*! \param this[] An array that is created with StockAttributes being the size.
-	\sa StockAttributes_Construct */
+/**
+ * Destroys a stock attributes object so it can safely go out of scope.
+ *
+ * @param this				A StockAttributes object to destroy.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 stock StockAttributes_Destroy (this[])
 {
 	if (this[StockAttributes:m_iObjectType] != StockAttributesID)
@@ -158,6 +177,16 @@ stock StockAttributes_Destroy (this[])
 
 }
 
+/**
+ * Adds a weapon's attributes to the internal hash map.
+ *
+ * @param this				A StockAttributes object.
+ * @param WeaponID			The index of the weapon (whose attributes we're adding) in string form.
+ * @param iAttributes		An array of the weapon's attribute indexes.
+ * @param fValues			An array of the weapon's attribute values.
+ *
+ * @noreturn
+ */
 static StockAttributes_AddToContainer (this[], const String:WeaponID[], const iAttributes[ENTITY_MAX_ATTRIBUTES], const Float:fValues[ENTITY_MAX_ATTRIBUTES])
 {
 	decl String:ValueKey[256];
@@ -169,12 +198,24 @@ static StockAttributes_AddToContainer (this[], const String:WeaponID[], const iA
 	SetTrieArray(this[m_hStockAttributes], ValueKey, fValues, ENTITY_MAX_ATTRIBUTES);
 }
 
+/**
+ * Gets a weapon's attributes from the internal hash map.
+ *
+ * @param this				A StockAttributes object.
+ * @param iWeaponID			The index of the weapon whose attributes to fetch.
+ * @param iAttributes		An array to store the weapon's attribute indexes in.
+ * @param fValues			An array to store the weapon's attribute values in.
+ *
+ * @error					Invalid object.
+ * @return					True if the weapon had attributes cached in the container, false if it didn't.
+ */
 bool:StockAttributes_GetItemAttributes (this[], iWeaponID, iAttributes[ENTITY_MAX_ATTRIBUTES], Float:fValues[ENTITY_MAX_ATTRIBUTES])
 {
 	if (this[StockAttributes:m_iObjectType] != StockAttributesID)
 	{
 		ThrowError("Invalid object passed to function. A valid, constructed object is expected.");
 	}
+
 	decl String:WeaponID[64];
 	decl String:ValueKey[256];
 

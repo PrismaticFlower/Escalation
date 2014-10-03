@@ -5,22 +5,32 @@
 
 #include<adt>
 
-#define ClassInfoStoreID (7 << _:ClassInfoStore)
-
+/**
+ * Stores which upgrades the classes are allowed.
+ */ 
 enum ClassInfoStore
 {
-	m_iObjectType, //!< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.)
-	Handle:m_hUpgradesScout, //!< A SourceMod Trie containing what upgrades Scout is allowed to buy.
-	Handle:m_hUpgradesSoldier, //!<A SourceMod ADT Trie containing what upgrades Soldier is allowed to buy.
-	Handle:m_hUpgradesPyro, //!< A SourceMod Trie containing what upgrades Pyro is allowed to buy.
-	Handle:m_hUpgradesDemoman, //!< A SourceMod Trie containing what upgrades Demoman is allowed to buy.
-	Handle:m_hUpgradesHeavy, //!< A SourceMod Trie containing what upgrades Heavy is allowed to buy.
-	Handle:m_hUpgradesEngineer, //!< A SourceMod Trie containing what upgrades Engineer is allowed to buy.
-	Handle:m_hUpgradesMedic, //!< A SourceMod Trie containing what upgrades Medic is allowed to buy.
-	Handle:m_hUpgradesSpy, //!< A SourceMod Trie containing what upgrades Spy is allowed to buy.
-	Handle:m_hUpgradeseSniper //!< A SourceMod Trie containing what upgrades Sniper is allowed to buy.
+	m_iObjectType, /**< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.) */
+	Handle:m_hUpgradesScout, /**< A hash map containing what upgrades Scout is allowed to buy. */
+	Handle:m_hUpgradesSoldier, /**< A hash map containing what upgrades Soldier is allowed to buy. */
+	Handle:m_hUpgradesPyro, /**< A hash map containing what upgrades Pyro is allowed to buy. */
+	Handle:m_hUpgradesDemoman, /**< A hash map containing what upgrades Demoman is allowed to buy. */
+	Handle:m_hUpgradesHeavy, /**< A hash map containing what upgrades Heavy is allowed to buy. */
+	Handle:m_hUpgradesEngineer, /**< A hash map containing what upgrades Engineer is allowed to buy. */
+	Handle:m_hUpgradesMedic, /**< A hash map containing what upgrades Medic is allowed to buy. */
+	Handle:m_hUpgradesSpy, /**< A hash map containing what upgrades Spy is allowed to buy. */
+	Handle:m_hUpgradeseSniper /**< A hash map containing what upgrades Sniper is allowed to buy. */
 };
 
+static const ClassInfoStoreID = (7 << _:ClassInfoStore);
+
+/**
+ * Constructs a ClassInfoStore object in the array provided. 
+ *
+ * @param this				An array to construct the object in.
+ *
+ * @noreturn
+ */
 ClassInfoStore_Construct (this[])
 {
 	this[ClassInfoStore:m_iObjectType] = ClassInfoStoreID;
@@ -36,6 +46,14 @@ ClassInfoStore_Construct (this[])
 	this[m_hUpgradeseSniper] = CreateTrie();
 }
 
+/**
+ * Destroys a ClassInfoStore object in so it can safely go out of scope. 
+ *
+ * @param this				A ClassInfoStore object to destroy.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 ClassInfoStore_Destroy (this[])
 {
 	if (this[ClassInfoStore:m_iObjectType] != ClassInfoStoreID)
@@ -66,6 +84,16 @@ ClassInfoStore_Destroy (this[])
 	this[m_hUpgradeseSniper] = INVALID_HANDLE;
 }
 
+/**
+ * Sets a class as being allowed an upgrade.
+ *
+ * @param this				A ClassInfoStore object.
+ * @param iClass			The class to set as being allowed the upgrade.
+ * @param Upgrade			The upgrade to allow.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 ClassInfoStore_SetUpgradeAllowed (this[], TFClassType:iClass, const String:Upgrade[])
 {
 	#if defined USE_OBJECT_SAFETY_CHECK
@@ -80,6 +108,16 @@ ClassInfoStore_SetUpgradeAllowed (this[], TFClassType:iClass, const String:Upgra
 	SetTrieValue(hTrie, Upgrade, true);
 }
 
+/** 
+ * Checks if a class is allowed an upgrade.
+ *
+ * @param this				A ClassInfoStore object.
+ * @param iClass			The class to check.
+ * @param Upgrade			The upgrade to see if the class is allowed.
+ *
+ * @error					Invalid object.
+ * @return					True if the class is allowed the upgrade, false if it isn't.
+ */
 bool:ClassInfoStore_IsUpgradeAllowed (this[], TFClassType:iClass, const String:Upgrade[])
 {
 	#if defined USE_OBJECT_SAFETY_CHECK
@@ -95,10 +133,14 @@ bool:ClassInfoStore_IsUpgradeAllowed (this[], TFClassType:iClass, const String:U
 	return GetTrieValue(hTrie, Upgrade, iTest);
 }
 
-//! A private function used to turn a class ID into the ADT trie handle for it's upgrade permissions.
-/*! \param this[] A constructed PlayerData object.
-	\param TFClassType:iClass The class to fetch the array handle of.
-	\return The handle of the class's trie. */
+/** 
+ * Gets a class's hash map of allowed upgrades.
+ *
+ * @param this				A ClassInfoStore object.
+ * @param iClass			The class to get the hash map for.
+ *
+ * @return					The handle to the class's hash map.
+ */
 static Handle:ClassInfoStore_ClassIDToClassTrie (this[], TFClassType:iClass)
 {
 	switch (iClass)

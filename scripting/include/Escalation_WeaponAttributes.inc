@@ -8,12 +8,29 @@
 #include<tf2attributes>
 #include<sdktools>
 
-static iWeaponAttributes[MAXPLAYERS + 1][UPGRADABLE_SLOTS][ENTITY_MAX_ATTRIBUTES];
-static Float:fWeaponAttributeValues[MAXPLAYERS + 1][UPGRADABLE_SLOTS][ENTITY_MAX_ATTRIBUTES];
-static iWeaponAttributeCount[MAXPLAYERS + 1][UPGRADABLE_SLOTS];
-static iWeaponEntRefs[MAXPLAYERS + 1][UPGRADABLE_SLOTS];
+/**
+ * Manages attributes that are applied to the player's weapons.
+ */ 
 
-//An add function.
+static iWeaponAttributes[MAXPLAYERS + 1][UPGRADABLE_SLOTS][ENTITY_MAX_ATTRIBUTES]; /**< Stores the indexes of each weapon's attributes. */
+static Float:fWeaponAttributeValues[MAXPLAYERS + 1][UPGRADABLE_SLOTS][ENTITY_MAX_ATTRIBUTES]; /**< Stores the values of each weapon's attributes. */
+static iWeaponAttributeCount[MAXPLAYERS + 1][UPGRADABLE_SLOTS]; /**< Stores how many attributes each weapon has. */
+static iWeaponEntRefs[MAXPLAYERS + 1][UPGRADABLE_SLOTS]; /**< Stores entity references to a player's weapons. */
+
+/**
+ * Adds an attribute to a player's weapon, this does not add it to the client's entity.
+ * You must call WeaponAttributes_Apply for that.
+ *
+ * @param iClient				The client to add the attribute to.
+ * @param iSlot					The weapon in this slot will have the attribute added.
+ * @param iAttribute			The index of the attribute to add to the weapon.
+ * @param fValue				The value of the attribute to add to the weapon. 
+ *								(Will be merged with any existing attribute of the same index.)
+ * @param bIsPercent			Controls the way the attribute is merged with an existing one. 
+ *								If false the values will be added together, if true the values will be added together and have 1 subtracted from them.
+ *
+ * @noreturn
+ */
 WeaponAttributes_Add (iClient, iSlot, iAttribute, Float:fValue, bool:bIsPercent)
 {
 	if (iAttribute == INVALID_ATTRIBUTE)
@@ -48,13 +65,21 @@ WeaponAttributes_Add (iClient, iSlot, iAttribute, Float:fValue, bool:bIsPercent)
 	{
 		iWeaponAttributes[iClient][iSlot][iWeaponAttributeCount[iClient][iSlot]]= iAttribute;
 		fWeaponAttributeValues[iClient][iSlot][iWeaponAttributeCount[iClient][iSlot]] = fValue;
-		//bAttributeIsPercent[iClient][iSlot][iWeaponAttributeCount[iClient][iSlot]] = bIsPercent;
 
 		iWeaponAttributeCount[iClient][iSlot] ++;
 	}
 }
 
-//A Set Function
+/**
+ * Sets the attributes of a player's weapon.
+ *
+ * @param iClient				The client to sets the attributes of.
+ * @param iSlot					The weapon in this slot will have the attributes set.
+ * @param iAttributes			The indexes of the attributes to set the weapon to.
+ * @param fValues				The values of the attributes to set the weapon to.
+ *
+ * @noreturn
+ */
 WeaponAttributes_SetAttributes (iClient, iSlot, const iAttributes[ENTITY_MAX_ATTRIBUTES], const Float:fValues[ENTITY_MAX_ATTRIBUTES])
 {
 	for (new i = 0; i < ENTITY_MAX_ATTRIBUTES; i ++)
@@ -71,11 +96,15 @@ WeaponAttributes_SetAttributes (iClient, iSlot, const iAttributes[ENTITY_MAX_ATT
 		iWeaponAttributes[iClient][iSlot][i]= iAttributes[i];
 		fWeaponAttributeValues[iClient][iSlot][i] = fValues[i];
 	}
-
-
 }
 
-//A clear function.
+/**
+ * Clears the attributes of a player's weapons.
+ *
+ * @param iClient				The client to clear the attributes of.
+ *
+ * @noreturn
+ */
 WeaponAttributes_Clear (iClient)
 {
 
@@ -115,7 +144,13 @@ WeaponAttributes_Clear (iClient)
 
 }
 
-//A apply to player function.
+/**
+ * Applies the attributes of a player's weapons.
+ *
+ * @param iClient				The client to apply the attributes of.
+ *
+ * @noreturn
+ */
 WeaponAttributes_Apply (iClient)
 {
 	for (new iSlot = 0; iSlot < UPGRADABLE_SLOTS; iSlot ++)
@@ -141,13 +176,27 @@ WeaponAttributes_Apply (iClient)
 	}
 }
 
-//An Update Function
+/**
+ * Updates the cached weapon entity for a client's slot.
+ *
+ * @param iClient				The client to update the weapon of.
+ * @param iSlot					The slot to update the weapon of.
+ * @param iEntity				The entity index of the weapon in the slot.
+ *
+ * @noreturn
+ */
 WeaponAttributes_UpdateWeaponEnt (iClient, iSlot, iEntity)
 {
 	iWeaponEntRefs[iClient][iSlot] = EntIndexToEntRef(iEntity);
 }
 
-//A Reset Function
+/**
+ * Resets all a client's attributes and cached weapon entities.
+ *
+ * @param iClient				The client to reset the data of.
+ *
+ * @noreturn
+ */
 WeaponAttributes_ResetData (iClient)
 {
 	WeaponAttributes_Clear(iClient);

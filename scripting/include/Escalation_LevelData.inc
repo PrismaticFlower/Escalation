@@ -5,9 +5,9 @@
 
 #include<adt>
 
-
-#define LevelDataID (10 << _:LevelData)
-
+/**
+ * Data struct for storing attribute information.
+ */ 
 enum AttributeInfo
 {
 	_iAttribute,
@@ -15,16 +15,24 @@ enum AttributeInfo
 	bool:_bIsPercent
 }
 
-
+/**
+ * Stores the attribute data of an upgrade level.
+ */ 
 enum LevelData
 {
-	m_iObjectType, //!< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.)
-	Handle:m_hAttributes //!< An array containing all the attributes of the level.
+	m_iObjectType, /**< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.) */
+	Handle:m_hAttributes /**< An array containing all the attributes of the level. */
 }
 
-//! Constructs an empty LevelData object in the array provided.
-/*! \param this[] An array that is created with LevelData being the size.
-	\sa LevelData_Destroy */
+static const LevelDataID = (10 << _:LevelData);
+
+/**
+ * Constructs a LevelData object in the array provided. 
+ *
+ * @param this				An array to construct the object in.
+ *
+ * @noreturn
+ */
 LevelData_Construct (this[])
 {
 	this[LevelData:m_iObjectType] = LevelDataID;
@@ -32,9 +40,14 @@ LevelData_Construct (this[])
 	this[m_hAttributes] = CreateArray(_:AttributeInfo);
 }
 
-//! Destroys a LevelData object so it can go out of scope.
-/*! \param this[] An array that is created with LevelData being the size.
-	\sa LevelData_Construct */
+/**
+ * Destroys a LevelData object so it can safely go out of scope. 
+ *
+ * @param this				A LevelData object to destroy.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 LevelData_Destroy (this[])
 {
 	if (this[LevelData:m_iObjectType] != LevelDataID)
@@ -50,12 +63,17 @@ LevelData_Destroy (this[])
 
 }
 
-//! Adds an attribute to the level data object.
-/*! \param this[] An array that is created with LevelData being the size.
-	\param iAttribute You know, the item definition index of the attribute we're adding.
-	\param fValue The value of the attribute we're adding.
-	\param bIsPercent Is the value a percentage?
-	\sa LevelData_GetAttribute */
+/**
+ * Adds an attribute to the level data. 
+ *
+ * @param this				A LevelData object.
+ * @param iAttribute		The index of the attribute to add.
+ * @param fValue			The value of the attribute to add.
+ * @param bIsPercent		Is the attribute's value a percent?
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 LevelData_AddAttribute (this[], iAttribute, Float:fValue, bool:bIsPercent)
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -75,11 +93,16 @@ LevelData_AddAttribute (this[], iAttribute, Float:fValue, bool:bIsPercent)
 	PushArrayArray(this[m_hAttributes], tmpAttribute[0]);
 }
 
-//! Gets an attribute from the object.
-/*! \param this[] An array that is created with LevelData being the size.
-	\param iPosition The index of the attribute to fetch the information of.
-	\param Attribute[] An array to store the information in, should have been created with the size AttributeInfo.
-	\sa LevelData_AddAttribute */
+/**
+ * Gets an attribute's information. 
+ *
+ * @param this				A LevelData object.
+ * @param iPosition			The index of the attribute of the attribute to get.
+ * @param Attribute			An array to store the information in, should have been created with the size AttributeInfo
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 LevelData_GetAttribute (this[], iPosition, Attribute[])
 {
 #if defined USE_OBJECT_SAFETY_CHECK
@@ -92,10 +115,14 @@ LevelData_GetAttribute (this[], iPosition, Attribute[])
 	GetArrayArray(this[m_hAttributes], iPosition, Attribute);
 }
 
-//! Gets the number of attributes in the object.
-/*! \param this[] An array that is created with LevelData being the size.
-	\return The number of attributes in the object.
-	\sa LevelData_AddAttribute */
+/**
+ * Gets number of attributes in the object. 
+ *
+ * @param this				A LevelData object.
+ *
+ * @error					Invalid object.
+ * @return					The number of attributes the level has.
+ */
 LevelData_GetAttributeCount (this[])
 {
 #if defined USE_OBJECT_SAFETY_CHECK

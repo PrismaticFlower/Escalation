@@ -6,26 +6,33 @@
 #include<adt>
 #include<Escalation_LevelData>
 
-#define UpgradeDataID (5 << _:UpgradeData)
 
-//! Thie fine object stores the information of an upgrade, save for it's name since the container it's stored in is supposed to handle that.
+/**
+ * Thie fine object stores the information of an upgrade.
+ */ 
 enum UpgradeData
 {
-	m_iObjectType, //!< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.)
-	m_iCost, //!< The amount of credits it costs to buy each level.
-	m_iSlot, //!< The weapon slot this upgrade affects.
-	bool:m_bPassive, //!< Is the upgrade passive? If it is we can't apply it to weapons that have the "While active" attribute. (The upgrade manager just applies it to a different weapon.)
-	m_iLevels, //!< How many levels this upgrade has to it. 
-	Handle:m_hLevelData //!< An ADT array storing the attribute data of each level.
+	m_iObjectType, /**< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.) */
+	m_iCost, /**< The amount of credits it costs to buy each level. */
+	m_iSlot, /**< The weapon slot this upgrade affects. */
+	bool:m_bPassive, /**< Is the upgrade passive? If it is we can't apply it to weapons that have the "While active" attribute. (The upgrade manager just applies it to a different weapon.)  */
+	m_iLevels, /**< How many levels this upgrade has to it. */
+	Handle:m_hLevelData /**< An array storing the attribute data of each level. */
 };
 
-//! Constructs a UpgradeData object in the array provided. 
-/*! \param this[] An array that has been created with UpgradeData as the size.
-	\param iCost How many credits the upgrade costs.
-	\param iSlot The weapon slot this upgrade applies to.
-	\param bool:bPassive Is this a passive upgrade?
-	\sa UpgradeData_Destroy */
-UpgradeData_Construct(this[], iCost, iSlot, bool:bPassive)
+static const UpgradeDataID = (5 << _:UpgradeData);
+
+/**
+ * Constructs an UpgradeData object in the array provided. 
+ *
+ * @param this				An array to construct the object in. 
+ * @param iCost				How many credits the upgrade costs to buy.
+ * @param iSlot				The weapon slot (if not a class upgrade) the upgrade applies to.
+ * @param bPassive			If true the upgrade will be a class upgrade.
+ *
+ * @noreturn
+ */
+UpgradeData_Construct(this[], iCost, iSlot, bool:bPassive = false)
 {
 	this[UpgradeData:m_iObjectType] = UpgradeDataID;
 	this[m_iCost] = iCost;
@@ -36,9 +43,15 @@ UpgradeData_Construct(this[], iCost, iSlot, bool:bPassive)
 	this[m_hLevelData] = CreateArray(_:LevelData);
 }
 
-//! Destroys a UpgradeData object so it can go out of scope. 
-/*! \param this[] A constructed UpgradeData object.
-	\sa UpgradeData_Construct */
+
+/**
+ * Destroys an UpgradeData object so it can safely go out of scope. 
+ *
+ * @param this				An UpgradeData object to destroy.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 UpgradeData_Destroy (this[])
 {
 	if (this[UpgradeData:m_iObjectType] != UpgradeDataID)
@@ -66,10 +79,15 @@ UpgradeData_Destroy (this[])
 	this[m_hLevelData] = INVALID_HANDLE;
 }
 
-//! Adds an upgrade level to the object. 
-/*! \param this[] A constructed UpgradeData object.
-	\param const Level[] A LevelData object containing the information of this level's attributes.
-	\sa UpgradeData_GetLevelCount */
+/**
+ * Adds a level to the upgrade
+ *
+ * @param this				An UpgradeData object.
+ * @param Level				The LevelData object containing the attribute information.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
 UpgradeData_AddLevel (this[], const Level[])
 {
 	#if defined USE_OBJECT_SAFETY_CHECK
@@ -84,9 +102,14 @@ UpgradeData_AddLevel (this[], const Level[])
 	this[m_iLevels] ++;	
 }
 
-//! Returns the cost of the upgrade.
-/*! \param this[] A constructed UpgradeData object.
-	\return The cost of the upgrade. */
+/**
+ * Gets the cost of the upgrade.
+ *
+ * @param this				An UpgradeData object.
+ *
+ * @error					Invalid object.
+ * @return					The cost of the credits.
+ */
 UpgradeData_GetCost (this[])
 {
 	#if defined USE_OBJECT_SAFETY_CHECK
@@ -99,9 +122,14 @@ UpgradeData_GetCost (this[])
 	return this[m_iCost];
 }
 
-//! Returns the slot of the upgrade.
-/*! \param this[] A constructed UpgradeData object.
-	\return The slot of the upgrade. */
+/**
+ * Gets the weapon slot the upgrade takes up.
+ *
+ * @param this				An UpgradeData object.
+ *
+ * @error					Invalid object.
+ * @return					The weapon slot of the upgrade.
+ */
 UpgradeData_GetSlot (this[])
 {
 	#if defined USE_OBJECT_SAFETY_CHECK
@@ -114,9 +142,15 @@ UpgradeData_GetSlot (this[])
 	return this[m_iSlot];
 }
 
-//! Returns if the upgrade is passive.
-/*! \param this[] A constructed UpgradeData object.
-	\return True if the upgrade is passive, false if it is not. */
+
+/**
+ * Checks if the upgrade is passive.
+ *
+ * @param this				An UpgradeData object.
+ *
+ * @error					Invalid object.
+ * @return					True if the upgrade is passive, false if it isn't.
+ */
 bool:UpgradeData_IsPassive (this[])
 {
 	#if defined USE_OBJECT_SAFETY_CHECK
@@ -129,9 +163,14 @@ bool:UpgradeData_IsPassive (this[])
 	return this[m_bPassive];
 }
 
-//! Returns the level count of the upgrade.
-/*! \param this[] A constructed UpgradeData object.
-	\return The level count of the upgrade. */
+/**
+ * Returns the level count of the upgrade.
+ *
+ * @param this				An UpgradeData object.
+ *
+ * @error					Invalid object.
+ * @return					The level count of the upgrade.
+ */
 UpgradeData_GetLevelCount (this[])
 {
 	#if defined USE_OBJECT_SAFETY_CHECK
@@ -144,10 +183,17 @@ UpgradeData_GetLevelCount (this[])
 	return this[m_iLevels];
 }
 
-//! Gets the information of a level of the upgrade.
-/*! \param this[] A constructed UpgradeData object.
-	\param iLevel The level to get the information of.
-	\param Level[] An array created with LevelData as the size to store the level object in.*/
+
+/**
+ * Returns the level count of the upgrade.
+ *
+ * @param this				An UpgradeData object.
+ * @param iLevel			The level to get the data of.
+ * @param Level				An array created with the size LevelData to store the level information in.	
+ *
+ * @error					Invalid object or level out of bounds.
+ * @noreturn
+ */
 UpgradeData_GetLevel(this[], iLevel, Level[])
 {
 	#if defined USE_OBJECT_SAFETY_CHECK

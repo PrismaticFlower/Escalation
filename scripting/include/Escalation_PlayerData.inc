@@ -70,10 +70,6 @@ enum PlayerData
 
 static const PlayerDataID = (4 << _:PlayerData);
 
-//! Constructs a PlayerData object in the array provided. 
-/*! \param this[] An array that has been created with PlayerData as the size.
-	\param iClient The index of the client the object was created for.
-	\sa PlayerData_Destroy */
 /**
  * Constructs a PlayerData object in the array provided. 
  *

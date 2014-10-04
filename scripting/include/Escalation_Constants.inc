@@ -33,12 +33,12 @@
  */
 enum Set_Operation
 { 
-	SET_ABSOLUTE,
-	SET_MULTIPLY,
-	SET_DIVIDE,
-	SET_ADD,
-	SET_SUBTRACT,
-	SET_MODULO
+	SET_ABSOLUTE, /**< Equivalent to "Variable = Value" */
+	SET_MULTIPLY, /**< Equivalent to "Variable *= Value" */
+	SET_DIVIDE, /**< Equivalent to "Variable /= Value" */
+	SET_ADD, /**< Equivalent to "Variable += Value" */
+	SET_SUBTRACT, /**< Equivalent to "Variable -= Value" */
+	SET_MODULO /**< Equivalent to "Variable %= Value" */
 };
 
 #define UPGRADE_NAME_MAXLENGTH 32 /**< The max length of an upgrade name. */

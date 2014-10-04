@@ -70,6 +70,21 @@ native Esc_GetUpgradeQueueSize (iClient, TFClassType:iClass);
 native Esc_ClearUpgradeQueue (iClient, TFClassType:iClass);
 
 /**
+ * Called whenever a client's credits change.
+ *
+ * @param iClient				The index of the client whose credits to set.
+ * @param iOperation			The set operation to take.
+ *								Set Escalation_Constants.inc for a list.
+ * @param iFlags				The bit flags containing the reason the client is getting these credits.
+ *								Set Escalation_Constants.inc for a list.
+ * @param iValue				The value to use with the set operation. 
+ *
+ * @error						Invalid client or client not connected.
+ * @return						The new value of the client's credits.
+ */
+native Esc_SetClientCredits (iClient, Set_Operation:iOperation, iFlags, iValue);
+
+/**
  * Called when a client's data object has been created.
  * It is unsafe to call functions that do something with a client
  * until after this is called for that client.
@@ -95,7 +110,7 @@ forward Esc_PlayerDataDestroy (iClient);
  *
  * @param iClient				The index of the client whose credits are changing.
  * @param iOperation			The set operation (by beference) to being taken.
- * @param iFlags				The flags containing the reason the client is getting these credits.
+ * @param iFlags				The  bit flags containing the reason the client is getting these credits.
  * @param iValue				The value (by beference) to use with the set operation. 
  *
  * @noreturn
@@ -122,5 +137,6 @@ public __pl_Escalation_SetNTVOptional()
 	MarkNativeAsOptional("Esc_RemoveUpgradeFromQueue");
 	MarkNativeAsOptional("Esc_GetUpgradeQueueSize");
 	MarkNativeAsOptional("Esc_ClearUpgradeQueue");
+	MarkNativeAsOptional("Esc_SetClientCredits");
 }
 #endif

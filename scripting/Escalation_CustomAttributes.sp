@@ -7,6 +7,8 @@
 #define MAX_ATTRIBUTES 16
 #define NULL_VAR -1
 
+//** BE WARNED THIS FILE IS A MESS AND IT'S ON MY TO-DO LIST TO GIVE IT A FACELIFT. **//
+
 public Plugin:myinfo =
 {
 	name = "Escalation Custom Attributes",

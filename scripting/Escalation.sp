@@ -231,6 +231,7 @@ public APLRes:AskPluginLoad2(Handle:hMyself, bool:bLate, String:Error[], iErr_ma
 	CreateNative("Esc_RemoveUpgradeFromQueue", Native_Esc_RemoveUpgradeFromQueue);
 	CreateNative("Esc_GetUpgradeQueueSize", Native_Esc_GetUpgradeQueueSize);
 	CreateNative("Esc_ClearUpgradeQueue", Native_Esc_ClearUpgradeQueue);
+	CreateNative("Esc_SetClientCredits", Native_Esc_SetClientCredits);
 	
 	RegPluginLibrary("Escalation");
 	
@@ -4840,6 +4841,41 @@ public Native_Esc_ClearUpgradeQueue (Handle:hPlugin, iNumParams)
 	ClassIDToName(iClass, Class, sizeof(Class));
 	
 	ClearUpgrades(iClient, bInform, Class);
+}
+
+/**
+ * Native callback for setting a client's credits.
+ *
+ * @param hPlugin				Handle to the calling plugin.
+ * @param iNumParams			The number of arguments passed to the function.
+ *
+ * @return						The client's upgrade queue size.
+ */
+public Native_Esc_SetClientCredits (Handle:hPlugin, iNumParams)
+{
+	if (iNumParams != 4)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
+	}
+
+	new iClient = GetNativeCell(1);
+	new Set_Operation:iOperation = Set_Operation:GetNativeCell(2);
+	new iFlags = GetNativeCell(3);
+	new iValue = GetNativeCell(4);
+	
+	iFlags |= ESC_CREDITS_PLUGIN;
+	
+	if (iClient <= 0 || iClient > MaxClients)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
+	}
+
+	if (! IsClientConnected(iClient))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
+	}
+	
+	return Set_iClientCredits(iValue, iOperation, iClient, iFlags);
 }
 
 /************************DEVELOPER COMMANDS************************/

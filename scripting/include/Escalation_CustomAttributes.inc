@@ -52,3 +52,24 @@ native Esc_RemoveCustomAttribute (client, iAttribute);
  * @error			Invalid client.
  */
 native Esc_RemoveCustomAttributes (client);
+
+
+public SharedPlugin:__pl_Escalation_CustomAttributes = 
+{
+	name = "Escalation_CustomAttributes",
+	file = "Escalation_CustomAttributes.smx",
+#if defined REQUIRE_PLUGIN
+	required = 1,
+#else
+	required = 0,
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public __pl_Escalation_CustomAttributes_SetNTVOptional()
+{
+	MarkNativeAsOptional("Esc_LoadCustomAttributeFile");
+	MarkNativeAsOptional("Esc_RemoveCustomAttribute");
+	MarkNativeAsOptional("Esc_RemoveCustomAttributes");
+}
+#endif

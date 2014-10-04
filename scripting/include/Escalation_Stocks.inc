@@ -135,6 +135,58 @@ ClassIDToName(TFClassType:iClass, String:Class[], iStringSize)
 	return -1;
 }
 
+/**
+ * Checks if a class ID is valid.
+ *
+ * @param iClass						The ID of the class to check.
+ *
+ * @return								True if the class ID is valid, false if it isn't.
+ */
+IsValidClass(TFClassType:iClass)
+{
+	
+	switch(iClass)
+	{
+		case TFClass_Scout:
+		{			
+			return true;
+		}
+		case TFClass_Sniper:
+		{
+			return true;
+		}
+		case TFClass_Soldier:
+		{
+			return true;
+		}
+		case TFClass_DemoMan:
+		{
+			return true;
+		}
+		case TFClass_Medic:
+		{
+			return true;
+		}
+		case TFClass_Heavy:
+		{
+			return true;
+		}
+		case TFClass_Pyro:
+		{
+			return true;
+		}
+		case TFClass_Spy:
+		{
+			return true;
+		}
+		case TFClass_Engineer:
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
 
 /**
  * Finds all the clients on a team and stores them in iClients[].

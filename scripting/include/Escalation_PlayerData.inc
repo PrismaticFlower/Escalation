@@ -357,13 +357,6 @@ PlayerData_RemoveUpgradeFromQueue (this[], TFClassType:iClass, iIndex)
 	}
 }
 
-//! Shifts an upgrade in the player's queue up.
-/*! \param this[] A constructed PlayerData object.
-	\param TFClassType:iClass The class whose upgrade queue we'll be dealing with. 
-	\param iIndex The index to set the upgrade queue information of.
-	\return True if the upgrades were swapped, false if some conditon caused them to stay in the same place.
-	\sa PlayerData_PushUpgradeToQueue, PlayerData_GetUpgradeOnQueue, PlayerData_GetUpgradeQueueSize and PlayerData_ResetUpgradeQueue */
-
 /**
  * Shifts an upgrade in the player's queue up.  
  *

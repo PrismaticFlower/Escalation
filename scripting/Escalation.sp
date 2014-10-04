@@ -146,6 +146,8 @@ static bool:g_bSteamTools; /**< Used to keep track of if SteamTools is available
 
 /************************FORWARD VARIABLES************************/
 
+static Handle:g_hClientDataReady = INVALID_HANDLE; /**< Handle to the forward that is called when a client's data is created. */
+static Handle:g_hClientDataDestroy = INVALID_HANDLE; /**< Handle to the forward that is called before a client's data is destroyed. */
 static Handle:g_hClientCreditsChanged = INVALID_HANDLE; /**< Handle to the forward that is called when a client's credits change. */
 
 /************************CVAR VARIABLES************************/
@@ -213,6 +215,29 @@ static TopMenuObject:g_AdminMenuResetBannedUpgrades;
 /************************CORE PLUGIN FUNCTIONS************************/
 
 /**
+ * Creates all of the lovely natives for the API.
+ *
+ * @param hMyself	Handle to the plugin.
+ * @param bLate		Whether or not the plugin was late loaded.
+ * @param Error		Buffer for an optional error message in event of load failure.
+ * @param iErr_max	The max size of the above buffer.
+ *
+ * @return			APLRes status.				
+ */
+public APLRes:AskPluginLoad2(Handle:hMyself, bool:bLate, String:Error[], iErr_max)
+{
+	CreateNative("Esc_PushUpgradeOntoQueue", Native_Esc_PushUpgradeOntoQueue);
+	CreateNative("Esc_GetUpgradeFromQueue", Native_Esc_GetUpgradeFromQueue);
+	CreateNative("Esc_RemoveUpgradeFromQueue", Native_Esc_RemoveUpgradeFromQueue);
+	CreateNative("Esc_GetUpgradeQueueSize", Native_Esc_GetUpgradeQueueSize);
+	CreateNative("Esc_ClearUpgradeQueue", Native_Esc_ClearUpgradeQueue);
+	
+	RegPluginLibrary("Escalation");
+	
+	return APLRes_Success;
+}
+
+/**
  * Does pretty much what you would expect OnPluginStart to do, loads up the translations, creates convars, 
  * console commands, constructs a couple objects and calls StartPlugin.
  *
@@ -233,7 +258,9 @@ public OnPluginStart()
 	HookConVarChange(CVar_Enabled, CVar_Enable_Changed);
 
 	//Create the forwards.
-	g_hClientCreditsChanged = CreateGlobalForward("Esc_ClientCreditsChanged", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_CellByRef);
+	g_hClientCreditsChanged = CreateGlobalForward("Esc_ClientCreditsChanged", ET_Ignore, Param_Cell, Param_CellByRef, Param_Cell, Param_CellByRef);
+	g_hClientDataReady = CreateGlobalForward("Esc_PlayerDataCreated", ET_Ignore, Param_Cell);
+	g_hClientDataDestroy = CreateGlobalForward("Esc_PlayerDataDestroy", ET_Ignore, Param_Cell);
 
 	//Create the Menus
 	CreateBaseMenus();
@@ -316,13 +343,15 @@ public OnPluginEnd()
 /**
  * Changes the description of the game back to Team Fortress if the plugin is paused.
  *
+ * @param bPause	True if the plugin is being paused.
+ *
  * @noreturn
  */
-public OnPluginPauseChange(bool:pause)
+public OnPluginPauseChange(bool:bPause)
 {
 	if (g_bSteamTools)
 	{
-		if (pause)
+		if (bPause)
 		{
 			Steam_SetGameDescription("Team Fortress");
 		}
@@ -537,11 +566,13 @@ StopPlugin ()
 /**
  * Helps keeps track of Escalation's optional dependencies. And takes measures if one is late loaded.
  *
+ * @param Name		The name of the library that got added.
+ *
  * @noreturn
  */
-public OnLibraryAdded (const String:name[])
+public OnLibraryAdded (const String:Name[])
 {
-	if (StrEqual(name, "TF2Items"))
+	if (StrEqual(Name, "TF2Items"))
 	{
 		if (g_bTF2ItemsBackupHooked)
 		{
@@ -557,7 +588,7 @@ public OnLibraryAdded (const String:name[])
 			}
 		}
 	}
-	else if (StrEqual(name, "steamtools"))
+	else if (StrEqual(Name, "steamtools"))
 	{
 		g_bSteamTools = true;
 	}
@@ -566,32 +597,34 @@ public OnLibraryAdded (const String:name[])
 /**
  * Keeps track of Escalation's dependencies. And takes measures if one is unloaded.
  *
+ * @param Name		The name of the library that got removed.
+ *
  * @noreturn
  */
-public OnLibraryRemoved (const String:name[])
+public OnLibraryRemoved (const String:Name[])
 {
-	if (StrEqual(name, "Escalation_CustomAttributes"))
+	if (StrEqual(Name, "Escalation_CustomAttributes"))
 	{
 		SetFailState("Escalation_CustomAttributes has been unloaded, the plugin can not continue operation.")
 
 	}
-	else if (StrEqual(name, "TF2Attributes"))
+	else if (StrEqual(Name, "TF2Attributes"))
 	{
 		SetFailState("TF2Attributes has been unloaded, the plugin can not continue operation.")
 
 	}
-	else if (StrEqual(name, "TF2Items"))
+	else if (StrEqual(Name, "TF2Items"))
 	{
 		if (! g_bTF2ItemsBackupHooked)
 		{
 			HookEvent("post_inventory_application", Event_PlayerInventoryCheck, EventHookMode_Pre);
 		}
 	}
-	else if (StrEqual(name, "steamtools", false))
+	else if (StrEqual(Name, "steamtools", false))
 	{
 		g_bSteamTools = false;
 	}
-	else if (StrEqual(name, "adminmenu"))
+	else if (StrEqual(Name, "adminmenu"))
 	{
 		g_hAdminMenu = INVALID_HANDLE;
 	}
@@ -1394,6 +1427,11 @@ public OnClientConnected (iClient)
 	//Create the client's data object.
 	PlayerData_ConstructFull(g_PlayerData[iClient][0], iClient);
 
+	//Call the Forward Notifying Other Plugins that the client's data is ready.
+	Call_StartForward(g_hClientDataReady); //Esc_PlayerDataCreated
+	Call_PushCell(iClient);
+	Call_Finish();
+	
 	//Set their starting credits.
 	Set_iClientCredits(g_iClientConnected_StartingCredits, SET_ABSOLUTE, iClient, ESC_CREDITS_STARTING);
 	
@@ -1434,6 +1472,11 @@ public OnClientDisconnect (iClient)
 	{
 		return;
 	}
+	
+	//Call the Forward Notifying Other Plugins that the client's data is about to be destroyed.
+	Call_StartForward(g_hClientDataDestroy); //Esc_PlayerDataCreated
+	Call_PushCell(iClient);
+	Call_Finish();
 	
 	//Destroy the client's data object.
 	PlayerData_Destroy(g_PlayerData[iClient][0]);
@@ -1547,8 +1590,7 @@ public Event_PlayerChangeTeam (Handle:event, const String:name[], bool:dontBroad
 		Set_iClientCredits(Get_iObjectiveCredits(iTeam), SET_ADD, iClient, ESC_CREDITS_OBJECTIVE);
 		PlayerData_SetGiveObjectiveCredits(g_PlayerData[iClient][0], true);
 	}
-	
-	if (g_iPlayerChangeTeam_SwapObjectiveCredits == 1)
+	else if (g_iPlayerChangeTeam_SwapObjectiveCredits == 1)
 	{	
 		RefundUpgrades(iClient);
 		Set_iClientCredits(Get_iObjectiveCredits(iOldTeam), SET_SUBTRACT, iClient, ESC_CREDITS_OBJECTIVE);
@@ -2473,7 +2515,7 @@ public Event_CapturedPoint(Handle:event, const String:name[], bool:dontBroadcast
  *
  * @return An Action value.
  */
-public Action:Command_MyCredits(iClient, args)
+public Action:Command_MyCredits(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -2496,7 +2538,7 @@ public Action:Command_MyCredits(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_ClearUpgrades(iClient, args)
+public Action:Command_ClearUpgrades(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -2509,10 +2551,28 @@ public Action:Command_ClearUpgrades(iClient, args)
 		return Plugin_Handled;
 	}
  	
-	decl String:arg1[16];	
-	GetCmdArg(1,arg1,sizeof(arg1));
+	decl String:Arg1[16];	
+	GetCmdArg(1, Arg1, sizeof(Arg1));
 	
-	return ClearUpgrades(iClient, arg1);
+	if (StrEqual("list", Arg1, false))
+	{
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Refund_Valid_Classnames");
+		CPrintToChat(iClient, "{silver}scout");
+		CPrintToChat(iClient, "{silver}sniper");		
+		CPrintToChat(iClient, "{silver}soldier");		
+		CPrintToChat(iClient, "{silver}demoman");
+		CPrintToChat(iClient, "{silver}medic");		
+		CPrintToChat(iClient, "{silver}heavy");	
+		CPrintToChat(iClient, "{silver}pyro");
+		CPrintToChat(iClient, "{silver}spy");		
+		CPrintToChat(iClient, "{silver}engineer");		
+		
+		return;
+	}
+	
+	ClearUpgrades(iClient, true, Arg1);
+	
+	return true;
 }
 
 /**
@@ -2520,7 +2580,7 @@ public Action:Command_ClearUpgrades(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_Upgrade(iClient, args)
+public Action:Command_Upgrade(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -2534,17 +2594,19 @@ public Action:Command_Upgrade(iClient, args)
 	}
  
 	//Check for errors first.
-	if (args < 1)
+	if (iArgs < 1)
 	{
 		ReplyToCommand(iClient,"Usage: sm_buyupgrade <upgrade name>");
 		return Plugin_Handled;
 	}
+
+	//Grab the upgrade.
+	new String:Upgrade[UPGRADE_NAME_MAXLENGTH];	
+	GetCmdArg(1 ,Upgrade, sizeof(Upgrade));
+
+	PushUpgrade(iClient, Upgrade, TF2_GetPlayerClass(iClient), true);
 	
-	//Grab the upgrade argument.
-	new String:arg1[32];	
-	GetCmdArg(1,arg1,sizeof(arg1));
-	
-	return PushUpgrade(iClient, arg1);
+	return Plugin_Handled;
 }
 
 /**
@@ -2552,7 +2614,7 @@ public Action:Command_Upgrade(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_UpgradeMenu(iClient, args)
+public Action:Command_UpgradeMenu(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -2579,7 +2641,7 @@ public Action:Command_UpgradeMenu(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_ReloadConfigs(iClient, args)
+public Action:Command_ReloadConfigs(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -2623,7 +2685,7 @@ public Action:Command_ReloadConfigs(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_BanUpgrade(iClient, args)
+public Action:Command_BanUpgrade(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -2651,7 +2713,7 @@ public Action:Command_BanUpgrade(iClient, args)
 		return Plugin_Handled;
 	}
 
-	if (args < 1)
+	if (iArgs < 1)
 	{
 		if (iClient == 0)
 		{
@@ -2709,7 +2771,7 @@ public Action:Command_BanUpgrade(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_BanCombo(iClient, args)
+public Action:Command_BanCombo(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -2737,7 +2799,7 @@ public Action:Command_BanCombo(iClient, args)
 		return Plugin_Handled;
 	}
 
-	if (args < 2)
+	if (iArgs < 2)
 	{
 		if (iClient == 0)
 		{
@@ -2812,7 +2874,7 @@ public Action:Command_BanCombo(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_UnbanUpgrade(iClient, args)
+public Action:Command_UnbanUpgrade(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -2840,7 +2902,7 @@ public Action:Command_UnbanUpgrade(iClient, args)
 		return Plugin_Handled;
 	}
 
-	if (args < 1)
+	if (iArgs < 1)
 	{
 		if (iClient == 0)
 		{
@@ -2903,7 +2965,7 @@ public Action:Command_UnbanUpgrade(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_UnbanCombo(iClient, args)
+public Action:Command_UnbanCombo(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -2931,7 +2993,7 @@ public Action:Command_UnbanCombo(iClient, args)
 		return Plugin_Handled;
 	}
 
-	if (args < 2)
+	if (iArgs < 2)
 	{
 		if (iClient == 0)
 		{
@@ -3012,7 +3074,7 @@ public Action:Command_UnbanCombo(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_ResetBannedUpgrades(iClient, args)
+public Action:Command_ResetBannedUpgrades(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -3056,7 +3118,7 @@ public Action:Command_ResetBannedUpgrades(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_ResetBannedCombos(iClient, args)
+public Action:Command_ResetBannedCombos(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -3100,7 +3162,7 @@ public Action:Command_ResetBannedCombos(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_BanUpgradeMenu(iClient, args)
+public Action:Command_BanUpgradeMenu(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -3144,7 +3206,7 @@ public Action:Command_BanUpgradeMenu(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_UnbanUpgradeMenu(iClient, args)
+public Action:Command_UnbanUpgradeMenu(iClient, iArgs)
 {
 	if (g_bPluginDisabledAdmin)
 	{
@@ -3432,43 +3494,43 @@ public Menu_ClearUpgrades(Handle:menu, MenuAction:action, param1, param2)
 			
 			if (StrEqual("Select_Class_All", buffer, true))
 			{
-				ClearUpgrades(param1);
+				ClearUpgrades(param1, true);
 			}
 			else if (StrEqual("Select_Class_Scout", buffer, true))
 			{
-				ClearUpgrades(param1, "scout");
+				ClearUpgrades(param1, true, "scout");
 			}
 			else if (StrEqual("Select_Class_Soldier", buffer, true))
 			{
-				ClearUpgrades(param1, "soldier");
+				ClearUpgrades(param1, true, "soldier");
 			}
 			else if (StrEqual("Select_Class_Pyro",buffer, true))
 			{
-				ClearUpgrades(param1, "pyro");
+				ClearUpgrades(param1, true, "pyro");
 			}
 			else if (StrEqual("Select_Class_Demoman",buffer, true))
 			{
-				ClearUpgrades(param1, "demoman");
+				ClearUpgrades(param1, true, "demoman");
 			}
 			else if (StrEqual("Select_Class_Heavy",buffer, true))
 			{
-				ClearUpgrades(param1, "heavy");
+				ClearUpgrades(param1, true, "heavy");
 			}			
 			else if (StrEqual("Select_Class_Engineer",buffer, true))
 			{
-				ClearUpgrades(param1, "engineer");
+				ClearUpgrades(param1, true, "engineer");
 			}			
 			else if (StrEqual("Select_Class_Medic",buffer, true))
 			{
-				ClearUpgrades(param1, "medic");
+				ClearUpgrades(param1, true, "medic");
 			}			
 			else if (StrEqual("Select_Class_Spy",buffer, true))
 			{
-				ClearUpgrades(param1, "spy");
+				ClearUpgrades(param1, true, "spy");
 			}					
 			else if (StrEqual("Select_Class_Sniper",buffer, true))
 			{
-				ClearUpgrades(param1, "sniper");
+				ClearUpgrades(param1, true, "sniper");
 			}
 			
 			DisplayMenu(g_hUpgradeMenuBase, param1, MENU_DISPLAY_DURATION);
@@ -3512,7 +3574,7 @@ public Menu_UpgradeHandler(Handle:menu, MenuAction:action, param1, param2)
 			
 			GetMenuItem(menu, param2, Upgrade, sizeof(Upgrade)); //Grab the upgrade the user wants.
 
-			PushUpgrade(param1, Upgrade); //Put the upgrade on the queue.
+			PushUpgrade(param1, Upgrade, TF2_GetPlayerClass(param1), true); //Put the upgrade on the queue.
 			
 			DisplayMenuAtItem(menu, param1, param2, MENU_DISPLAY_DURATION); //Re-display the menu.
 		}
@@ -3964,13 +4026,14 @@ RefundUpgrades(iClient)
  * Clears a client's upgrade queue.
  *
  * @param iClient				The index of the client to clear the upgrade queue.
- * @param Class					If not empty only the classname here will be refunded.
+ * @param bInform				If true, inform the client of any action taken or error encountered.
+ * @param Class					If not empty only the classname here will be cleared.
  *
  * @noreturn
  */
-Action:ClearUpgrades(iClient, String:Class[] = "")
+ClearUpgrades(iClient, bool:bInform, String:Class[] = "")
 {	
-	if (StrEqual("", Class, true)) //If no args were sent we clear all the client's upgrades.
+	if (StrEqual("", Class, true)) 
 	{
 		new iCreditsToGive;
 		
@@ -3980,46 +4043,34 @@ Action:ClearUpgrades(iClient, String:Class[] = "")
 			{
 				decl tmpUpgradeQueue[UpgradeQueue];
 				PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
-			
+
 				if (tmpUpgradeQueue[_bOwned] == true)
 				{
 					iCreditsToGive += UpgradeDataStore_GetUpgradeCost(g_UpgradeDataStore[0], tmpUpgradeQueue[_Upgrade]);//Get the value of the upgrade we're refunding then add it to the amount of credits the client will gain.
 				}	
 			}
-			
+
 			//Reset the upgrade queue itself so it is empty.
 			PlayerData_ResetUpgradeQueue(g_PlayerData[iClient][0], iClass);
 		}
-		
+
 		//Now that we have the total cost of their upgrades we can give them their credits.
 		new iNewCredits = Set_iClientCredits(iCreditsToGive, SET_ADD, iClient, ESC_CREDITS_REFUND_FULL);
-		
-		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Cleared_All_Classes");
-		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Refunded_New_Credits", iNewCredits);
+
+		if (bInform)
+		{
+			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Cleared_All_Classes");
+			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Refunded_New_Credits", iNewCredits);
+		}
 		
 		//If the client's loadout isn't refreshed they would end up with upgrades they didn't actually own on their weapons.
 		g_bForceLoadoutRefresh[iClient] = true;
-		
-		return Plugin_Handled;
+
+		return;
 	}
 	
 	new TFClassType:iClassToRefund;
 	new iCreditsToGive;
-	
-	if (StrEqual("list", Class, false))
-	{
-		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Refund_Valid_Classnames");
-		CPrintToChat(iClient, "{silver}scout");
-		CPrintToChat(iClient, "{silver}sniper");		
-		CPrintToChat(iClient, "{silver}soldier");		
-		CPrintToChat(iClient, "{silver}demoman");
-		CPrintToChat(iClient, "{silver}medic");		
-		CPrintToChat(iClient, "{silver}heavy");	
-		CPrintToChat(iClient, "{silver}pyro");
-		CPrintToChat(iClient, "{silver}spy");		
-		CPrintToChat(iClient, "{silver}engineer");		
-		return Plugin_Handled;
-	}
 	
 	iClassToRefund = GetClassID(Class);
 
@@ -4027,22 +4078,27 @@ Action:ClearUpgrades(iClient, String:Class[] = "")
 	if (iClassToRefund == TFClass_Unknown)
 	{
 		CPrintToChat(iClient,"%t %t", "Escalation_Tag", "Refund_Invalid_Class", Class);
-		return Plugin_Handled;
+		
+		return;
 	}
-	
+
 	//Check if this is the class the client is currently playing as, if so set their loadout to needing a refresh.
 	if (iClassToRefund == TF2_GetPlayerClass(iClient))
 	{
 		g_bForceLoadoutRefresh[iClient] = true;
 	}
-	
+
 	//Make sure there are actually some upgrades on this class.
 	if (PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClassToRefund) == 0)
 	{
-		CPrintToChat(iClient,"%t %t", "Escalation_Tag", "Clear_Empty_Queue")
-		return Plugin_Handled;
+		if (bInform)
+		{	
+			CPrintToChat(iClient,"%t %t", "Escalation_Tag", "Clear_Empty_Queue")
+		}
+
+		return;
 	}
-	
+
 	for (new iIndex = 0; iIndex < PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClassToRefund); iIndex ++) //Now we can go through the upgrades themselves.
 	{
 			decl tmpUpgradeQueue[UpgradeQueue];
@@ -4053,16 +4109,19 @@ Action:ClearUpgrades(iClient, String:Class[] = "")
 				iCreditsToGive += UpgradeDataStore_GetUpgradeCost(g_UpgradeDataStore[0], tmpUpgradeQueue[_Upgrade]);//Get the value of the upgrade we're refunding then add it to the amount of credits the client will gain.
 			}
 	}
-	
+
 	new iNewCredits = Set_iClientCredits(iCreditsToGive, SET_ADD, iClient, ESC_CREDITS_REFUND_FULL);
-	
+
 	//Reset the upgrade queue itself so it is empty.
 	PlayerData_ResetUpgradeQueue(g_PlayerData[iClient][0], iClassToRefund);
-	
-	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Cleared_Success_Class");
-	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Refunded_New_Credits", iNewCredits);
-	
-	return Plugin_Handled;
+
+	if (bInform)
+	{		
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Cleared_Success_Class");
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Refunded_New_Credits", iNewCredits);
+	}
+
+	return;
 }
 
 /**
@@ -4070,10 +4129,12 @@ Action:ClearUpgrades(iClient, String:Class[] = "")
  *
  * @param iClient				The index of the client wanting the upgrade.
  * @param Upgrade				The name of the upgrade to push onto the queue..
+ * @param iClass				The class whose upgrade queue to push the upgrade onto.
+ * @param bRespond				If true the client will be informed of success or failure by chat messages.
  *
- * @noreturn
+ * @return						True if the upgrade was pushed onto the queue successfully, false if an error occured.
  */
-Action:PushUpgrade(iClient, String:Upgrade[])
+bool:PushUpgrade(iClient, const String:Upgrade[UPGRADE_NAME_MAXLENGTH], TFClassType:iClass, bool:bRespond)
 {
 	//Allocate the memory to store a copy of the upgrade's object.
 	decl tmpUpgradeData[UpgradeData];
@@ -4081,51 +4142,69 @@ Action:PushUpgrade(iClient, String:Upgrade[])
 	//Try to get the upgrade the user wants.
 	if (! UpgradeDataStore_GetUpgrade(g_UpgradeDataStore[0], Upgrade, tmpUpgradeData[0], sizeof(tmpUpgradeData)))
 	{
-		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Not_Found", Upgrade);
-		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Not_Found_Bug");
+		if (bRespond)
+		{
+			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Not_Found", Upgrade);
+			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Not_Found_Bug");
+		}
 		
-		return Plugin_Handled;		
+		return false;		
 	}
-	
+
 	//Fetch the upgrade's slot.
 	new iSlot = UpgradeData_GetSlot(tmpUpgradeData[0]);
-	
+
 	//And the highest we can upgrade this to.
 	new iMaxLevel = UpgradeData_GetLevelCount(tmpUpgradeData[0]);
 	new iNextLevel;
 
 	new iClientWeaponIndex = PlayerData_GetWeaponID(g_PlayerData[iClient][0], iSlot);
-	
+
 
 	//Check to see if the upgrade is passive, if it was we treat it as a clas upgrade.
 	if (! UpgradeData_IsPassive(tmpUpgradeData[0]))
 	{
 		//Check to see if da weapon is allowed the upgrade.
-		if (! IsWeaponAllowedUpgrade(iClient, iClientWeaponIndex, Upgrade, TF2_GetPlayerClass(iClient)))
+		if (! IsWeaponAllowedUpgrade(iClient, iClientWeaponIndex, Upgrade, iClass))
 		{
-			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Weapon_Not_Allowed");	
-			return Plugin_Handled;
+			if (bRespond)
+			{
+				CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Weapon_Not_Allowed");	
+			}
+
+			return false;
 		}
 	}
 	else
 	{
-		if (! ClassInfoStore_IsUpgradeAllowed(g_ClassInfoStore[0], TF2_GetPlayerClass(iClient), Upgrade))
+		if (! ClassInfoStore_IsUpgradeAllowed(g_ClassInfoStore[0], iClass, Upgrade))
 		{
-			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Class_Not_Allowed");	
-			return Plugin_Handled;
+			if (bRespond)
+			{
+				CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Class_Not_Allowed");	
+			}
+			
+			return false;
 		}
 	}
-	
+
 	// PlayerData_PushUpgradeOntoQueue returns false when an upgrade already is at iMaxLevel on the queue.
-	if (! PlayerData_PushUpgradeToQueue(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient), Upgrade, iMaxLevel, iNextLevel))
+	if (! PlayerData_PushUpgradeToQueue(g_PlayerData[iClient][0], iClass, Upgrade, iMaxLevel, iNextLevel))
 	{
-		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Highest_Level");	
-		return Plugin_Handled;
+		if (bRespond)
+		{
+			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Highest_Level");
+		}
+
+		return false;
 	}
-	
-	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Added_Success", Upgrade, iNextLevel);
-	
-	return Plugin_Handled;
+
+	if (bRespond)
+	{
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Added_Success", Upgrade, iNextLevel);
+	}
+
+	return true;
 }
 
 /**
@@ -4429,7 +4508,7 @@ Set_iClientCredits(iValue, Set_Operation:iOperation, iClient, iFlags)
 	Call_StartForward(g_hClientCreditsChanged); //Esc_ClientCreditsChanged
 	
 	Call_PushCell(iClient);
-	Call_PushCell(iOperation);
+	Call_PushCellRef(iOperation);
 	Call_PushCell(iFlags);
 	Call_PushCellRef(iValue);
 
@@ -4514,6 +4593,258 @@ Set_iObjectiveCredits(iValue, Set_Operation:iOperation, team)
 	return g_iObjectiveCredits[team];
 }
 
+/************************NATIVE FUNCTIONS************************/
+
+/**
+ * Native callback for pushing an upgrade onto a client's queue.
+ *
+ * @param hPlugin				Handle to the calling plugin.
+ * @param iNumParams			The number of arguments passed to the function.
+ *
+ * @return						True on the upgrade being pushed to the client's queue.
+ */
+public Native_Esc_PushUpgradeOntoQueue (Handle:hPlugin, iNumParams)
+{
+	if (iNumParams != 3)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
+	}
+
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+
+	new iClient = GetNativeCell(1);
+
+	if (iClient <= 0 || iClient > MaxClients)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
+	}
+
+	if (! IsClientConnected(iClient))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
+	}
+
+	new iStringLength;
+	GetNativeStringLength(2, iStringLength);
+
+	decl String:Upgrade[iStringLength + 1];
+	GetNativeString(1, Upgrade, sizeof(Upgrade), false);
+
+	new TFClassType:iClass = TFClassType:GetNativeCell(3);
+
+	if (! IsValidClass(iClass))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid class (%i) passed to function.", iClient);
+	}
+	
+	new bool:bRespond = bool:GetNativeCell(4);
+
+	return PushUpgrade(iClient, Upgrade, iClass, bRespond);
+}
+
+/**
+ * Native callback for getting an upgrade from a client's queue.
+ *
+ * @param hPlugin				Handle to the calling plugin.
+ * @param iNumParams			The number of arguments passed to the function.
+ *
+ * @noreturn
+ */
+public Native_Esc_GetUpgradeFromQueue (Handle:hPlugin, iNumParams)
+{
+	if (iNumParams != 5)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
+	}
+
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
+	new iClient = GetNativeCell(1);
+	new iIndex = GetNativeCell(2);
+	new TFClassType:iClass = TFClassType:GetNativeCell(3);
+	new iBufferSize = GetNativeCell(5);
+
+	decl tmpUpgradeQueue[UpgradeQueue];
+
+	if (iClient <= 0 || iClient > MaxClients)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
+	}
+
+	if (! IsClientConnected(iClient))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
+	}
+	
+	if (! IsValidClass(iClass))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid class (%i) passed to function.", iClient);
+	}
+
+	if (iBufferSize > sizeof(tmpUpgradeQueue))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Buffer to store UpgradeQueue struct in is not large enough.", iClient);
+	}
+
+	new iQueueSize = PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClass);
+	
+	if (iIndex > iQueueSize || iIndex < 1)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "iIndex (%i) is out of range.");
+	}
+	
+	PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue, sizeof(tmpUpgradeQueue));
+	
+	SetNativeArray(4, tmpUpgradeQueue, sizeof(tmpUpgradeQueue));
+}
+
+/**
+ * Native callback for removing an upgrade from a client's queue.
+ *
+ * @param hPlugin				Handle to the calling plugin.
+ * @param iNumParams			The number of arguments passed to the function.
+ *
+ * @noreturn
+ */
+public Native_Esc_RemoveUpgradeFromQueue (Handle:hPlugin, iNumParams)
+{
+	if (iNumParams != 3)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
+	}
+
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
+	new iClient = GetNativeCell(1);
+	new iIndex = GetNativeCell(2);
+	new TFClassType:iClass = TFClassType:GetNativeCell(3);
+
+	if (iClient <= 0 || iClient > MaxClients)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
+	}
+
+	if (! IsClientConnected(iClient))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
+	}
+	
+	if (! IsValidClass(iClass))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid class (%i) passed to function.", iClient);
+	}
+
+	new iQueueSize = PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClass);
+	
+	if (iIndex > iQueueSize || iIndex < 1)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "iIndex (%i) is out of range.");
+	}
+
+	decl tmpUpgradeQueue[UpgradeQueue];	
+	PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue, sizeof(tmpUpgradeQueue));
+
+	new iCost = UpgradeDataStore_GetUpgradeCost(g_UpgradeDataStore[0], tmpUpgradeQueue[_Upgrade]);
+	Set_iClientCredits(iCost, SET_ADD, param1, ESC_CREDITS_REFUNDED);
+	
+	PlayerData_RemoveUpgradeFromQueue(g_PlayerData[iClient][0], iClass, iIndex);
+}
+
+/**
+ * Native callback for getting a client's upgrade queue size.
+ *
+ * @param hPlugin				Handle to the calling plugin.
+ * @param iNumParams			The number of arguments passed to the function.
+ *
+ * @return						The client's upgrade queue size.
+ */
+public Native_Esc_GetUpgradeQueueSize (Handle:hPlugin, iNumParams)
+{
+	if (iNumParams != 2)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
+	}
+
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
+	new iClient = GetNativeCell(1);
+	new TFClassType:iClass = TFClassType:GetNativeCell(2);
+
+	if (iClient <= 0 || iClient > MaxClients)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
+	}
+
+	if (! IsClientConnected(iClient))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
+	}
+	
+	if (! IsValidClass(iClass))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid class (%i) passed to function.", iClient);
+	}
+	
+	return PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClass);
+}
+
+/**
+ * Native callback for clearing a client's upgrade queue.
+ *
+ * @param hPlugin				Handle to the calling plugin.
+ * @param iNumParams			The number of arguments passed to the function.
+ *
+ * @noreturn
+ */
+public Native_Esc_ClearUpgradeQueue (Handle:hPlugin, iNumParams)
+{
+	if (iNumParams != 3)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
+	}
+
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
+	new iClient = GetNativeCell(1);
+	new TFClassType:iClass = TFClassType:GetNativeCell(2);
+	new bool:bInform = bool:GetNativeCell(3);
+	
+	if (iClient <= 0 || iClient > MaxClients)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
+	}
+
+	if (! IsClientConnected(iClient))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
+	}
+	
+	if (! IsValidClass(iClass))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid class (%i) passed to function.", iClient);
+	}
+	
+	decl String:Class[32];
+	GetClientName(iClass, Class, sizeof(Class));
+	
+	ClearUpgrades(iClient, bInform, Class);
+}
+
 /************************DEVELOPER COMMANDS************************/
 
 #if defined DEV_BUILD
@@ -4524,18 +4855,18 @@ Set_iObjectiveCredits(iValue, Set_Operation:iOperation, team)
  *
  * @return An Action value.
  */
-public Action:Command_GiveCredits(iClient, args)
+public Action:Command_GiveCredits(iClient, iArgs)
 {
 	new String:arg1[32];
 	new String:arg2[32];
 	
-	if (args < 1)
+	if (iArgs < 1)
 	{
 		CReplyToCommand(iClient,"Usage: sm_givecredits <target> <credits>");
 		return Plugin_Handled;
 	}
 	
-	if (args < 2)
+	if (iArgs < 2)
 	{
 		GetCmdArg(1,arg1,sizeof(arg1));	
 		Set_iClientCredits(StringToInt(arg1), SET_ADD, iClient, ESC_CREDITS_PLUGIN);
@@ -4546,7 +4877,7 @@ public Action:Command_GiveCredits(iClient, args)
 		
 		CShowActivity2(iClient, "{royalblue}[Escalation]{silver} ", "{silver}Someone has given %s {dodgerblue}%i{silver} credits.", clientName, StringToInt(arg1));
 	}
-	else if (args < 3)
+	else if (iArgs < 3)
 	{
 		GetCmdArg(1, arg1, sizeof(arg1));
 		GetCmdArg(2, arg2, sizeof(arg2));
@@ -4575,9 +4906,9 @@ public Action:Command_GiveCredits(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_ForceUpgrade(iClient, args)
+public Action:Command_ForceUpgrade(iClient, iArgs)
 {
-	if (args < 2)
+	if (iArgs < 2)
 	{
 		ReplyToCommand(iClient, "Usage: sm_forceupgrade <upgrade> <target>");
 		return Plugin_Handled;
@@ -4589,7 +4920,7 @@ public Action:Command_ForceUpgrade(iClient, args)
 	new iTarget = FindTarget(iClient, arg2);
 		
 	//Hand control over to Command_Upgrade
-	return Command_Upgrade(iTarget, args);
+	return Command_Upgrade(iTarget, iArgs);
 }
 
 /**
@@ -4597,7 +4928,7 @@ public Action:Command_ForceUpgrade(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_PrintCredits(iClient, args)
+public Action:Command_PrintCredits(iClient, iArgs)
 {
 	decl String:buffer1[MAX_NAME_LENGTH];
 
@@ -4619,7 +4950,7 @@ public Action:Command_PrintCredits(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_PrintTeamCredits(iClient, args)
+public Action:Command_PrintTeamCredits(iClient, iArgs)
 {
 	decl String:arg1[4];
 	decl String:buffer1[MAX_NAME_LENGTH];
@@ -4647,7 +4978,7 @@ public Action:Command_PrintTeamCredits(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_PrintTotalCredits(iClient, args)
+public Action:Command_PrintTotalCredits(iClient, iArgs)
 {
 	decl String:buffer1[MAX_NAME_LENGTH];
 
@@ -4669,9 +5000,9 @@ public Action:Command_PrintTotalCredits(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_ForceMenuDisplay(iClient, args)
+public Action:Command_ForceMenuDisplay(iClient, iArgs)
 {
-	if (args < 1)
+	if (iArgs < 1)
 	{
 		ReplyToCommand(iClient, "Usage: sm_forcemenu <weaponID> <classID (optional)>");
 		return Plugin_Handled;
@@ -4682,7 +5013,7 @@ public Action:Command_ForceMenuDisplay(iClient, args)
 	
 	GetCmdArg(1, buffer1, sizeof(buffer1));
 	
-	if (args > 1)
+	if (iArgs > 1)
 	{
 		GetCmdArg(2, buffer2, sizeof(buffer2));
 	}
@@ -4714,7 +5045,7 @@ public Action:Command_ForceMenuDisplay(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_ForceAttribute(iClient, args)
+public Action:Command_ForceAttribute(iClient, iArgs)
 {
 	if (iClient == 0)
 	{
@@ -4744,7 +5075,7 @@ public Action:Command_ForceAttribute(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_ForceSupport(iClient, args)
+public Action:Command_ForceSupport(iClient, iArgs)
 {
 	g_bPluginDisabledForMap = false;
 
@@ -4761,7 +5092,7 @@ public Action:Command_ForceSupport(iClient, args)
  *
  * @return An Action value.
  */
-public Action:Command_DestroyObjects(iClient, args)
+public Action:Command_DestroyObjects(iClient, iArgs)
 {
 	WeaponInfoManager_Destroy(g_WeaponInfoManager[0]);
 	MenuCache_Destroy(g_UpgradeMenuCache[0]);

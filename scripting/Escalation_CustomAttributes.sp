@@ -15,7 +15,7 @@ public Plugin:myinfo =
 	author = "SleepKiller",
 	description = "Provides a library of functions that enable defining and applying of custom attributes to players.",
 	version = "0.9.1",
-	url = "http://mysticalkittens.com"
+	url = ""
 };
 
 enum EventTypes

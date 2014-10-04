@@ -38,6 +38,7 @@ enum PlayerData
 	Handle:m_hNextLevelSniper,  /**< A hash map storing the current level of an upgrade on the queue for Sniper. */
 	
 	m_iQueuePosition, /**< A variable that can be used to keep track of where a client's upgrade queue has been processed up to. */
+	bool:m_bForceQueueReprocess, /**< Should the client's upgrade queue be completely reprocessed? */
 	
 	m_iWeaponIndex_0, /**< The item definition index of the player's primary weapon. */
 	m_iWeaponIndex_1, /**< The item definition index of the player's secondary weapon. */
@@ -510,6 +511,48 @@ PlayerData_ResetQueuePosition (this[])
 	
 	this[m_iQueuePosition] = 0;
 }
+
+/**
+ * Gets if the client needs their upgrade queue reprocessed.
+ *
+ * @param this				A PlayerData object.
+ *
+ * @error					Invalid object.
+ * @return					True if the client needs their upgrade queue to be reprocessed, false if it doesn't.
+ */
+bool:PlayerData_GetForceQueueReprocess (this[])
+{
+	#if defined USE_OBJECT_SAFETY_CHECK
+		if (this[PlayerData:m_iObjectType] != PlayerDataID)
+		{
+			ThrowError("Invalid object passed to function. A valid, constructed object is expected.");
+		}
+	#endif
+
+	return this[m_bForceQueueReprocess];
+}
+
+/**
+ * Sets that the client needs their upgrade queue reprocessed.
+ *
+ * @param this				A PlayerData object.
+ * @param bValue			The value to set the variable to.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
+PlayerData_SetForceQueueReprocess (this[], bool:bValue)
+{
+	#if defined USE_OBJECT_SAFETY_CHECK
+		if (this[PlayerData:m_iObjectType] != PlayerDataID)
+		{
+			ThrowError("Invalid object passed to function. A valid, constructed object is expected.");
+		}
+	#endif
+	
+	this[m_bForceQueueReprocess] = bValue;
+}
+
 
 /**
  * Gets the highest level of an upgrade on the client's upgrade queue.

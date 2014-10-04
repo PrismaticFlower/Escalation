@@ -1,7 +1,7 @@
-#if defined _escalation_included
+#if defined _escalation_constants_included
 #endinput
 #endif
-#define _escalation_included
+#define _escalation_constants_included
 
 
 /** 
@@ -60,7 +60,7 @@ enum Set_Operation
 /**
  * An array of strings containing the names of each weapon slot.
  */
-new const String:WeaponSlotKeys[UPGRADABLE_SLOTS][] = 
+stock const String:WeaponSlotKeys[UPGRADABLE_SLOTS][] = 
 {
 	"Slot_Primary",
 	"Slot_Secondary",

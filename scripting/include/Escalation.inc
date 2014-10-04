@@ -40,11 +40,12 @@ native Esc_GetUpgradeFromQueue (iClient, iIndex, TFClassType:iClass, UpgradeQueu
  * @param iClient				The index of the client.
  * @param iIndex				The index of the upgrade on the client's queue to remove.
  * @param iClass				The class whose upgrade queue to remove the upgrade from
+ * @param bInform				If true inform the client of any action taken.
  *
  * @error						Client not connected, index out of range or invalid class,
  * @noreturn
  */
-native Esc_RemoveUpgradeFromQueue (iClient, iIndex, TFClassType:iClass);
+native Esc_RemoveUpgradeFromQueue (iClient, iIndex, TFClassType:iClass, bool:bInform);
 
 /**
  * Gets the size of a client's upgrade queue.
@@ -70,7 +71,7 @@ native Esc_GetUpgradeQueueSize (iClient, TFClassType:iClass);
 native Esc_ClearUpgradeQueue (iClient, TFClassType:iClass);
 
 /**
- * Called whenever a client's credits change.
+ * Sets a client's credits.
  *
  * @param iClient				The index of the client whose credits to set.
  * @param iOperation			The set operation to take.
@@ -83,6 +84,31 @@ native Esc_ClearUpgradeQueue (iClient, TFClassType:iClass);
  * @return						The new value of the client's credits.
  */
 native Esc_SetClientCredits (iClient, Set_Operation:iOperation, iFlags, iValue);
+
+/**
+ * Checks if the plugin is active. (Started and not disabled.)
+ *
+ * @return						The new value of the client's credits.
+ */
+native bool:Esc_IsPluginActive ();
+
+/**
+ * Called when the plugin is started and ready.
+ * This exists so you can track when the plugin is 
+ * enabled and disabled by the server admin.
+ *
+ * @noreturn
+ */
+forward Esc_PluginReady ();
+
+/**
+ * Called when the plugin is stopped.
+ * This exists so you can track when the plugin is 
+ * enabled and disabled by the server admin.
+ *
+ * @noreturn
+ */
+forward Esc_PluginStopped ();
 
 /**
  * Called when a client's data object has been created.

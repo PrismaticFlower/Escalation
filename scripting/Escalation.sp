@@ -18,7 +18,7 @@
 #include<Escalation_CustomAttributes>
 
 #define PLUGIN_NAME "Escalation"
-#define PLUGIN_VERSION "0.9.5"
+#define PLUGIN_VERSION "0.9.7"
 
 
 public Plugin:myinfo =
@@ -27,7 +27,7 @@ public Plugin:myinfo =
 	author = "SleepKiller",
 	description = "A custom gamemode (of sorts) centered around weapon upgrading as the game goes on. Earn credits by playing for the objectives and being a team player.",
 	version = PLUGIN_VERSION,
-	url = ""//"http://mysticalkittens.com"
+	url = ""
 };
 
  
@@ -125,8 +125,6 @@ static Handle:g_hClearMenu = INVALID_HANDLE; /**< The handle to the menu that a 
 
 /************************UTILITY VARIABLES************************/
 
-static bool:g_bForceLoadoutRefresh[MAXPLAYERS+1]; /**< Can be set to true for a specific client to force a loadout refresh. */
-
 static bool:g_bPluginDisabledForMap; /**< When set to true the plugin is disabled for the rest of the map. */
 
 static bool:g_bPluginDisabledAdmin; /**< When set to true the plugin is disabled. When set to false the plugin is disabled, amazing! */
@@ -146,6 +144,8 @@ static bool:g_bSteamTools; /**< Used to keep track of if SteamTools is available
 
 /************************FORWARD VARIABLES************************/
 
+static Handle:g_hPluginReady = INVALID_HANDLE; /**< Handle to the forward that is called when the plugin is started and ready. */
+static Handle:g_hPluginStopped = INVALID_HANDLE; /**< Handle to the forward that is called when the plugin is stopped. */
 static Handle:g_hClientDataReady = INVALID_HANDLE; /**< Handle to the forward that is called when a client's data is created. */
 static Handle:g_hClientDataDestroy = INVALID_HANDLE; /**< Handle to the forward that is called before a client's data is destroyed. */
 static Handle:g_hClientCreditsChanged = INVALID_HANDLE; /**< Handle to the forward that is called when a client's credits change. */
@@ -232,6 +232,7 @@ public APLRes:AskPluginLoad2(Handle:hMyself, bool:bLate, String:Error[], iErr_ma
 	CreateNative("Esc_GetUpgradeQueueSize", Native_Esc_GetUpgradeQueueSize);
 	CreateNative("Esc_ClearUpgradeQueue", Native_Esc_ClearUpgradeQueue);
 	CreateNative("Esc_SetClientCredits", Native_Esc_SetClientCredits);
+	CreateNative("Esc_IsPluginActive", Native_Esc_IsPluginActive);
 	
 	RegPluginLibrary("Escalation");
 	
@@ -262,7 +263,9 @@ public OnPluginStart()
 	g_hClientCreditsChanged = CreateGlobalForward("Esc_ClientCreditsChanged", ET_Ignore, Param_Cell, Param_CellByRef, Param_Cell, Param_CellByRef);
 	g_hClientDataReady = CreateGlobalForward("Esc_PlayerDataCreated", ET_Ignore, Param_Cell);
 	g_hClientDataDestroy = CreateGlobalForward("Esc_PlayerDataDestroy", ET_Ignore, Param_Cell);
-
+	g_hPluginReady = CreateGlobalForward("Esc_PluginReady", ET_Ignore);
+	g_hPluginStopped = CreateGlobalForward("Esc_PluginStopped", ET_Ignore);
+	
 	//Create the Menus
 	CreateBaseMenus();
 
@@ -324,8 +327,13 @@ public OnPluginStart()
 		OnAdminMenuReady(hTopMenu);
 	}
 
+	g_bPluginDisabledAdmin = ! GetConVarBool(CVar_Enabled);
+
 	//Start The Plugin!
-	StartPlugin();
+	if (! g_bPluginDisabledAdmin)
+	{
+		StartPlugin();
+	}
 }
 
 /**
@@ -447,14 +455,19 @@ StartPlugin ()
 	//Catch those pesky already connected players.
 	new bool:bClientWasConnected;
 	
-	for (new i = 1; i <= MaxClients; i ++)
+	for (new iClient = 1; iClient <= MaxClients; iClient ++)
 	{
-		if (IsClientConnected(i) && ! IsClientReplay(i))
+		if (IsClientConnected(iClient) && ! IsClientReplay(iClient))
 		{
-			OnClientConnected(i);
-			g_bForceLoadoutRefresh[i] = true;
-
+			OnClientConnected(iClient);
+			
 			bClientWasConnected = true;
+			
+			//Cache Those Weapon Thingys
+			if (IsClientInGame(iClient))
+			{
+				ForceCachedLoadoutRefresh(iClient);
+			}
 		}
 	}
 	
@@ -498,6 +511,10 @@ StartPlugin ()
 	
 		Steam_SetGameDescription(FormattedString);
 	}
+	
+	//Call the Forward notifying other plugins that the plugin is ready.
+	Call_StartForward(g_hPluginReady); //Esc_PluginReady
+	Call_Finish();
 }
 
 /**
@@ -562,6 +579,10 @@ StopPlugin ()
 	{
 		Steam_SetGameDescription("Team Fortress");
 	}
+	
+	//Call the Forward notifying other plugins that the plugin has been stopped.
+	Call_StartForward(g_hPluginStopped); //Esc_PluginStopped
+	Call_Finish();
 }
 
 /**
@@ -579,12 +600,12 @@ public OnLibraryAdded (const String:Name[])
 		{
 			UnhookEvent("post_inventory_application", Event_PlayerInventoryCheck, EventHookMode_Pre);
 			
-			for (new i = 1; i <= MaxClients; i ++)
+			for (new iClient = 1; iClient <= MaxClients; iClient ++)
 			{
 	
-				if (IsClientConnected(i))
+				if (IsClientInGame(iClient))
 				{
-					g_bForceLoadoutRefresh[i] = true;
+					ForceCachedLoadoutRefresh(iClient);
 				}
 			}
 		}
@@ -1380,7 +1401,7 @@ public CVar_Enable_Changed(Handle:cvar, const String:oldVal[], const String:newV
 	{	
 		g_bPluginDisabledAdmin = true;
 	
-		if (IsPluginDisabled() && g_bPluginStarted)
+		if (g_bPluginStarted)
 		{
 			StopPlugin();
 		}
@@ -1511,20 +1532,14 @@ public Event_PlayerResupply (Handle:event, const String:name[], bool:dontBroadca
 		return;
 	}
 
-	//Bit of a hack here we use to force a client's loadout to be refreshed. If there is a better way (I hope so) please enlighten me.
-	if (g_bForceLoadoutRefresh[iClient])
+	//Check if the upgrade queue needs reprocessing.
+	if (PlayerData_GetForceQueueReprocess(g_PlayerData[iClient][0]))
 	{
-		//These need to be called here otherwise if the client doesn't actually change his loadout the call to PlayerData_HaveWeaponsChanged-
-		//-will return false and result in the client having attributes they aren't actually allowed.
 		PlayerAttributeManager_ClearAttributes(iClient);
 		WeaponAttributes_Clear(iClient);
 		PlayerData_ResetQueuePosition(g_PlayerData[iClient][0]);
-		
-		TF2_RemoveAllWeapons(iClient);
-		g_bForceLoadoutRefresh[iClient] = false;
-		TF2_RegeneratePlayer(iClient);
-		
-		return;
+
+		PlayerData_SetForceQueueReprocess(g_PlayerData[iClient][0], false)
 	}
 
 	if (PlayerData_HaveWeaponsChanged(g_PlayerData[iClient][0]))
@@ -2760,7 +2775,7 @@ public Action:Command_BanUpgrade(iClient, iArgs)
 	{
 		if (IsClientInGame(i))
 		{
-			g_bForceLoadoutRefresh[i] = true;
+			PlayerData_SetForceQueueReprocess(g_PlayerData[i][0], true);
 		}
 	}
 	
@@ -2863,7 +2878,7 @@ public Action:Command_BanCombo(iClient, iArgs)
 	{
 		if (IsClientInGame(i))
 		{
-			g_bForceLoadoutRefresh[i] = true;
+			PlayerData_SetForceQueueReprocess(g_PlayerData[i][0], true);
 		}
 	}
 	
@@ -3731,7 +3746,7 @@ public Menu_RemoveUpgradeQueue(Handle:menu, MenuAction:action, param1, param2)
 
 				Set_iClientCredits(iCost, SET_ADD, param1, ESC_CREDITS_REFUNDED);
 				
-				g_bForceLoadoutRefresh[param1] = true;
+				PlayerData_SetForceQueueReprocess(g_PlayerData[param1][0], true);
 
 				CPrintToChat(param1, "%t %t", "Escalation_Tag", "Upgrade_Removed_Credits", tmpUpgradeQueue[_Upgrade], iCost);
 			}
@@ -4065,7 +4080,7 @@ ClearUpgrades(iClient, bool:bInform, String:Class[] = "")
 		}
 		
 		//If the client's loadout isn't refreshed they would end up with upgrades they didn't actually own on their weapons.
-		g_bForceLoadoutRefresh[iClient] = true;
+		PlayerData_SetForceQueueReprocess(g_PlayerData[iClient][0], true);
 
 		return;
 	}
@@ -4086,7 +4101,7 @@ ClearUpgrades(iClient, bool:bInform, String:Class[] = "")
 	//Check if this is the class the client is currently playing as, if so set their loadout to needing a refresh.
 	if (iClassToRefund == TF2_GetPlayerClass(iClient))
 	{
-		g_bForceLoadoutRefresh[iClient] = true;
+		PlayerData_SetForceQueueReprocess(g_PlayerData[iClient][0], true);
 	}
 
 	//Make sure there are actually some upgrades on this class.
@@ -4442,20 +4457,20 @@ bool:IsClientAllowedUpgrade(iClient, const String:Upgrade[])
 /************************UTILITY FUNCTIONS************************/
 
 /**
- * Gets the average earned credits of iClient's in the game.
+ * Gets the average earned credits of client's in the game.
  *
- * @param exclude				The index of the client to to exclude from averaging the credits.
+ * @param iExclude				The index of the client to to exclude from averaging the credits.
  *
- * @return						The average credits of iClient's in the game.
+ * @return						The average credits of client's in the game.
  */
-GetAverageCredits(exclude = 0)
+GetAverageCredits(iExclude = 0)
 {
 	new iCredits;
 	new iClientCount;
 	
 	for (new i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientInGame(i) && i != exclude)
+		if (IsClientInGame(i) && i != iExclude)
 		{
 			iCredits += PlayerData_GetEarnedCredits(g_PlayerData[i][0]);
 			iClientCount++;
@@ -4473,6 +4488,57 @@ GetAverageCredits(exclude = 0)
 	}
 }
 
+/**
+ * Forces a client's cached loadout to be refreshed.
+ *
+ * @param iClient				The index of the client to refresh.
+ *
+ * @noreturn
+ */
+ForceCachedLoadoutRefresh(iClient)
+{
+	new bool:bHandledWearables;
+	
+	for (new i = 0; i < UPGRADABLE_SLOTS; i++)
+	{
+		new iEntity = GetPlayerWeaponSlot(iClient, i);
+		
+		//Handle the wearables.
+		if (! IsValidEntity(iEntity) && ! bHandledWearables)
+		{
+			decl iWearables[PLAYER_MAX_WEARABLES];
+
+			new iWearableCount = GetClientWearables(iClient, iWearables, sizeof(iWearables));
+			
+			for (new iWearableIndex = 0; iWearableIndex < iWearableCount; iWearableIndex ++)
+			{
+				new iItemDefinitionIndex = GetEntProp(iWearables[iWearableIndex], Prop_Send, "m_iItemDefinitionIndex");
+				
+				new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(iClient));
+		
+				if (iSlot != WEAPONINFO_INVALID_SLOT)
+				{
+					PlayerData_UpdateWeapon(g_PlayerData[iClient][0], iSlot, iItemDefinitionIndex);
+					WeaponAttributes_UpdateWeaponEnt(iClient, iSlot, iWearables[iWearableIndex]);
+				}
+			}
+			
+			bHandledWearables = true;
+			
+			continue;
+		}
+		
+		new iItemDefinitionIndex = GetEntProp(iEntity, Prop_Send, "m_iItemDefinitionIndex");
+		
+		new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(iClient));
+		
+		if (iSlot != WEAPONINFO_INVALID_SLOT)
+		{
+			PlayerData_UpdateWeapon(g_PlayerData[iClient][0], iSlot, iItemDefinitionIndex);
+			WeaponAttributes_UpdateWeaponEnt(iClient, iSlot, iEntity);
+		}
+	}
+}
 
 /************************GETTERS & SETTERS************************/
 
@@ -4712,7 +4778,7 @@ public Native_Esc_GetUpgradeFromQueue (Handle:hPlugin, iNumParams)
  */
 public Native_Esc_RemoveUpgradeFromQueue (Handle:hPlugin, iNumParams)
 {
-	if (iNumParams != 3)
+	if (iNumParams != 4)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
 	}
@@ -4725,7 +4791,8 @@ public Native_Esc_RemoveUpgradeFromQueue (Handle:hPlugin, iNumParams)
 	new iClient = GetNativeCell(1);
 	new iIndex = GetNativeCell(2);
 	new TFClassType:iClass = TFClassType:GetNativeCell(3);
-
+	new bool:bInform = bool:GetNativeCell(4);
+	
 	if (iClient <= 0 || iClient > MaxClients)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
@@ -4751,8 +4818,22 @@ public Native_Esc_RemoveUpgradeFromQueue (Handle:hPlugin, iNumParams)
 	decl tmpUpgradeQueue[UpgradeQueue];	
 	PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
 
-	new iCost = UpgradeDataStore_GetUpgradeCost(g_UpgradeDataStore[0], tmpUpgradeQueue[_Upgrade]);
-	Set_iClientCredits(iCost, SET_ADD, iClient, ESC_CREDITS_REFUNDED);
+	if (tmpUpgradeQueue[_bOwned])
+	{
+		new iCost = UpgradeDataStore_GetUpgradeCost(g_UpgradeDataStore[0], tmpUpgradeQueue[_Upgrade]);
+		Set_iClientCredits(iCost, SET_ADD, iClient, ESC_CREDITS_REFUNDED);
+		
+		PlayerData_SetForceQueueReprocess(g_PlayerData[iClient][0], true);
+		
+		if (bInform)
+		{
+			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Removed_Credits", tmpUpgradeQueue[_Upgrade], iCost);
+		}
+	}
+	else if (bInform)
+	{
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Upgrade_Removed", tmpUpgradeQueue[_Upgrade]);
+	}
 	
 	PlayerData_RemoveUpgradeFromQueue(g_PlayerData[iClient][0], iClass, iIndex);
 }
@@ -4877,6 +4958,20 @@ public Native_Esc_SetClientCredits (Handle:hPlugin, iNumParams)
 	
 	return Set_iClientCredits(iValue, iOperation, iClient, iFlags);
 }
+
+/**
+ * Native callback for checking if the plugin is running.
+ *
+ * @param hPlugin				Handle to the calling plugin.
+ * @param iNumParams			The number of arguments passed to the function.
+ *
+ * @return						True if the plugin is active, false if it isn't.
+ */
+public Native_Esc_IsPluginActive (Handle:hPlugin, iNumParams)
+{
+	return g_bPluginStarted;
+}
+
 
 /************************DEVELOPER COMMANDS************************/
 

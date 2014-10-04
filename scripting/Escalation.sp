@@ -2477,7 +2477,7 @@ public Event_CapturedPoint(Handle:event, const String:name[], bool:dontBroadcast
 	GetEventString(event, "cpname", point_name, sizeof(point_name));
 	
 	decl iClients[MaxClients + 1];
-	new iNumClients = GetClientsOnTeam(iTeam, iClients, sizeof(iClients));
+	new iNumClients = GetClientsOnTeam(iTeam, iClients, MaxClients + 1);
 	
 	
 	for (new i = 0; i < iNumClients; i++)
@@ -2497,7 +2497,7 @@ public Event_CapturedPoint(Handle:event, const String:name[], bool:dontBroadcast
 		return;
 	
 	//Since we don't need it anymore we can just reuse our old array.
-	iNumClients = GetClientsOnTeam(iTeam, iClients, sizeof(iClients));
+	iNumClients = GetClientsOnTeam(iTeam, iClients, MaxClients + 1);
 	
 	for (new i = 0; i < iNumClients; i++)
 	{
@@ -2567,12 +2567,12 @@ public Action:Command_ClearUpgrades(iClient, iArgs)
 		CPrintToChat(iClient, "{silver}spy");		
 		CPrintToChat(iClient, "{silver}engineer");		
 		
-		return;
+		return Plugin_Handled;
 	}
 	
 	ClearUpgrades(iClient, true, Arg1);
 	
-	return true;
+	return Plugin_Handled;
 }
 
 /**
@@ -4627,11 +4627,8 @@ public Native_Esc_PushUpgradeOntoQueue (Handle:hPlugin, iNumParams)
 		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
 	}
 
-	new iStringLength;
-	GetNativeStringLength(2, iStringLength);
-
-	decl String:Upgrade[iStringLength + 1];
-	GetNativeString(1, Upgrade, sizeof(Upgrade), false);
+	decl String:Upgrade[UPGRADE_NAME_MAXLENGTH];
+	GetNativeString(1, Upgrade, sizeof(Upgrade));
 
 	new TFClassType:iClass = TFClassType:GetNativeCell(3);
 
@@ -4699,9 +4696,9 @@ public Native_Esc_GetUpgradeFromQueue (Handle:hPlugin, iNumParams)
 		ThrowNativeError(SP_ERROR_NATIVE, "iIndex (%i) is out of range.");
 	}
 	
-	PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue, sizeof(tmpUpgradeQueue));
+	PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
 	
-	SetNativeArray(4, tmpUpgradeQueue, sizeof(tmpUpgradeQueue));
+	SetNativeArray(4, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
 }
 
 /**
@@ -4751,10 +4748,10 @@ public Native_Esc_RemoveUpgradeFromQueue (Handle:hPlugin, iNumParams)
 	}
 
 	decl tmpUpgradeQueue[UpgradeQueue];	
-	PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue, sizeof(tmpUpgradeQueue));
+	PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
 
 	new iCost = UpgradeDataStore_GetUpgradeCost(g_UpgradeDataStore[0], tmpUpgradeQueue[_Upgrade]);
-	Set_iClientCredits(iCost, SET_ADD, param1, ESC_CREDITS_REFUNDED);
+	Set_iClientCredits(iCost, SET_ADD, iClient, ESC_CREDITS_REFUNDED);
 	
 	PlayerData_RemoveUpgradeFromQueue(g_PlayerData[iClient][0], iClass, iIndex);
 }
@@ -4840,7 +4837,7 @@ public Native_Esc_ClearUpgradeQueue (Handle:hPlugin, iNumParams)
 	}
 	
 	decl String:Class[32];
-	GetClientName(iClass, Class, sizeof(Class));
+	ClassIDToName(iClass, Class, sizeof(Class));
 	
 	ClearUpgrades(iClient, bInform, Class);
 }

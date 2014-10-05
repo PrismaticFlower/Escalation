@@ -27,11 +27,11 @@
             <File name="scripting\include\Escalation_LevelData.inc" />
         </Folder>
         <Folder name="Config Files">
-            <File name="configs\escalation_classinfo.cfg" />
-            <File name="configs\Escalation_CustomAttributes.cfg" />
-            <File name="configs\escalation_gameinfo.cfg" />
-            <File name="configs\escalation_upgrades.cfg" />
-            <File name="configs\escalation_weaponinfo.cfg" />
+            <File name="configs\escalation\escalation_classinfo.cfg" />
+            <File name="configs\escalation\Escalation_CustomAttributes.cfg" />
+            <File name="configs\escalation\escalation_gameinfo.cfg" />
+            <File name="configs\escalation\escalation_upgrades.cfg" />
+            <File name="configs\escalation\escalation_weaponinfo.cfg" />
         </Folder>
         <Folder name="Translations">
             <File name="translations\Escalation.phrases.txt" />

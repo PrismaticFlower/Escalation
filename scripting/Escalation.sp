@@ -697,16 +697,16 @@ ExecuteConfigs ()
 	new Handle:hUpgradeClassInfo = CreateKeyValues("escalation_classinfo");
 	
 	decl String:UpgradesPath[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, UpgradesPath, sizeof(UpgradesPath), "configs/escalation_upgrades.cfg");
+	BuildPath(Path_SM, UpgradesPath, sizeof(UpgradesPath), "configs/escalation/escalation_upgrades.cfg");
 	
 	decl String:WeaponInfoPath[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, WeaponInfoPath, sizeof(WeaponInfoPath), "configs/escalation_weaponinfo.cfg");
+	BuildPath(Path_SM, WeaponInfoPath, sizeof(WeaponInfoPath), "configs/escalation/escalation_weaponinfo.cfg");
 
 	decl String:ClassInfoPath[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, ClassInfoPath, sizeof(ClassInfoPath), "configs/escalation_classinfo.cfg");
+	BuildPath(Path_SM, ClassInfoPath, sizeof(ClassInfoPath), "configs/escalation/escalation_classinfo.cfg");
 
 	decl String:CustomAttributesPath[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, CustomAttributesPath, sizeof(CustomAttributesPath), "configs/Escalation_CustomAttributes.cfg");
+	BuildPath(Path_SM, CustomAttributesPath, sizeof(CustomAttributesPath), "configs/escalation/Escalation_CustomAttributes.cfg");
 	
 	if (! FileToKeyValues(hUpgrades, UpgradesPath))
 	{
@@ -1161,7 +1161,7 @@ public OnMapStart()
 	new Handle:hGameInfo = CreateKeyValues("escalation_gameinfo");
 	
 	decl String:GameInfoPath[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, GameInfoPath, sizeof(GameInfoPath), "configs/escalation_gameinfo.cfg");
+	BuildPath(Path_SM, GameInfoPath, sizeof(GameInfoPath), "configs/escalation/escalation_gameinfo.cfg");
 
 	if (! FileToKeyValues(hGameInfo, GameInfoPath))
 	{

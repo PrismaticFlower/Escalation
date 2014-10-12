@@ -13,11 +13,14 @@
  * @param Upgrade				The name of the upgrade to add to the client's queue.
  * @param iClass				The class whose upgrade queue to push the upgrade onto.
  * @param bRespond				If true the client will be informed of success or failure by chat messages.
+ * @param bForce				If true the bypass the check of if the client is allowed the upgrade.
+ *								This does not let the client buy the upgrade. Their current class and weapons must still be allowed it.
+ *								It is designed to let other plugins add upgrade to the client's queue when their loadout is not yet known.
  *
- * @error						Client not connected or invalid class.
+ * @error						Client not connected, invalid class or plugin not active/ready.
  * @return						True on the upgrade being pushed onto the client's queue, false on failure.
  */
-native bool:Esc_PushUpgradeOntoQueue (iClient, const String:Upgrade[UPGRADE_NAME_MAXLENGTH], TFClassType:iClass);
+native bool:Esc_PushUpgradeOntoQueue (iClient, const String:Upgrade[UPGRADE_NAME_MAXLENGTH], TFClassType:iClass, bool:bRespond, bool:bForce = false);
 
 /**
  * Gets an upgrade from a client's upgrade queue.
@@ -28,8 +31,8 @@ native bool:Esc_PushUpgradeOntoQueue (iClient, const String:Upgrade[UPGRADE_NAME
  * @param UpgradeQueueBuffer	An array to store the UpgradeQueue struct in.
  * @param iMaxSize				The max size of UpgradeQueueBuffer.
  *
- * @error						Client not connected, index out of range, invalid class
- *								or buffer not large enough.
+ * @error						Client not connected, index out of range, invalid class,
+ *								buffer not large enough or plugin not active/ready
  * @noreturn
  */
 native Esc_GetUpgradeFromQueue (iClient, iIndex, TFClassType:iClass, UpgradeQueueBuffer[], iMaxSize);
@@ -42,7 +45,8 @@ native Esc_GetUpgradeFromQueue (iClient, iIndex, TFClassType:iClass, UpgradeQueu
  * @param iClass				The class whose upgrade queue to remove the upgrade from
  * @param bInform				If true inform the client of any action taken.
  *
- * @error						Client not connected, index out of range or invalid class,
+ * @error						Client not connected,index out of range,
+ *								invalid class or plugin not active/ready.
  * @noreturn
  */
 native Esc_RemoveUpgradeFromQueue (iClient, iIndex, TFClassType:iClass, bool:bInform);
@@ -53,7 +57,7 @@ native Esc_RemoveUpgradeFromQueue (iClient, iIndex, TFClassType:iClass, bool:bIn
  * @param iClient				The index of the client.
  * @param iClass				The class whose upgrade queue to get the size of.
  *
- * @error						Client not connected or invalid class.
+ * @error						Client not connected, invalid class or plugin not active/ready.
  * @return						The size of the client's upgrade queue.
  */
 native Esc_GetUpgradeQueueSize (iClient, TFClassType:iClass);
@@ -65,10 +69,10 @@ native Esc_GetUpgradeQueueSize (iClient, TFClassType:iClass);
  * @param iClass				The class whose upgrade queue to get the size of.
  * @param bInform				If true inform the client of any action taken.
  *
- * @error						Client not connected or invalid class.
+ * @error						Client not connected, invalid class or plugin not active/ready.
  * @noreturn
  */
-native Esc_ClearUpgradeQueue (iClient, TFClassType:iClass);
+native Esc_ClearUpgradeQueue (iClient, TFClassType:iClass, bool:bInform);
 
 /**
  * Sets a client's credits.
@@ -80,7 +84,7 @@ native Esc_ClearUpgradeQueue (iClient, TFClassType:iClass);
  *								Set Escalation_Constants.inc for a list.
  * @param iValue				The value to use with the set operation. 
  *
- * @error						Invalid client or client not connected.
+ * @error						Invalid client, client not connected or plugin not active/ready.
  * @return						The new value of the client's credits.
  */
 native Esc_SetClientCredits (iClient, Set_Operation:iOperation, iFlags, iValue);
@@ -88,9 +92,17 @@ native Esc_SetClientCredits (iClient, Set_Operation:iOperation, iFlags, iValue);
 /**
  * Checks if the plugin is active. (Started and not disabled.)
  *
- * @return						The new value of the client's credits.
+ * @return						True if the plugin is active, false if it isn't.
  */
 native bool:Esc_IsPluginActive ();
+
+/**
+ * Gets an array filled with the names of Escalation's upgradequeue.
+ *
+ * @error						Plugin not active/ready.
+ * @return						The handle to the array, you must close this once you're done with it.
+ */
+native Handle:Esc_GetArrayOfUpgrades ();
 
 /**
  * Called when the plugin is started and ready.
@@ -109,6 +121,16 @@ forward Esc_PluginReady ();
  * @noreturn
  */
 forward Esc_PluginStopped ();
+
+/**
+ * Called whenever the plugin loads upgrade data, 
+ * weapon data and class data. For some reason this doesn't
+ * always fire at plugin start. But if Esc_IsPluginActive
+ * returns true you can just manually call this yourself safely.
+ *
+ * @noreturn
+ */
+forward Esc_CoreConfigsLoaded ();
 
 /**
  * Called when a client's data object has been created.
@@ -164,5 +186,7 @@ public __pl_Escalation_SetNTVOptional()
 	MarkNativeAsOptional("Esc_GetUpgradeQueueSize");
 	MarkNativeAsOptional("Esc_ClearUpgradeQueue");
 	MarkNativeAsOptional("Esc_SetClientCredits");
+	MarkNativeAsOptional("Esc_IsPluginActive");
+	MarkNativeAsOptional("Esc_GetArrayOfUpgrades");
 }
 #endif

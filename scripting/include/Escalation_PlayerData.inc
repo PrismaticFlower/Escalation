@@ -954,27 +954,27 @@ PlayerData_SetEarnedCredits (this[], iValue, Set_Operation:iOperation)
 	{
 		case SET_ABSOLUTE:
 		{
-			this[m_iCredits] = iValue;
+			this[m_iEarnedCredits] = iValue;
 		}
 		case SET_ADD:
 		{
-			this[m_iCredits] += iValue;
+			this[m_iEarnedCredits] += iValue;
 		}
 		case SET_SUBTRACT:
 		{
-			this[m_iCredits] -= iValue;
+			this[m_iEarnedCredits] -= iValue;
 		}
 		case SET_MULTIPLY:
 		{
-			this[m_iCredits] *= iValue;
+			this[m_iEarnedCredits] *= iValue;
 		}
 		case SET_DIVIDE:
 		{
-			this[m_iCredits] /= iValue;
+			this[m_iEarnedCredits] /= iValue;
 		}
 		case SET_MODULO:
 		{
-			this[m_iCredits] %= iValue;
+			this[m_iEarnedCredits] %= iValue;
 		}
 	}
 

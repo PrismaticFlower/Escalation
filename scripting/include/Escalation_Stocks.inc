@@ -16,7 +16,7 @@
  *
  * @return								True if the weapon is an all class weapon, false if it isn't.
  */
-bool:IsAllClassWeapon(iWeaponIndex)
+stock bool:IsAllClassWeapon(iWeaponIndex)
 {	
 	switch (iWeaponIndex)
 	{
@@ -35,7 +35,7 @@ bool:IsAllClassWeapon(iWeaponIndex)
  *
  * @return								The TFClassType of the class.
  */
-TFClassType:GetClassID(const String:Class[])
+stock TFClassType:GetClassID(const String:Class[])
 {
 	//Giant String Comparision Block!!!!
 	if (StrEqual("scout",Class,false))
@@ -89,7 +89,7 @@ TFClassType:GetClassID(const String:Class[])
  *
  * @return								The number of cells written to the buffer or -1 on invalid class.
  */
-ClassIDToName(TFClassType:iClass, String:Class[], iStringSize)
+stock ClassIDToName(TFClassType:iClass, String:Class[], iStringSize)
 {
 	
 	switch(iClass)
@@ -142,7 +142,7 @@ ClassIDToName(TFClassType:iClass, String:Class[], iStringSize)
  *
  * @return								True if the class ID is valid, false if it isn't.
  */
-IsValidClass(TFClassType:iClass)
+stock IsValidClass(TFClassType:iClass)
 {
 	
 	switch(iClass)
@@ -198,7 +198,7 @@ IsValidClass(TFClassType:iClass)
  * @error								Out of space in iClients.
  * @return								The number of clients on the team.
  */
-GetClientsOnTeam (iTeam, iClients[], iMaxSize)
+stock GetClientsOnTeam (iTeam, iClients[], iMaxSize)
 {
 
 	new iSize = 0;
@@ -236,7 +236,7 @@ GetClientsOnTeam (iTeam, iClients[], iMaxSize)
  *
  * @return								The location the string was split at or -1 on failure.
  */
-SeperateString (String:Source[], iSourceSize, const String:Split[], String:Part[], iPartSize)
+stock SeperateString (String:Source[], iSourceSize, const String:Split[], String:Part[], iPartSize)
 {
 	new iIndex;
 
@@ -283,7 +283,7 @@ SeperateString (String:Source[], iSourceSize, const String:Split[], String:Part[
  *
  * @return								The count of wearables on the player.
  */
-GetClientWearables (iClient, iWearables[], iSize)
+stock GetClientWearables (iClient, iWearables[], iSize)
 {
 	new iWearableCount = 0;
 	
@@ -312,6 +312,32 @@ GetClientWearables (iClient, iWearables[], iSize)
 	return iWearableCount;
 }
 
+stock bool:IsDisguiseEntity (iEntity)
+{
+	decl String:NetClass[32];
+	GetEntityNetClass(iEntity, NetClass, sizeof(NetClass));
+
+	new iOffsetWeap = FindSendPropInfo(NetClass, "m_bDisguiseWeapon");
+	new iOffsetWearable = FindSendPropInfo(NetClass, "m_bDisguiseWearable");
+	
+	if (iOffsetWeap > 0)
+	{	
+		if (GetEntData(iEntity, iOffsetWeap))
+		{
+			return true;
+		}
+	}
+	else if (iOffsetWearable > 0)
+	{
+		if (GetEntData(iEntity, iOffsetWearable))
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+
 #define VPK2_SIGNATURE 1437209140
 #define VPK2_VERSION 2
 #define VPK2_TREE_TERMINATOR 65535
@@ -325,7 +351,7 @@ GetClientWearables (iClient, iWearables[], iSize)
  *
  * @return								True if the file was extracted, false if it wasn't.
  */
-bool:ExtractFileFromVPK2 (const String:VPK_File[], const String:File[], const String:FileToExtractTo[])
+stock bool:ExtractFileFromVPK2 (const String:VPK_File[], const String:File[], const String:FileToExtractTo[])
 {
 	new String:DirFileName[PLATFORM_MAX_PATH];
 	
@@ -417,7 +443,7 @@ bool:ExtractFileFromVPK2 (const String:VPK_File[], const String:File[], const St
 	return true;
 }
 
-static bool:ExtractFileFromVPK2_Helper (const String:VPK_File[], const String:FileToExtractTo[], iArchiveIndex, iEntryOffset, iEntryLength)
+stock static bool:ExtractFileFromVPK2_Helper (const String:VPK_File[], const String:FileToExtractTo[], iArchiveIndex, iEntryOffset, iEntryLength)
 {
 	new String:VPKFileName[PLATFORM_MAX_PATH];
 

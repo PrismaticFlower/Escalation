@@ -18,7 +18,7 @@
 #include<Escalation_CustomAttributes>
 
 #define PLUGIN_NAME "Escalation"
-#define PLUGIN_VERSION "0.9.7"
+#define PLUGIN_VERSION "0.9.8"
 
 
 public Plugin:myinfo =
@@ -125,6 +125,8 @@ static Handle:g_hClearMenu = INVALID_HANDLE; /**< The handle to the menu that a 
 
 /************************UTILITY VARIABLES************************/
 
+static bool:g_bClientHasData[MAXPLAYERS + 1]; /**< Used to keep track of if a player has had their data object created for them. */
+
 static bool:g_bPluginDisabledForMap; /**< When set to true the plugin is disabled for the rest of the map. */
 
 static bool:g_bPluginDisabledAdmin; /**< When set to true the plugin is disabled. When set to false the plugin is disabled, amazing! */
@@ -144,6 +146,7 @@ static bool:g_bSteamTools; /**< Used to keep track of if SteamTools is available
 
 /************************FORWARD VARIABLES************************/
 
+static Handle:g_hCoreConfigsLoaded = INVALID_HANDLE; /**< Handle to the forward that is called when the plugin loads it's core config files. */
 static Handle:g_hPluginReady = INVALID_HANDLE; /**< Handle to the forward that is called when the plugin is started and ready. */
 static Handle:g_hPluginStopped = INVALID_HANDLE; /**< Handle to the forward that is called when the plugin is stopped. */
 static Handle:g_hClientDataReady = INVALID_HANDLE; /**< Handle to the forward that is called when a client's data is created. */
@@ -233,6 +236,7 @@ public APLRes:AskPluginLoad2(Handle:hMyself, bool:bLate, String:Error[], iErr_ma
 	CreateNative("Esc_ClearUpgradeQueue", Native_Esc_ClearUpgradeQueue);
 	CreateNative("Esc_SetClientCredits", Native_Esc_SetClientCredits);
 	CreateNative("Esc_IsPluginActive", Native_Esc_IsPluginActive);
+	CreateNative("Esc_GetArrayOfUpgrades", Native_Esc_GetArrayOfUpgrades);
 	
 	RegPluginLibrary("Escalation");
 	
@@ -265,6 +269,7 @@ public OnPluginStart()
 	g_hClientDataDestroy = CreateGlobalForward("Esc_PlayerDataDestroy", ET_Ignore, Param_Cell);
 	g_hPluginReady = CreateGlobalForward("Esc_PluginReady", ET_Ignore);
 	g_hPluginStopped = CreateGlobalForward("Esc_PluginStopped", ET_Ignore);
+	g_hCoreConfigsLoaded = CreateGlobalForward("Esc_CoreConfigsLoaded", ET_Ignore);
 	
 	//Create the Menus
 	CreateBaseMenus();
@@ -290,7 +295,7 @@ public OnPluginStart()
 	#if defined DEV_BUILD
 		RegConsoleCmd("sm_givecredits", Command_GiveCredits, "Gives you X amount of credits.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
 		RegConsoleCmd("sm_forceupgrade", Command_ForceUpgrade, "Forces an upgrade to be put onto a client's upgrade queue.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
-		RegConsoleCmd("sm_printcredits", Command_PrintCredits, "Prints out all connected iClient's credits to the console.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
+		RegConsoleCmd("sm_printcredits", Command_PrintCredits, "Prints out all connected client's credits to the console.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
 		RegConsoleCmd("sm_printteamcredits", Command_PrintTeamCredits, "Prints out the credits of all clients on the team.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
 		RegConsoleCmd("sm_printearnedcredits", Command_PrintTotalCredits, "Prints out the total earned credits of all clients.", FCVAR_UNREGISTERED | FCVAR_CHEAT);
 		RegConsoleCmd("sm_forcemenu", Command_ForceMenuDisplay, "Forces an upgrade menu to be displayed", FCVAR_UNREGISTERED | FCVAR_CHEAT);
@@ -451,13 +456,13 @@ StartPlugin ()
 
 	//Execute The Configs
 	ExecuteConfigs();
-
+	
 	//Catch those pesky already connected players.
 	new bool:bClientWasConnected;
 	
 	for (new iClient = 1; iClient <= MaxClients; iClient ++)
 	{
-		if (IsClientConnected(iClient) && ! IsClientReplay(iClient))
+		if (IsClientValid(iClient))
 		{
 			OnClientConnected(iClient);
 			
@@ -540,11 +545,11 @@ StopPlugin ()
 	UpgradeDescriptions_Destroy(g_UpgradeDescriptions[0]);
 	
 	//"Disconnect" all the connected players.
-	for (new i = 1; i <= MaxClients; i ++)
+	for (new iClient = 1; iClient <= MaxClients; iClient ++)
 	{
-		if (IsClientConnected(i) && ! IsClientReplay(i))
+		if (IsClientValid(iClient))
 		{
-			OnClientDisconnect(i);
+			OnClientDisconnect(iClient);
 		}
 	}
 	
@@ -750,6 +755,10 @@ ExecuteConfigs ()
 	CloseHandle(hUpgrades);
 	CloseHandle(hUpgradeWeaponInfo);
 	CloseHandle(hUpgradeClassInfo);
+	
+	//Call the Forward notifying other plugins that the core configs are ready.
+	Call_StartForward(g_hCoreConfigsLoaded); //Esc_CoreConfigsLoaded
+	Call_Finish();
 }
 
 /**
@@ -1218,9 +1227,9 @@ ExecuteGameInfoConfig(Handle:hGameInfo)
 	
 	//TODO: Insert string to lower here.
 	
-	if (! KvJumpToKey(hGameInfo, "map_configss"))
+	if (! (KvJumpToKey(hGameInfo, "map_configss") || KvJumpToKey(hGameInfo, "map_configs")))
 	{
-		LogError("Failure to find \"map_configss\" section in Escalation's gamemode config. The plugin will fall back to the default values for all gamemode settings.");
+		LogError("Failure to find \"map_configs\" section in Escalation's gamemode config. The plugin will fall back to the default values for all gamemode settings.");
 		
 		return;
 	}
@@ -1393,7 +1402,7 @@ ExecuteGameInfoConfig(Handle:hGameInfo)
  *
  * @noreturn
  */
-public CVar_Enable_Changed(Handle:cvar, const String:oldVal[], const String:newVal[])
+public CVar_Enable_Changed (Handle:cvar, const String:oldVal[], const String:newVal[])
 {
 	new bool:bNewValue = ! bool:StringToInt(newVal);
 	
@@ -1441,7 +1450,7 @@ public OnClientConnected (iClient)
 		return;
 	}
 
-	if (IsClientReplay(iClient))
+	if (! IsClientValid(iClient))
 	{
 		return;
 	}
@@ -1449,6 +1458,8 @@ public OnClientConnected (iClient)
 	//Create the client's data object.
 	PlayerData_ConstructFull(g_PlayerData[iClient][0], iClient);
 
+	g_bClientHasData[iClient] = true;
+	
 	//Call the Forward Notifying Other Plugins that the client's data is ready.
 	Call_StartForward(g_hClientDataReady); //Esc_PlayerDataCreated
 	Call_PushCell(iClient);
@@ -1464,12 +1475,12 @@ public OnClientConnected (iClient)
 	
 	if (g_iClientConnected_CompensateCredits == 1)
 	{
-		Set_iClientCredits(GetAverageCredits(iClient), SET_ABSOLUTE, iClient, ESC_CREDITS_COMPENSATE);
+		Set_iClientCredits(GetAverageCredits(iClient), SET_ADD, iClient, ESC_CREDITS_COMPENSATE);
 	}
 	else if (g_iClientConnected_CompensateCredits == 2)
 	{
 		new iAverage = GetAverageCredits(iClient);
-		Set_iClientCredits(iAverage - (iAverage/4), SET_ABSOLUTE, iClient, ESC_CREDITS_COMPENSATE);
+		Set_iClientCredits(iAverage - (iAverage/4), SET_ADD, iClient, ESC_CREDITS_COMPENSATE);
 	}
 	
 	CreateTimer(15.0, Timer_MenuReminder, GetClientUserId(iClient), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
@@ -1490,7 +1501,7 @@ public OnClientDisconnect (iClient)
 		return;	
 	}
 
-	if (IsClientReplay(iClient))
+	if (! IsClientValid(iClient))
 	{
 		return;
 	}
@@ -1503,6 +1514,8 @@ public OnClientDisconnect (iClient)
 	//Destroy the client's data object.
 	PlayerData_Destroy(g_PlayerData[iClient][0]);
 	
+	g_bClientHasData[iClient] = false;
+	
 	//Clear the attributes.
 	PlayerAttributeManager_ClearAttributes(iClient);
 	WeaponAttributes_ResetData(iClient);
@@ -1511,11 +1524,59 @@ public OnClientDisconnect (iClient)
 	for (new i = 1; i <= MaxClients; i++)
 	{
 		//Reset the death trackers.
-		if (i != iClient && IsClientConnected(i) && ! IsClientReplay(i))
+		if (i != iClient && IsClientValid(i) && g_bClientHasData[i])
 		{
 			PlayerData_ResetDeathCounter(g_PlayerData[i][0], iClient);
 		}
 	}
+}
+
+/**
+ * Handles the various chat triggers for the upgrade menu.
+ *
+ * @param iClient		The index of the client saying the chat message.
+ * @param Command		The command being executed.
+ * @param Args			Chat argument string.
+ *
+ * @noreturn
+ */
+public Action:OnClientSayCommand(iClient, const String:Command[], const String:Args[])
+{
+	static const String:ChatTriggers[4][] = 
+	{
+		"upgrade",
+		"upgrades",
+		"!upgrade",
+		"!upgrades"
+	};
+
+	static const String:SilentTriggers[2][] =
+	{
+		"/upgrade",
+		"/upgrades"
+	};
+
+	for (new i = 0; i < 4; i ++)
+	{
+		if (StrEqual(ChatTriggers[i], Args, false))
+		{
+			Command_UpgradeMenu(iClient, 0);
+			
+			return Plugin_Continue;
+		}
+	}
+
+	for (new i = 0; i < 2; i ++)
+	{
+		if (StrEqual(SilentTriggers[i], Args, false))
+		{
+			Command_UpgradeMenu(iClient, 0);
+			
+			return Plugin_Handled;
+		}
+	}
+	
+	return Plugin_Continue;
 }
 
 /**
@@ -1557,7 +1618,7 @@ public Event_PlayerResupply (Handle:event, const String:name[], bool:dontBroadca
 				WeaponAttributes_SetAttributes(iClient, i, iAttributes, fValues);
 			}
 		}
-		
+
 
 		PlayerData_ResetQueuePosition(g_PlayerData[iClient][0]);
 	}
@@ -1665,9 +1726,14 @@ public Action:Timer_MenuReminder (Handle:timer, any:data)
 {
 	new iClient = GetClientOfUserId(data);
 
-	if (iClient == 0 || ! IsClientInGame(iClient) || IsPluginDisabled())
+	if (iClient == 0 || ! IsClientConnected(iClient) || IsPluginDisabled())
 	{
 		return Plugin_Stop;
+	}
+
+	if (! IsClientInGame(iClient))
+	{
+		return Plugin_Continue;
 	}
 
 	if (PlayerData_GetHasOpenedMenu(g_PlayerData[iClient][0]))
@@ -1691,9 +1757,14 @@ public Action:Timer_AnnoyingMenuReminder (Handle:timer, any:data)
 {
 	new iClient = GetClientOfUserId(data);
 
-	if (iClient == 0 || ! IsClientInGame(iClient) || IsPluginDisabled())
+	if (iClient == 0 || ! IsClientConnected(iClient) || IsPluginDisabled())
 	{
 		return Plugin_Stop;
+	}
+	
+	if (! IsClientInGame(iClient))
+	{
+		return Plugin_Continue;
 	}
 
 	if (PlayerData_GetHasOpenedMenu(g_PlayerData[iClient][0]))
@@ -1745,13 +1816,13 @@ public Action:Timer_ForceHUDTextUpdate (Handle:timer, any:data)
  */
 public TF2Items_OnGiveNamedItem_Post (iClient, String:ClassName[], iItemDefinitionIndex, iItemLevel, iItemQuality, iEntityIndex)
 {
-	new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(iClient));
+	new Handle:hStack = CreateStack();
 
-	if (iSlot != WEAPONINFO_INVALID_SLOT)
-	{
-		PlayerData_UpdateWeapon(g_PlayerData[iClient][0], iSlot, iItemDefinitionIndex);
-		WeaponAttributes_UpdateWeaponEnt(iClient, iSlot, iEntityIndex);
-	}
+	PushStackCell(hStack, EntIndexToEntRef(iEntityIndex));
+	PushStackCell(hStack, iItemDefinitionIndex);
+	PushStackCell(hStack, iClient);
+	
+	RequestFrame(FrameCallback_GiveNamedItem, hStack);
 }
 
 /**
@@ -1783,6 +1854,11 @@ public Event_PlayerInventoryCheck (Handle:event, const String:name[], bool:dontB
 			
 			for (new iWearableIndex = 0; iWearableIndex < iWearableCount; iWearableIndex ++)
 			{
+				if (IsDisguiseEntity(iWearables[iWearableIndex]))
+				{
+					continue;
+				}
+			
 				new iItemDefinitionIndex = GetEntProp(iWearables[iWearableIndex], Prop_Send, "m_iItemDefinitionIndex");
 				
 				new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(iClient));
@@ -1799,6 +1875,11 @@ public Event_PlayerInventoryCheck (Handle:event, const String:name[], bool:dontB
 			continue;
 		}
 		
+		if (IsDisguiseEntity(iEntity))
+		{
+			continue;
+		}
+				
 		new iItemDefinitionIndex = GetEntProp(iEntity, Prop_Send, "m_iItemDefinitionIndex");
 		
 		new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(iClient));
@@ -1809,6 +1890,44 @@ public Event_PlayerInventoryCheck (Handle:event, const String:name[], bool:dontB
 			WeaponAttributes_UpdateWeaponEnt(iClient, iSlot, iEntity);
 		}
 	}
+}
+
+/**
+ * Callback for updating a client's cached weapon entities and item definition indexes.
+ *
+ * @noreturn
+ */
+public FrameCallback_GiveNamedItem (any:aData)
+{
+	new iClient;
+	new iItemDefinitionIndex;
+	new iEntity;
+
+	PopStackCell(aData, iClient);
+	PopStackCell(aData, iItemDefinitionIndex);
+	PopStackCell(aData, iEntity);
+
+	iEntity = EntRefToEntIndex(iEntity);
+	
+	if (iEntity == INVALID_ENT_REFERENCE)
+	{
+		return;
+	}
+	
+	if (IsDisguiseEntity(iEntity))
+	{
+		return;
+	}
+	
+	new iSlot = WeaponInfoManager_GetSlot(g_WeaponInfoManager[0], iItemDefinitionIndex, TF2_GetPlayerClass(iClient));
+
+	if (iSlot != WEAPONINFO_INVALID_SLOT)
+	{
+		PlayerData_UpdateWeapon(g_PlayerData[iClient][0], iSlot, iItemDefinitionIndex);
+		WeaponAttributes_UpdateWeaponEnt(iClient, iSlot, iEntity);
+	}
+	
+	CloseHandle(aData);
 }
 
 /************************ROUND & SUCH EVENTS************************/
@@ -1844,7 +1963,7 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		for (new iClient = 1; iClient <= MaxClients; iClient++)
 		{
-			if (! IsClientConnected(iClient) || IsClientReplay(iClient))
+			if (! IsClientValid(iClient))
 			{
 				continue;
 			}
@@ -1893,7 +2012,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		for (new iClient = 1; iClient <= MaxClients; iClient++)
 		{
-			if (! IsClientConnected(iClient) || IsClientReplay(iClient))
+			if (! IsClientValid(iClient))
 			{
 				continue;
 			}
@@ -2686,7 +2805,22 @@ public Action:Command_ReloadConfigs(iClient, iArgs)
 	}
 
 	ExecuteConfigs();
+	
+	//Reload The Gameinfo
+	new Handle:hGameInfo = CreateKeyValues("escalation_gameinfo");
+	
+	decl String:GameInfoPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, GameInfoPath, sizeof(GameInfoPath), "configs/escalation/escalation_gameinfo.cfg");
 
+	if (! FileToKeyValues(hGameInfo, GameInfoPath))
+	{
+		SetFailState("Unable to open config file for escalation_gameinfo: escalation_gameinfo.cfg");
+	}
+
+	ExecuteGameInfoConfig(hGameInfo);
+
+	CloseHandle(hGameInfo);
+	
 	decl String:Tag[64];
 	Format(Tag, sizeof(Tag), "%T ", "Escalation_Tag", LANG_SERVER);
 	
@@ -4099,9 +4233,12 @@ ClearUpgrades(iClient, bool:bInform, String:Class[] = "")
 	}
 
 	//Check if this is the class the client is currently playing as, if so set their loadout to needing a refresh.
-	if (iClassToRefund == TF2_GetPlayerClass(iClient))
+	if (IsClientInGame(iClient))
 	{
-		PlayerData_SetForceQueueReprocess(g_PlayerData[iClient][0], true);
+		if (iClassToRefund == TF2_GetPlayerClass(iClient))
+		{
+			PlayerData_SetForceQueueReprocess(g_PlayerData[iClient][0], true);
+		}
 	}
 
 	//Make sure there are actually some upgrades on this class.
@@ -4147,10 +4284,13 @@ ClearUpgrades(iClient, bool:bInform, String:Class[] = "")
  * @param Upgrade				The name of the upgrade to push onto the queue..
  * @param iClass				The class whose upgrade queue to push the upgrade onto.
  * @param bRespond				If true the client will be informed of success or failure by chat messages.
+ * @param bForce				If true the bypass the check of if the client is allowed the upgrade.
+ *								This does not let the client buy the upgrade. Their current class and weapons must still be allowed it.
+ *								It is designed to let other plugins add upgrade to the client's queue when their loadout is not yet known.
  *
  * @return						True if the upgrade was pushed onto the queue successfully, false if an error occured.
  */
-bool:PushUpgrade(iClient, const String:Upgrade[UPGRADE_NAME_MAXLENGTH], TFClassType:iClass, bool:bRespond)
+bool:PushUpgrade(iClient, const String:Upgrade[UPGRADE_NAME_MAXLENGTH], TFClassType:iClass, bool:bRespond, bool:bForce = false)
 {
 	//Allocate the memory to store a copy of the upgrade's object.
 	decl tmpUpgradeData[UpgradeData];
@@ -4181,7 +4321,7 @@ bool:PushUpgrade(iClient, const String:Upgrade[UPGRADE_NAME_MAXLENGTH], TFClassT
 	if (! UpgradeData_IsPassive(tmpUpgradeData[0]))
 	{
 		//Check to see if da weapon is allowed the upgrade.
-		if (! IsWeaponAllowedUpgrade(iClient, iClientWeaponIndex, Upgrade, iClass))
+		if (! IsWeaponAllowedUpgrade(iClient, iClientWeaponIndex, Upgrade, iClass) && ! bForce)
 		{
 			if (bRespond)
 			{
@@ -4193,7 +4333,7 @@ bool:PushUpgrade(iClient, const String:Upgrade[UPGRADE_NAME_MAXLENGTH], TFClassT
 	}
 	else
 	{
-		if (! ClassInfoStore_IsUpgradeAllowed(g_ClassInfoStore[0], iClass, Upgrade))
+		if (! ClassInfoStore_IsUpgradeAllowed(g_ClassInfoStore[0], iClass, Upgrade) && ! bForce)
 		{
 			if (bRespond)
 			{
@@ -4470,7 +4610,7 @@ GetAverageCredits(iExclude = 0)
 	
 	for (new i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientInGame(i) && i != iExclude)
+		if (IsClientValid(i) && g_bClientHasData[i] && i != iExclude)
 		{
 			iCredits += PlayerData_GetEarnedCredits(g_PlayerData[i][0]);
 			iClientCount++;
@@ -4538,6 +4678,31 @@ ForceCachedLoadoutRefresh(iClient)
 			WeaponAttributes_UpdateWeaponEnt(iClient, iSlot, iEntity);
 		}
 	}
+}
+
+/**
+ * Checks if a client index is valid, connected and useable by the plugin (I.e not replay or STV).
+ *
+ * @param iClient				The index of the client to check.
+ *
+ * @return						True if the client the client is valid and safe, false if otherwise.
+ */
+bool:IsClientValid(iClient)
+{
+	if (iClient <= 0 || iClient > MaxClients)
+	{
+		return false;
+	}
+	else if (! IsClientConnected(iClient))
+	{
+		return false;
+	}
+	else if (IsClientReplay(iClient) || IsClientSourceTV(iClient))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 /************************GETTERS & SETTERS************************/
@@ -4672,7 +4837,12 @@ Set_iObjectiveCredits(iValue, Set_Operation:iOperation, team)
  */
 public Native_Esc_PushUpgradeOntoQueue (Handle:hPlugin, iNumParams)
 {
-	if (iNumParams != 3)
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
+	if (iNumParams != 5)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
 	}
@@ -4684,19 +4854,14 @@ public Native_Esc_PushUpgradeOntoQueue (Handle:hPlugin, iNumParams)
 
 	new iClient = GetNativeCell(1);
 
-	if (iClient <= 0 || iClient > MaxClients)
+	if (! IsClientValid(iClient))
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
 	}
 
-	if (! IsClientConnected(iClient))
-	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
-	}
-
 	decl String:Upgrade[UPGRADE_NAME_MAXLENGTH];
-	GetNativeString(1, Upgrade, sizeof(Upgrade));
-
+	GetNativeString(2, Upgrade, sizeof(Upgrade));
+	
 	new TFClassType:iClass = TFClassType:GetNativeCell(3);
 
 	if (! IsValidClass(iClass))
@@ -4705,8 +4870,9 @@ public Native_Esc_PushUpgradeOntoQueue (Handle:hPlugin, iNumParams)
 	}
 	
 	new bool:bRespond = bool:GetNativeCell(4);
-
-	return PushUpgrade(iClient, Upgrade, iClass, bRespond);
+	new bool:bForce = bool:GetNativeCell(5);
+	
+	return PushUpgrade(iClient, Upgrade, iClass, bRespond, bForce);
 }
 
 /**
@@ -4719,6 +4885,11 @@ public Native_Esc_PushUpgradeOntoQueue (Handle:hPlugin, iNumParams)
  */
 public Native_Esc_GetUpgradeFromQueue (Handle:hPlugin, iNumParams)
 {
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
 	if (iNumParams != 5)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
@@ -4736,14 +4907,9 @@ public Native_Esc_GetUpgradeFromQueue (Handle:hPlugin, iNumParams)
 
 	decl tmpUpgradeQueue[UpgradeQueue];
 
-	if (iClient <= 0 || iClient > MaxClients)
+	if (! IsClientValid(iClient))
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
-	}
-
-	if (! IsClientConnected(iClient))
-	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
 	}
 	
 	if (! IsValidClass(iClass))
@@ -4758,9 +4924,9 @@ public Native_Esc_GetUpgradeFromQueue (Handle:hPlugin, iNumParams)
 
 	new iQueueSize = PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClass);
 	
-	if (iIndex > iQueueSize || iIndex < 1)
+	if (iIndex > iQueueSize || iIndex < 0)
 	{
-		ThrowNativeError(SP_ERROR_NATIVE, "iIndex (%i) is out of range.");
+		ThrowNativeError(SP_ERROR_NATIVE, "iIndex (%i) is out of range.", iIndex);
 	}
 	
 	PlayerData_GetUpgradeOnQueue(g_PlayerData[iClient][0], iClass, iIndex, tmpUpgradeQueue[0], sizeof(tmpUpgradeQueue));
@@ -4778,6 +4944,11 @@ public Native_Esc_GetUpgradeFromQueue (Handle:hPlugin, iNumParams)
  */
 public Native_Esc_RemoveUpgradeFromQueue (Handle:hPlugin, iNumParams)
 {
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
 	if (iNumParams != 4)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
@@ -4793,14 +4964,9 @@ public Native_Esc_RemoveUpgradeFromQueue (Handle:hPlugin, iNumParams)
 	new TFClassType:iClass = TFClassType:GetNativeCell(3);
 	new bool:bInform = bool:GetNativeCell(4);
 	
-	if (iClient <= 0 || iClient > MaxClients)
+	if (! IsClientValid(iClient))
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
-	}
-
-	if (! IsClientConnected(iClient))
-	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
 	}
 	
 	if (! IsValidClass(iClass))
@@ -4810,9 +4976,9 @@ public Native_Esc_RemoveUpgradeFromQueue (Handle:hPlugin, iNumParams)
 
 	new iQueueSize = PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], iClass);
 	
-	if (iIndex > iQueueSize || iIndex < 1)
+	if (iIndex > iQueueSize || iIndex < 0)
 	{
-		ThrowNativeError(SP_ERROR_NATIVE, "iIndex (%i) is out of range.");
+		ThrowNativeError(SP_ERROR_NATIVE, "iIndex (%i) is out of range.", iIndex);
 	}
 
 	decl tmpUpgradeQueue[UpgradeQueue];	
@@ -4848,6 +5014,11 @@ public Native_Esc_RemoveUpgradeFromQueue (Handle:hPlugin, iNumParams)
  */
 public Native_Esc_GetUpgradeQueueSize (Handle:hPlugin, iNumParams)
 {
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
 	if (iNumParams != 2)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
@@ -4861,14 +5032,9 @@ public Native_Esc_GetUpgradeQueueSize (Handle:hPlugin, iNumParams)
 	new iClient = GetNativeCell(1);
 	new TFClassType:iClass = TFClassType:GetNativeCell(2);
 
-	if (iClient <= 0 || iClient > MaxClients)
+	if (! IsClientValid(iClient))
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
-	}
-
-	if (! IsClientConnected(iClient))
-	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
 	}
 	
 	if (! IsValidClass(iClass))
@@ -4889,6 +5055,11 @@ public Native_Esc_GetUpgradeQueueSize (Handle:hPlugin, iNumParams)
  */
 public Native_Esc_ClearUpgradeQueue (Handle:hPlugin, iNumParams)
 {
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
 	if (iNumParams != 3)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
@@ -4903,14 +5074,9 @@ public Native_Esc_ClearUpgradeQueue (Handle:hPlugin, iNumParams)
 	new TFClassType:iClass = TFClassType:GetNativeCell(2);
 	new bool:bInform = bool:GetNativeCell(3);
 	
-	if (iClient <= 0 || iClient > MaxClients)
+	if (! IsClientValid(iClient))
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
-	}
-
-	if (! IsClientConnected(iClient))
-	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
 	}
 	
 	if (! IsValidClass(iClass))
@@ -4934,6 +5100,11 @@ public Native_Esc_ClearUpgradeQueue (Handle:hPlugin, iNumParams)
  */
 public Native_Esc_SetClientCredits (Handle:hPlugin, iNumParams)
 {
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
 	if (iNumParams != 4)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
@@ -4946,14 +5117,9 @@ public Native_Esc_SetClientCredits (Handle:hPlugin, iNumParams)
 	
 	iFlags |= ESC_CREDITS_PLUGIN;
 	
-	if (iClient <= 0 || iClient > MaxClients)
+	if (! IsClientValid(iClient))
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
-	}
-
-	if (! IsClientConnected(iClient))
-	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Client (%i) is not connected.", iClient);
 	}
 	
 	return Set_iClientCredits(iValue, iOperation, iClient, iFlags);
@@ -4970,6 +5136,29 @@ public Native_Esc_SetClientCredits (Handle:hPlugin, iNumParams)
 public Native_Esc_IsPluginActive (Handle:hPlugin, iNumParams)
 {
 	return g_bPluginStarted;
+}
+
+/**
+ * Native callback for getting an array of upgrade names.
+ *
+ * @param hPlugin				Handle to the calling plugin.
+ * @param iNumParams			The number of arguments passed to the function.
+ *
+ * @return						Handle.
+ */
+public Native_Esc_GetArrayOfUpgrades (Handle:hPlugin, iNumParams)
+{
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+	
+	
+	new Handle:hMyArray = UpgradeDataStore_GetArrayOfUpgrades(g_UpgradeDataStore[0]);
+	new Handle:hArray = CloneHandle(hMyArray, hPlugin);
+	CloseHandle(hMyArray);
+	
+	return _:hArray;
 }
 
 
@@ -5089,7 +5278,7 @@ public Action:Command_PrintTeamCredits(iClient, iArgs)
 	
 	decl iClients[MaxClients+1];
 	
-	new iSize = GetClientsOnTeam(iTeam, iClients);
+	new iSize = GetClientsOnTeam(iTeam, iClients, MaxClients + 1);
 
 	
 	for (new i = 0; i <= iSize; i++)
@@ -5112,12 +5301,12 @@ public Action:Command_PrintTotalCredits(iClient, iArgs)
 
 	for (new i = 1; i <= MaxClients; i++)
 	{
-		if (! IsClientInGame(i))
+		if (! IsClientValid(i) || ! g_bClientHasData[i])
 			continue;
 			
 		GetClientName(i, buffer1, sizeof(buffer1));	
 			
-		PrintToConsole(iClient, "iClient - %i Name - %s Credits - %i", i, buffer1, Get_iClientTotalCredits(i));	
+		PrintToConsole(iClient, "iClient - %i Name - %s Credits - %i", i, buffer1, PlayerData_GetEarnedCredits(g_PlayerData[i][0]));	
 	}
 
 	return Plugin_Handled;

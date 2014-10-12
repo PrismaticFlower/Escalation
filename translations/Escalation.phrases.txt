@@ -382,7 +382,7 @@
 
 	"Open_Menu_Reminder"
 	{
-		"en" "Type {dodgerblue}!upgrade{silver} or {dodgerblue}/upgrade{silver} into to chat to open up the upgrade menu!"
+		"en" "Type {dodgerblue}!upgrade{silver} or {dodgerblue}/upgrade{silver} into chat to open up the upgrade menu!"
 	}
 
 	"Open_Menu_ReminderHud"

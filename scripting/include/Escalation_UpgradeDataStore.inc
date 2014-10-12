@@ -279,3 +279,23 @@ Handle:UpgradeDataStore_GetMenuOfUpgrades (this[], MenuHandler:fnHandler, MenuAc
 
 	return hMenu;
 }
+
+/**
+ * Creates an array where each entry is the name of an upgrade.
+ *
+ * @param this				An UpgradeDataStore object.
+ *
+ * @error					Invalid object.
+ * @return					The handle to the array. You're responsible for the lifetime of the handle.
+ */
+ Handle:UpgradeDataStore_GetArrayOfUpgrades (this[])
+{
+#if defined USE_OBJECT_SAFETY_CHECK
+	if (this[UpgradeDataStore:m_iObjectType] != UpgradeDataStoreID)
+	{
+		ThrowError("Invalid object passed to function. A valid, constructed object is expected.");
+	}
+#endif
+
+	return CloneArray(this[m_hUpgradeKeys]);
+}

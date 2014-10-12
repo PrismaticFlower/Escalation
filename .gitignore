@@ -75,6 +75,9 @@ version_auto.inc
 #Ignore Any Exe Files
 .exe
 
+#Ignore Any Zip Files
+.zip
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db

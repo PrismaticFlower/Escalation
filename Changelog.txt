@@ -13,6 +13,7 @@ Code Changes
 Upgrade Changes
 	-The Righteous Bison can no longer buy the Clip Size upgrade.
 	-Fixed The Soda Popper and Force-A-Nature gaining clip size of 12. It should now max out at 4 correctly.
+	-Fixed The Lugermorph not being upgradeable.
 
 Gamemode Changes
 	-Added support for Payload Race.

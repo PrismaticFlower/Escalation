@@ -1,3 +1,13 @@
+v0.9.9
+Bug Fixes
+	-Updated the path to items_game.txt after Valve changed it again.
+
+Code Changes
+	-Added Esc_ClientHasData native.
+
+Upgrade Changes
+	-The Sniper Rifle and Huntsman's reload speed upgrade now works correctly.
+
 v0.9.8
 Bug Fixes
 	-Fixed various mistakes in the natives that caused them to wrongly error.

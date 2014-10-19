@@ -18,7 +18,7 @@
 #include<Escalation_CustomAttributes>
 
 #define PLUGIN_NAME "Escalation"
-#define PLUGIN_VERSION "0.9.8"
+#define PLUGIN_VERSION "0.9.9"
 
 
 public Plugin:myinfo =
@@ -237,6 +237,7 @@ public APLRes:AskPluginLoad2(Handle:hMyself, bool:bLate, String:Error[], iErr_ma
 	CreateNative("Esc_SetClientCredits", Native_Esc_SetClientCredits);
 	CreateNative("Esc_IsPluginActive", Native_Esc_IsPluginActive);
 	CreateNative("Esc_GetArrayOfUpgrades", Native_Esc_GetArrayOfUpgrades);
+	CreateNative("Esc_ClientHasData", Native_Esc_ClientHasData);
 	
 	RegPluginLibrary("Escalation");
 	
@@ -256,13 +257,12 @@ public OnPluginStart()
 	LoadTranslations("escalation_upgrade.phrases");
 	LoadTranslations("Escalation_AttrDescriptions.phrases");
 
-	CVar_Enabled = CreateConVar("escalation_enabled", "1", "When set to 1 the plugin is enabled! When set to 0 the plugin is disabled, amazing!", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	CreateConVar("escalation_version", PLUGIN_VERSION, "The version of the plugin you're running, not much else to say really.", FCVAR_NOTIFY | FCVAR_DONTRECORD | FCVAR_SPONLY);
+	CVar_Enabled = CreateConVar("escalation_enabled", "1", "When set to 1 the plugin is enabled! When set to 0 the plugin is disabled, amazing!", FCVAR_NOTIFY, true, 0.0, true, 1.0);	CreateConVar("escalation_version", PLUGIN_VERSION, "The version of the plugin you're running, not much else to say really.", FCVAR_NOTIFY | FCVAR_DONTRECORD | FCVAR_SPONLY);
 
-//	AutoExecConfig(true,"Escalation_Config"); //Execute the config. (Disabled during development.)
-
+	AutoExecConfig(true, "Escalation_Config"); //Execute the config.
+	
 	HookConVarChange(CVar_Enabled, CVar_Enable_Changed);
-
+	
 	//Create the forwards.
 	g_hClientCreditsChanged = CreateGlobalForward("Esc_ClientCreditsChanged", ET_Ignore, Param_Cell, Param_CellByRef, Param_Cell, Param_CellByRef);
 	g_hClientDataReady = CreateGlobalForward("Esc_PlayerDataCreated", ET_Ignore, Param_Cell);
@@ -306,19 +306,7 @@ public OnPluginStart()
 
 	BannedUpgrades_Construct(g_BannedUpgrades[0]);
 
-	//It's extremely unlikely that this file will change while the server and plugin are running.
-	new String:ItemsGamePath[PLATFORM_MAX_PATH];
-
-	BuildPath(Path_SM, ItemsGamePath, sizeof(ItemsGamePath), "logs/items_game_temp.txt");
-
-	if (! ExtractFileFromVPK2("tf2_scripts", "scripts/items/items_game.txt", ItemsGamePath))
-	{
-		SetFailState("Unable to extract items_game.txt from tf2_scripts VPK");
-	}
-
-	StockAttributes_ConstructFull(g_StockAttributes[0], ItemsGamePath);
-
-	DeleteFile(ItemsGamePath);
+	StockAttributes_ConstructFull(g_StockAttributes[0], "scripts/items/items_game.txt");
 
 	if (! LibraryExists("TF2Items") && ! g_bTF2ItemsBackupHooked)
 	{
@@ -439,11 +427,6 @@ StartPlugin ()
 		return;
 	}
 
-	if (IsPluginDisabled())
-	{
-		return;
-	}
-
 	//Enable the plugin
 	g_bPluginStarted = true;
 
@@ -516,7 +499,7 @@ StartPlugin ()
 	
 		Steam_SetGameDescription(FormattedString);
 	}
-	
+
 	//Call the Forward notifying other plugins that the plugin is ready.
 	Call_StartForward(g_hPluginReady); //Esc_PluginReady
 	Call_Finish();
@@ -547,7 +530,7 @@ StopPlugin ()
 	//"Disconnect" all the connected players.
 	for (new iClient = 1; iClient <= MaxClients; iClient ++)
 	{
-		if (IsClientValid(iClient))
+		if (IsClientValid(iClient) && g_bClientHasData[iClient])
 		{
 			OnClientDisconnect(iClient);
 		}
@@ -579,11 +562,14 @@ StopPlugin ()
 	UnhookEvent("teamplay_capture_blocked", Event_CaptureBlocked);
 	
 	g_bPluginStarted = false;
+	g_bBuyUpgrades = false;
+	g_bGiveCredits = false;
 	
 	if (g_bSteamTools)
 	{
 		Steam_SetGameDescription("Team Fortress");
 	}
+	
 	
 	//Call the Forward notifying other plugins that the plugin has been stopped.
 	Call_StartForward(g_hPluginStopped); //Esc_PluginStopped
@@ -677,7 +663,7 @@ public Steam_FullyLoaded ()
  */
 bool:IsPluginDisabled ()
 {
-	if  (g_bPluginDisabledForMap && g_bPluginDisabledAdmin)
+	if  (g_bPluginDisabledForMap || g_bPluginDisabledAdmin)
 	{
 		return true;
 	}
@@ -1150,8 +1136,6 @@ BuildClassUpgradeMenus (Handle:hClassInfo)
 	}
 }
 
-
-
 /************************MAP EVENTS************************/
 
 /**
@@ -1252,8 +1236,6 @@ ExecuteGameInfoConfig(Handle:hGameInfo)
 		if (buffer2[0] == 0)
 		{
 			LogError("Failure to find gamemode define for map prefix %s section in Escalation's gamemode config. The plugin will fall back to the default values for all gamemode settings.", buffer3);
-			
-			CloseHandle(hGameInfo);
 	
 			return;
 		}
@@ -1407,20 +1389,20 @@ public CVar_Enable_Changed (Handle:cvar, const String:oldVal[], const String:new
 	new bool:bNewValue = ! bool:StringToInt(newVal);
 	
 	if (bNewValue == true)
-	{	
-		g_bPluginDisabledAdmin = true;
-	
+	{
 		if (g_bPluginStarted)
 		{
 			StopPlugin();
 		}
 
 		CPrintToChatAll("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+
+		g_bPluginDisabledAdmin = true;
 	}
 	else if (bNewValue == false)
 	{
 		g_bPluginDisabledAdmin = false;
-	
+
 		if (! IsPluginDisabled() && ! g_bPluginStarted)
 		{
 			StartPlugin();
@@ -1432,7 +1414,6 @@ public CVar_Enable_Changed (Handle:cvar, const String:oldVal[], const String:new
 		}
 	}
 }
-
 
 /************************CORE PLAYER EVENTS************************/
 
@@ -1726,7 +1707,7 @@ public Action:Timer_MenuReminder (Handle:timer, any:data)
 {
 	new iClient = GetClientOfUserId(data);
 
-	if (iClient == 0 || ! IsClientConnected(iClient) || IsPluginDisabled())
+	if (iClient == 0 || ! g_bClientHasData[iClient] || IsPluginDisabled())
 	{
 		return Plugin_Stop;
 	}
@@ -1757,7 +1738,7 @@ public Action:Timer_AnnoyingMenuReminder (Handle:timer, any:data)
 {
 	new iClient = GetClientOfUserId(data);
 
-	if (iClient == 0 || ! IsClientConnected(iClient) || IsPluginDisabled())
+	if (iClient == 0 || ! g_bClientHasData[iClient] || IsPluginDisabled())
 	{
 		return Plugin_Stop;
 	}
@@ -1788,7 +1769,7 @@ public Action:Timer_ForceHUDTextUpdate (Handle:timer, any:data)
 {
 	new iClient = GetClientOfUserId(data);
 
-	if (iClient != 0 && IsClientInGame(iClient) && ! IsPluginDisabled())
+	if (iClient != 0 && g_bClientHasData[iClient] && ! IsPluginDisabled())
 	{
 		PlayerData_ForceHudTextUpdate(g_PlayerData[iClient][0]);
 	}
@@ -1816,6 +1797,11 @@ public Action:Timer_ForceHUDTextUpdate (Handle:timer, any:data)
  */
 public TF2Items_OnGiveNamedItem_Post (iClient, String:ClassName[], iItemDefinitionIndex, iItemLevel, iItemQuality, iEntityIndex)
 {
+	if (IsPluginDisabled())
+	{
+		return;
+	}
+
 	new Handle:hStack = CreateStack();
 
 	PushStackCell(hStack, EntIndexToEntRef(iEntityIndex));
@@ -1899,6 +1885,11 @@ public Event_PlayerInventoryCheck (Handle:event, const String:name[], bool:dontB
  */
 public FrameCallback_GiveNamedItem (any:aData)
 {
+	if (IsPluginDisabled())
+	{
+		return;
+	}
+
 	new iClient;
 	new iItemDefinitionIndex;
 	new iEntity;
@@ -5152,13 +5143,42 @@ public Native_Esc_GetArrayOfUpgrades (Handle:hPlugin, iNumParams)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
 	}
-	
-	
+
 	new Handle:hMyArray = UpgradeDataStore_GetArrayOfUpgrades(g_UpgradeDataStore[0]);
 	new Handle:hArray = CloneHandle(hMyArray, hPlugin);
 	CloseHandle(hMyArray);
 	
 	return _:hArray;
+}
+
+/**
+ * Native callback for checking if a client has data.
+ *
+ * @param hPlugin				Handle to the calling plugin.
+ * @param iNumParams			The number of arguments passed to the function.
+ *
+ * @return						True if the plugin is active, false if it isn't.
+ */
+public Native_Esc_ClientHasData (Handle:hPlugin, iNumParams)
+{
+	if (! g_bPluginStarted)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Escalation is not running.");
+	}
+
+	if (iNumParams != 1)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid number of arguments passed to functions.");
+	}
+
+	new iClient = GetNativeCell(1);
+	
+	if (! IsClientValid(iClient))
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i) passed to function.", iClient);
+	}
+	
+	return g_bClientHasData[iClient];
 }
 
 

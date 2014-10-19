@@ -97,6 +97,16 @@ native Esc_SetClientCredits (iClient, Set_Operation:iOperation, iFlags, iValue);
 native bool:Esc_IsPluginActive ();
 
 /**
+ * Checks if a client's data object exists.
+ *
+ * @param iClient				The client to check the data of.
+ *
+ * @error						Plugin not active or invalid client.
+ * @return						True if the client has data, false if they don't.
+ */
+native bool:Esc_ClientHasData (iClient);
+
+/**
  * Gets an array filled with the names of Escalation's upgradequeue.
  *
  * @error						Plugin not active/ready.
@@ -188,5 +198,6 @@ public __pl_Escalation_SetNTVOptional()
 	MarkNativeAsOptional("Esc_SetClientCredits");
 	MarkNativeAsOptional("Esc_IsPluginActive");
 	MarkNativeAsOptional("Esc_GetArrayOfUpgrades");
+	MarkNativeAsOptional("Esc_ClientHasData");
 }
 #endif

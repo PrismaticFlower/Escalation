@@ -1,3 +1,29 @@
+v1.0.0
+Bug Fixes
+	-Fixed the plugin failing to load if their were players on a spectator team.
+	-Player's now get the correct amount of credits when they destroy a building.
+
+Code Changes
+	-Added an upgrade queue saving sub-plugin named Escalation_QueueSaving. By default it will use SQL, can be made to just cache queues in memory using escalation_queuesaving_usesql.
+	-Using the client preferences extension the plugin will no longer display reminders to open the upgrade menu to players that have done it before.
+	-Changed the way the plugin stores gamemode information.
+	-Client's upgrade queues are now processed at round start and when they change class in spawn.
+
+CVar Changes
+	-Added escalation_hudreminder to enable admins to disable the HUD reminder.
+	-Added escalation_chatreminder to enable admins to disable the chat reminder.
+	-Added escalation_queuesaving_usesql to enable admins to disable SQL queue saving.
+
+Command Changes
+	-Upgrade commands can no longer be used when not ingame and when not on a team.
+	-Added sm_setgameinfo admin command. (Defaults to cheats flag)
+
+Upgrade Changes
+	-The Big Earner's Cloak On Backstab upgrade now grants the Silent Killer attribute as well.
+
+Gamemode Changes
+	-Added support for CTF.
+
 v0.9.9
 Bug Fixes
 	-Updated the path to items_game.txt after Valve changed it again.

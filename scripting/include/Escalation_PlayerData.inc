@@ -14,6 +14,7 @@ enum PlayerData
 {
 	m_iObjectType, /**< A variable containing a unique number used to perform checks to ensure an object has been constructed. (Obivously not a robust check, but hopefully enough to catch out most programming mistakes.) */
 	m_iClient, /**< The index of the client the object was created for. */
+	bool:m_bCookiesRead, /**< Have the client's cookies been read? */
 	
 	//Upgrade QueueZ!
 	Handle:m_hUpgradeQueueScout, /**< An array of upgrade queue structs for Scout. */
@@ -74,7 +75,8 @@ PlayerData_ConstructFull (this[], iClient)
 	this[PlayerData:m_iObjectType] = PlayerDataID;
 	
 	this[m_iClient] = iClient;
-	
+	this[m_bCookiesRead] = false;
+
 	this[m_hUpgradeQueueScout] = CreateArray(_:UpgradeQueue);
 	this[m_hUpgradeQueueSoldier] = CreateArray(_:UpgradeQueue);
 	this[m_hUpgradeQueuePyro] = CreateArray(_:UpgradeQueue);
@@ -1210,6 +1212,48 @@ PlayerData_SetTimeStartedCapture (this[])
 }
 
 /**
+ * Checks if the client's cookies have been read.
+ *
+ * @param this				A PlayerData object.
+ *
+ * @error					Invalid object.
+ * @return					True if the client's cookies have been read, false if they haven't.
+ */
+bool:PlayerData_GetReadCookies (this[])
+{
+	#if defined USE_OBJECT_SAFETY_CHECK
+		if (this[PlayerData:m_iObjectType] != PlayerDataID)
+		{
+			ThrowError("Invalid object passed to function. A valid, constructed object is expected.");
+		}
+	#endif
+	
+	
+	return this[m_bCookiesRead];
+}
+
+/**
+ * Sets that the client's cookies have been read.
+ *
+ * @param this				A PlayerData object.
+ *
+ * @error					Invalid object.
+ * @noreturn
+ */
+PlayerData_SetCookiesRead (this[])
+{
+	#if defined USE_OBJECT_SAFETY_CHECK
+		if (this[PlayerData:m_iObjectType] != PlayerDataID)
+		{
+			ThrowError("Invalid object passed to function. A valid, constructed object is expected.");
+		}
+	#endif
+	
+	this[m_bCookiesRead] = true;
+}
+
+
+/**
  * Gets if the client has opened the upgrade menu.
  *
  * @param this				A PlayerData object.
@@ -1249,7 +1293,10 @@ PlayerData_SetHasOpenedMenu (this[])
 	
 	this[m_bHasOpenedMenu] = true;
 	
-	ClearSyncHud(this[m_iClient], this[m_hHUDReminderText]);
+	if (IsClientInGame(this[m_iClient]))
+	{
+		ClearSyncHud(this[m_iClient], this[m_hHUDReminderText]);
+	}
 }
 
 /**

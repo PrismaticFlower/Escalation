@@ -5,6 +5,8 @@
 #include<tf2_stocks>
 #include<tf2attributes>
 
+#include<clientprefs>
+
 #undef REQUIRE_EXTENSIONS
 #include<tf2items>
 #include<steamtools>
@@ -15,10 +17,12 @@
 #include<Escalation_Constants>
 #include<Escalation_Stocks>
 #include<Escalation_Objects>
+
+#define REQUIRE_PLUGIN
 #include<Escalation_CustomAttributes>
 
 #define PLUGIN_NAME "Escalation"
-#define PLUGIN_VERSION "0.9.9"
+#define PLUGIN_VERSION "1.0.0"
 
 
 public Plugin:myinfo =
@@ -29,84 +33,6 @@ public Plugin:myinfo =
 	version = PLUGIN_VERSION,
 	url = ""
 };
-
- 
-/************************GAMEINFO VARIABLES************************/
-
-//ClientConnected
-static g_iClientConnected_StartingCredits = 50;
-static g_iClientConnected_CompensateCredits = 2;
-
-//PlayerChangeTeam
-static g_iPlayerChangeTeam_CompensateObjectiveCredits = 1;
-static g_iPlayerChangeTeam_SwapObjectiveCredits = 1;
-
-//OnDeath
-static g_iOnDeath_Credits = 30;
-static g_iOnDeath_MaxStreak = 3;
-
-
-//OnKill
-static g_iOnKill_Credits = 15;
-static g_iOnKill_MaxStreak = 3;
-
-//OnAssist
-static g_iOnAssist_Credits = 5;
-
-//OnMedicKilled
-static g_iOnMedicKilled_BonusCredits = 5;	
-static g_iOnMedicKilled_UberDroppedCredits = 10;
-
-//OnMedicDeath
-static g_iOnMedicDeath_AmountHealed = 250; 
-static g_iOnMedicDeath_CreditsPerAmountHealed = 1;
-
-//OnMedicDefended
-static g_iOnMedicDefended_Credits = 5;
-
-//OnDomination
-static g_iOnDomination_Credits = 10;
-
-
-//OnDominated
-static g_iOnDominated_Credits = 15;
-
-//OnCapturePoint
-static g_iOnCapturePoint_Credits = 30;
-
-//OnLosePoint
-static g_iOnLosePoint_Credits = 50;
-
-//OnDefendedPoint
-static g_iOnDefendedPoint_Credits = 15;
- 
-//OnCaptureStarted
-static g_iOnCaptureStarted_Credits = 10;
-static g_iOnCaptureStarted_Timeout = 3;
-
-//PlayerTeleported
-static g_iPlayerTeleported_Credits = 10;
-
-//UpgradedBuilding
-static g_iUpgradedBuilding_Credits = 5;
-static g_iUpgradedBuilding_OtherCredits = 10;
-
-//ChargeDeployed
-static g_iChargeDeployed_Credits = 20;
-static Float:g_fChargeDeployed_KritzScale = 0.75;
-static Float:g_fChargeDeployed_QFScale = 0.75;
-static Float:g_fChargeDeployed_VaccScale = 0.25;
-
-//PlayerExtinguished
-static g_iPlayerExtinguished_Credits = 5;
-
-//ObjectDestroyed
-static g_iObjectDestroyed_SentryCredits = 15;
-static Float:g_fObjectDestroyed_MiniScale = 0.33;
-static g_iObjectDestroyed_DispenserCredits = 10;
-static g_iObjectDestroyed_TeleporterCredits = 10;
-static g_iObjectDestroyed_SapperCredits = 5;
-static Float:g_fObjectDestroyed_WasBuildingScale = 0.5;
 
 /************************CREDIT VARIABLES************************/
 
@@ -139,6 +65,10 @@ static bool:g_bBuyUpgrades; /**< When set to true the plugin will buy upgrades, 
 
 static bool:g_bGiveCredits; /**< When set to true the plugin will give players credits for doing stuff, when set to false it won't. */
 
+static bool:g_bHUDReminder = true; /**< When set to true the plugin will display a HUD reminder to new players. */
+
+static bool:g_bChatReminder = true; /**< When set to true the plugin will display a chat reminder to new players. */
+
 /************************LIBRARY VARIABLES************************/
 
 static bool:g_bTF2ItemsBackupHooked; /**< Used to keep track of if the TF2Items fallback event has been hooked. */
@@ -156,6 +86,8 @@ static Handle:g_hClientCreditsChanged = INVALID_HANDLE; /**< Handle to the forwa
 /************************CVAR VARIABLES************************/
 
 static Handle:CVar_Enabled = INVALID_HANDLE; /**< A handle to the cvar the server admin can use to disable the plugin. */
+static Handle:CVar_HUD_Reminder = INVALID_HANDLE; /**< A handle to the cvar the server admin can use to disable the HUD reminder. */
+static Handle:CVar_Chat_Reminder = INVALID_HANDLE; /**< A handle to the cvar the server admin can use to disable the chat reminder. */
 
 /************************OBJECTS************************/
 
@@ -205,6 +137,10 @@ static g_BannedUpgrades[BannedUpgrades];
  */
 static g_StockAttributes[StockAttributes];
 
+/**
+ * Stores the current gamemode information.
+ */
+static g_GameInfo[KVMap];
 
 /************************ADMIN MENU VARIABLES************************/
 
@@ -214,6 +150,9 @@ static TopMenuObject:g_AdminMenuBanUpgrades;
 static TopMenuObject:g_AdminMenuUnbanUpgrades;
 static TopMenuObject:g_AdminMenuResetBannedUpgrades;
 
+/************************CLIENT COOKIE VARIABLES************************/
+
+static Handle:g_hMenuOpenedCookie = INVALID_HANDLE; /**< A handle to the cookie for a client has opened the upgrade menu. */
 
 /************************CORE PLUGIN FUNCTIONS************************/
 
@@ -256,13 +195,20 @@ public OnPluginStart()
 	LoadTranslations("Escalation.phrases");
 	LoadTranslations("escalation_upgrade.phrases");
 	LoadTranslations("Escalation_AttrDescriptions.phrases");
-
-	CVar_Enabled = CreateConVar("escalation_enabled", "1", "When set to 1 the plugin is enabled! When set to 0 the plugin is disabled, amazing!", FCVAR_NOTIFY, true, 0.0, true, 1.0);	CreateConVar("escalation_version", PLUGIN_VERSION, "The version of the plugin you're running, not much else to say really.", FCVAR_NOTIFY | FCVAR_DONTRECORD | FCVAR_SPONLY);
+	
+	CreateConVar("escalation_version", PLUGIN_VERSION, "The version of the plugin you're running, not much else to say really.", FCVAR_NOTIFY | FCVAR_DONTRECORD | FCVAR_SPONLY | FCVAR_PLUGIN);
+	CVar_Enabled = CreateConVar("escalation_enabled", "1", "When set to 1 the plugin is enabled! When set to 0 the plugin is disabled, amazing!", FCVAR_NOTIFY | FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	CVar_HUD_Reminder = CreateConVar("escalation_hudreminder", "1", "If 1 a HUD reminder tells players to open the upgrade menu will be displayed to players connecting to the server for the first time.",  FCVAR_PLUGIN, true, 0.0, true, 1.0);	
+	CVar_Chat_Reminder = CreateConVar("escalation_chatreminder", "1", "If 1 a chat reminder tells players to open the upgrade menu will be displayed to players connecting to the server for the first time.",  FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
 	AutoExecConfig(true, "Escalation_Config"); //Execute the config.
 	
 	HookConVarChange(CVar_Enabled, CVar_Enable_Changed);
+	HookConVarChange(CVar_HUD_Reminder, CVar_Misc_Changed);
+	HookConVarChange(CVar_Chat_Reminder, CVar_Misc_Changed);
 	
+	g_hMenuOpenedCookie = RegClientCookie("escalation_menuopened", "", CookieAccess_Private);
+
 	//Create the forwards.
 	g_hClientCreditsChanged = CreateGlobalForward("Esc_ClientCreditsChanged", ET_Ignore, Param_Cell, Param_CellByRef, Param_Cell, Param_CellByRef);
 	g_hClientDataReady = CreateGlobalForward("Esc_PlayerDataCreated", ET_Ignore, Param_Cell);
@@ -290,6 +236,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_reset_bannedcombos", Command_ResetBannedCombos, ADMFLAG_BAN, "Resets all banned upgrade and weapon combinations.");
 	RegAdminCmd("sm_menu_banupgrade", Command_BanUpgradeMenu, ADMFLAG_BAN, "Allows you to ban an upgrade through a menu.");
 	RegAdminCmd("sm_menu_unbanupgrade", Command_UnbanUpgradeMenu, ADMFLAG_BAN, "Allows you to ban an upgrade through a menu.");
+	RegAdminCmd("sm_setgameinfo", Command_SetGameInfo, ADMFLAG_CHEATS, "Sets a game info variable. (The starting credits of a client for instance.)");
 
 	//Developer Commands
 	#if defined DEV_BUILD
@@ -305,7 +252,7 @@ public OnPluginStart()
 	#endif
 
 	BannedUpgrades_Construct(g_BannedUpgrades[0]);
-
+	KVMap_Construct(g_GameInfo[0]);
 	StockAttributes_ConstructFull(g_StockAttributes[0], "scripts/items/items_game.txt");
 
 	if (! LibraryExists("TF2Items") && ! g_bTF2ItemsBackupHooked)
@@ -320,8 +267,11 @@ public OnPluginStart()
 		OnAdminMenuReady(hTopMenu);
 	}
 
+	//Cache Initial Cvar values
 	g_bPluginDisabledAdmin = ! GetConVarBool(CVar_Enabled);
-
+	g_bHUDReminder = GetConVarBool(CVar_HUD_Reminder);
+	g_bChatReminder = GetConVarBool(CVar_Chat_Reminder);
+	
 	//Start The Plugin!
 	if (! g_bPluginDisabledAdmin)
 	{
@@ -439,10 +389,10 @@ StartPlugin ()
 
 	//Execute The Configs
 	ExecuteConfigs();
-	
+
 	//Catch those pesky already connected players.
 	new bool:bClientWasConnected;
-	
+
 	for (new iClient = 1; iClient <= MaxClients; iClient ++)
 	{
 		if (IsClientValid(iClient))
@@ -452,13 +402,13 @@ StartPlugin ()
 			bClientWasConnected = true;
 			
 			//Cache Those Weapon Thingys
-			if (IsClientInGame(iClient))
+			if (IsClientInGame(iClient) && ! IsClientSpectator(iClient))
 			{
 				ForceCachedLoadoutRefresh(iClient);
 			}
 		}
 	}
-	
+
 	if (bClientWasConnected)
 	{
 		ServerCommand("mp_restartgame_immediate 1");
@@ -469,12 +419,12 @@ StartPlugin ()
 	HookEvent("player_changeclass", Event_PlayerChangeClass);		
 	HookEvent("post_inventory_application", Event_PlayerResupply);
 	HookEvent("player_spawn", Event_PlayerSpawn);
-	
+
 	//Round Events
 	HookEvent("teamplay_round_start", Event_RoundStart);
 	HookEvent("teamplay_round_win", Event_RoundEnd);
 	HookEvent("teamplay_round_stalemate", Event_RoundEnd);
-	
+
 	//Player Events
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("medic_death", Event_MedicDeath);
@@ -484,14 +434,15 @@ StartPlugin ()
 	HookEvent("player_chargedeployed", Event_ChargeDeployed);
 	HookEvent("player_extinguished", Event_PlayerExtinguished);
 	HookEvent("object_destroyed", Event_ObjectDestroyed);
-	
+
 	//Team Events
+	HookEvent("teamplay_flag_event", Event_FlagEvent);
 	HookEvent("teamplay_point_startcapture", Event_PointContested);
 	HookEvent("teamplay_point_captured", Event_CapturedPoint);
 	HookEvent("teamplay_capture_blocked", Event_CaptureBlocked);
-	
+
 	CPrintToChatAll("%t %t", "Escalation_Tag", "Plugin_Started");
-	
+
 	if (g_bSteamTools)
 	{
 		decl String:FormattedString[256];
@@ -526,7 +477,7 @@ StopPlugin ()
 	UpgradeDataStore_Destroy(g_UpgradeDataStore[0]);
 	ClassInfoStore_Destroy(g_ClassInfoStore[0]);
 	UpgradeDescriptions_Destroy(g_UpgradeDescriptions[0]);
-	
+
 	//"Disconnect" all the connected players.
 	for (new iClient = 1; iClient <= MaxClients; iClient ++)
 	{
@@ -535,12 +486,12 @@ StopPlugin ()
 			OnClientDisconnect(iClient);
 		}
 	}
-	
+
 	//Round Events
 	UnhookEvent("teamplay_round_start", Event_RoundStart);
 	UnhookEvent("teamplay_round_win", Event_RoundEnd);
 	UnhookEvent("teamplay_round_stalemate", Event_RoundEnd);
-	
+
 	//Player Events
 	UnhookEvent("player_death", Event_PlayerDeath);
 	UnhookEvent("medic_death", Event_MedicDeath);
@@ -550,27 +501,28 @@ StopPlugin ()
 	UnhookEvent("player_chargedeployed", Event_ChargeDeployed);
 	UnhookEvent("player_extinguished", Event_PlayerExtinguished);
 	UnhookEvent("object_destroyed", Event_ObjectDestroyed);
-	
+
 	UnhookEvent("player_team", Event_PlayerChangeTeam);
 	UnhookEvent("player_changeclass", Event_PlayerChangeClass);		
 	UnhookEvent("post_inventory_application", Event_PlayerResupply);
 	UnhookEvent("player_spawn", Event_PlayerSpawn);
-	
+
 	//Team Events
+	UnhookEvent("teamplay_flag_event", Event_FlagEvent);
 	UnhookEvent("teamplay_point_startcapture", Event_PointContested);
 	UnhookEvent("teamplay_point_captured", Event_CapturedPoint);
 	UnhookEvent("teamplay_capture_blocked", Event_CaptureBlocked);
-	
+
 	g_bPluginStarted = false;
 	g_bBuyUpgrades = false;
 	g_bGiveCredits = false;
-	
+
 	if (g_bSteamTools)
 	{
 		Steam_SetGameDescription("Team Fortress");
 	}
-	
-	
+
+
 	//Call the Forward notifying other plugins that the plugin has been stopped.
 	Call_StartForward(g_hPluginStopped); //Esc_PluginStopped
 	Call_Finish();
@@ -594,7 +546,7 @@ public OnLibraryAdded (const String:Name[])
 			for (new iClient = 1; iClient <= MaxClients; iClient ++)
 			{
 	
-				if (IsClientInGame(iClient))
+				if (IsClientInGame(iClient) && ! IsClientSpectator(iClient))
 				{
 					ForceCachedLoadoutRefresh(iClient);
 				}
@@ -1203,11 +1155,13 @@ public OnMapEnd()
  */
 ExecuteGameInfoConfig(Handle:hGameInfo)
 {
-	decl String:buffer1[64]; //Stores the name of the map.
-	decl String:buffer2[32]; //Stores the name of the gamemode config to use.
-	decl String:buffer3[32]; //Stores the prefix of the map if needed.
+	decl String:Map[64]; //Stores the name of the map.
+	decl String:Gamemode[32]; //Stores the name of the gamemode config to use.
+	decl String:Prefix[32]; //Stores the prefix of the map if needed.
 	
-	GetCurrentMap(buffer1, sizeof(buffer1));
+	GetCurrentMap(Map, sizeof(Map));
+
+	ReadGameConfigSection(hGameInfo, "*"); //Execute the base config.
 	
 	//TODO: Insert string to lower here.
 	
@@ -1218,10 +1172,10 @@ ExecuteGameInfoConfig(Handle:hGameInfo)
 		return;
 	}
 	
-	KvGetString(hGameInfo, buffer1, buffer2, sizeof(buffer2));
+	KvGetString(hGameInfo, Map, Gamemode, sizeof(Gamemode));
 	
 	//If the map wasn't specified in the config file we fall back to using it's prefix. If this fails the plugin will just use the default config values.
-	if (buffer2[0] == 0)
+	if (Gamemode[0] == 0)
 	{
 		if (! KvJumpToKey(hGameInfo, "prefixes"))
 		{
@@ -1230,151 +1184,88 @@ ExecuteGameInfoConfig(Handle:hGameInfo)
 			return;
 		}
 		
-		SplitString(buffer1, "_", buffer3, sizeof(buffer3));		
-		KvGetString(hGameInfo, buffer3, buffer2, sizeof(buffer2));
+		SplitString(Map, "_", Prefix, sizeof(Prefix));		
+		KvGetString(hGameInfo, Prefix, Gamemode, sizeof(Gamemode));
 		
-		if (buffer2[0] == 0)
+		if (Gamemode[0] == 0)
 		{
-			LogError("Failure to find gamemode define for map prefix %s section in Escalation's gamemode config. The plugin will fall back to the default values for all gamemode settings.", buffer3);
+			LogError("Failure to find gamemode define for map prefix %s section in Escalation's gamemode config. The plugin will fall back to the default values for all gamemode settings.", Prefix);
 	
 			return;
 		}
 	}
 	
-	if (StrEqual(buffer2, "NOSUPPORT")) //No support for this gamemode? Shame, we'll just have to disable the plugin for the map.
+	if (StrEqual(Gamemode, "NOSUPPORT")) //No support for this gamemode? Shame, we'll just have to disable the plugin for the map.
 	{
 		g_bPluginDisabledForMap = true;
 	
 		return;
 	}
-	
+
+	ReadGameConfigSection(hGameInfo, Gamemode);
+}
+
+/**
+ * Used by ExecuteGameInfoConfig to read sub-sections in escalation_gameinfo.cfg.
+ *
+ * @param hGameInfo		A handle to a KeyValue structure to get the config information from.
+ *
+ * @noreturn
+ */
+ReadGameConfigSection(Handle:hGameInfo, const String:ConfigName[])
+{
 	KvRewind(hGameInfo); //Reset this before trying to continue.
-	KvJumpToKey(hGameInfo, buffer2);
-
 	
-	if (KvJumpToKey(hGameInfo, "ClientConnected"))
+	if (! KvJumpToKey(hGameInfo, ConfigName))
 	{
-		g_iClientConnected_StartingCredits = KvGetNum(hGameInfo, "StartingCredits");
-		g_iClientConnected_CompensateCredits = KvGetNum(hGameInfo, "CompensateCredits");
-		KvGoBack(hGameInfo);
-	}
-	
-	if (KvJumpToKey(hGameInfo, "PlayerChangeTeam"))
-	{
-		g_iPlayerChangeTeam_CompensateObjectiveCredits = KvGetNum(hGameInfo, "CompensateObjectiveCredits");
-		g_iPlayerChangeTeam_SwapObjectiveCredits = KvGetNum(hGameInfo, "SwapObjectiveCredits");
-		KvGoBack(hGameInfo);		
+		return;
 	}
 
-	if (KvJumpToKey(hGameInfo, "OnDeath"))
-	{
-		g_iOnDeath_Credits = KvGetNum(hGameInfo, "Credits");
-		g_iOnDeath_MaxStreak = KvGetNum(hGameInfo, "MaxStreak");
-		KvGoBack(hGameInfo);
-	}
+	KvGotoFirstSubKey(hGameInfo);
 	
-	if (KvJumpToKey(hGameInfo, "OnKill"))
+	do
 	{
-		g_iOnKill_Credits = KvGetNum(hGameInfo, "Credits");
-		g_iOnKill_MaxStreak = KvGetNum(hGameInfo, "MaxStreak");
-		KvGoBack(hGameInfo);
-	}
-	
-	if (KvJumpToKey(hGameInfo, "OnAssist"))
-	{
-		g_iOnAssist_Credits = KvGetNum(hGameInfo, "Credits");
-		KvGoBack(hGameInfo);
-	}
-	
-	if (KvJumpToKey(hGameInfo, "OnMedicKilled"))
-	{
-		g_iOnMedicKilled_BonusCredits = KvGetNum(hGameInfo, "BonusCredits");
-		g_iOnMedicKilled_UberDroppedCredits = KvGetNum(hGameInfo, "UberDroppedCredits");		
-		KvGoBack(hGameInfo);
-	}	
-		
-	if (KvJumpToKey(hGameInfo, "OnMedicDeath"))
-	{
-		g_iOnMedicDeath_AmountHealed = KvGetNum(hGameInfo, "AmountHealed");
-		g_iOnMedicDeath_CreditsPerAmountHealed = KvGetNum(hGameInfo, "CreditsPerAmountHealed");
-		KvGoBack(hGameInfo);
-	}
-	
-	if (KvJumpToKey(hGameInfo, "OnMedicDefended"))
-	{
-		g_iOnMedicDefended_Credits = KvGetNum(hGameInfo, "Credits");
-		KvGoBack(hGameInfo);
-	}
+		decl String:SectionName[SECTION_NAME_MAX_LENGTH];	
+		KvGetSectionName(hGameInfo, SectionName, sizeof(SectionName));
 
-	if (KvJumpToKey(hGameInfo, "OnDomination"))
-	{
-		g_iOnDomination_Credits  = KvGetNum(hGameInfo, "Credits");
-		KvGoBack(hGameInfo);
-	}
+		KvGotoFirstSubKey(hGameInfo, false);
 
-	if (KvJumpToKey(hGameInfo, "OnDominated"))
-	{
-		g_iOnDominated_Credits  = KvGetNum(hGameInfo, "Credits");
-		KvGoBack(hGameInfo);
-	}
-	
-	if (KvJumpToKey(hGameInfo, "OnCapturePoint"))
-	{
-		g_iOnCapturePoint_Credits = KvGetNum(hGameInfo, "Credits");
-		KvGoBack(hGameInfo);
-	}
+		do
+		{
+			new bool:bIsFloat = false;
 
-	if (KvJumpToKey(hGameInfo, "OnLosePoint"))
-	{
-		g_iOnLosePoint_Credits = KvGetNum(hGameInfo, "Credits");
-		KvGoBack(hGameInfo);
-	}
-	
-	if (KvJumpToKey(hGameInfo, "OnDefendedPoint"))
-	{
-		g_iOnDefendedPoint_Credits = KvGetNum(hGameInfo, "Credits");
-		KvGoBack(hGameInfo);
-	}
+			decl String:ValueName[VALUE_NAME_MAX_LENGTH];
+			decl String:Value[32];
 
-	if (KvJumpToKey(hGameInfo, "OnCaptureStarted"))
-	{
-		g_iOnCaptureStarted_Credits = KvGetNum(hGameInfo, "Credits");
-		g_iOnCaptureStarted_Timeout = KvGetNum(hGameInfo, "Timeout");
+			KvGetSectionName(hGameInfo, ValueName, sizeof(ValueName));
+			KvGetString(hGameInfo, NULL_STRING, Value, sizeof(Value));
+
+			if (Value[0] == 'f')
+			{
+				bIsFloat = true;
+				ReplaceStringEx(ValueName, sizeof(ValueName), "f", "", -1, -1, false);
+			}
+
+			new any:Cell;
+			
+			if (bIsFloat)
+			{
+				Cell = StringToFloat(Value);
+			}
+			else
+			{
+				Cell = StringToInt(Value);
+			}
+
+			KVMap_SetCell(g_GameInfo[0], SectionName, ValueName, Cell);
+
+		} while (KvGotoNextKey(hGameInfo, false))
+
 		KvGoBack(hGameInfo);
-	}
-	
-	if (KvJumpToKey(hGameInfo, "PlayerTeleported"))
-	{
-		g_iPlayerTeleported_Credits = KvGetNum(hGameInfo, "Credits");
-		KvGoBack(hGameInfo);
-	}
-	
-	if (KvJumpToKey(hGameInfo, "UpgradedBuilding"))
-	{
-		g_iUpgradedBuilding_Credits = KvGetNum(hGameInfo, "Credits");
-		g_iUpgradedBuilding_OtherCredits = KvGetNum(hGameInfo, "OtherCredits");
-		KvGoBack(hGameInfo);
-	}
-	
-	if (KvJumpToKey(hGameInfo, "ChargeDeployed"))
-	{
-		g_iChargeDeployed_Credits = KvGetNum(hGameInfo, "Credits");
-		g_fChargeDeployed_KritzScale = KvGetFloat(hGameInfo, "QFScale");
-		g_fChargeDeployed_QFScale = KvGetFloat(hGameInfo, "QFScale");
-		g_fChargeDeployed_VaccScale = KvGetFloat(hGameInfo, "VaccScale");
-		
-		KvGoBack(hGameInfo);
-	}
-	
-	if (KvJumpToKey(hGameInfo, "ObjectDestroyed"))
-	{
-		g_iObjectDestroyed_SentryCredits = KvGetNum(hGameInfo, "SentryCredits");
-		g_fObjectDestroyed_MiniScale = KvGetFloat(hGameInfo, "MiniScale");
-		g_iObjectDestroyed_DispenserCredits = KvGetNum(hGameInfo, "DispenserCredits");
-		g_iObjectDestroyed_TeleporterCredits = KvGetNum(hGameInfo, "TeleporterCredits");
-		g_iObjectDestroyed_SapperCredits = KvGetNum(hGameInfo, "SapperCredits");
-		g_fObjectDestroyed_WasBuildingScale = KvGetFloat(hGameInfo, "WasBuildingScale");
-	}
+
+	} while (KvGotoNextKey(hGameInfo))
+
+	KvRewind(hGameInfo);
 }
 
 /************************CVAR EVENTS************************/
@@ -1415,6 +1306,23 @@ public CVar_Enable_Changed (Handle:cvar, const String:oldVal[], const String:new
 	}
 }
 
+/**
+ * Handles most CVar changes.
+ *
+ * @noreturn
+ */
+public CVar_Misc_Changed (Handle:cvar, const String:oldVal[], const String:newVal[])
+{
+	if (cvar == CVar_HUD_Reminder)
+	{
+		g_bHUDReminder = bool:StringToInt(newVal);
+	}
+	else if (cvar == CVar_Chat_Reminder)
+	{
+		g_bChatReminder = bool:StringToInt(newVal);
+	}
+}
+
 /************************CORE PLAYER EVENTS************************/
 
 /**
@@ -1446,26 +1354,56 @@ public OnClientConnected (iClient)
 	Call_PushCell(iClient);
 	Call_Finish();
 	
+	new iStartingCredits;
+	new iCompensateCredits;
+	new bool:bCompensateObjectiveCredits;
+
+	KVMap_IndexGetCell(g_GameInfo[0], "ClientConnected.StartingCredits", iStartingCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "ClientConnected.CompensateCredits", iCompensateCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "PlayerChangeTeam.CompensateObjectiveCredits", bCompensateObjectiveCredits);
+
 	//Set their starting credits.
-	Set_iClientCredits(g_iClientConnected_StartingCredits, SET_ABSOLUTE, iClient, ESC_CREDITS_STARTING);
-	
-	if (g_iPlayerChangeTeam_CompensateObjectiveCredits == 1)
+	Set_iClientCredits(iStartingCredits, SET_ABSOLUTE, iClient, ESC_CREDITS_STARTING);
+
+	if (bCompensateObjectiveCredits)
 	{
 		PlayerData_SetGiveObjectiveCredits(g_PlayerData[iClient][0], true);
 	}
-	
-	if (g_iClientConnected_CompensateCredits == 1)
+
+	if (iCompensateCredits == 1)
 	{
 		Set_iClientCredits(GetAverageCredits(iClient), SET_ADD, iClient, ESC_CREDITS_COMPENSATE);
 	}
-	else if (g_iClientConnected_CompensateCredits == 2)
+	else if (iCompensateCredits == 2)
 	{
 		new iAverage = GetAverageCredits(iClient);
 		Set_iClientCredits(iAverage - (iAverage/4), SET_ADD, iClient, ESC_CREDITS_COMPENSATE);
 	}
-	
-	CreateTimer(15.0, Timer_MenuReminder, GetClientUserId(iClient), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(60.0, Timer_AnnoyingMenuReminder, GetClientUserId(iClient), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+
+	if (g_bChatReminder)
+	{
+		CreateTimer(15.0, Timer_MenuReminder, GetClientUserId(iClient), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	}
+
+	if (g_bHUDReminder)
+	{
+		CreateTimer(60.0, Timer_AnnoyingMenuReminder, GetClientUserId(iClient), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	}
+
+	if (! PlayerData_GetReadCookies(g_PlayerData[iClient][0]) && AreClientCookiesCached(iClient))
+	{
+		decl String:CookieValue[32];
+		GetClientCookie(iClient, g_hMenuOpenedCookie, CookieValue, sizeof(CookieValue));
+
+		new bool:bValue = bool:StringToInt(CookieValue);
+
+		if (bValue)
+		{
+			PlayerData_SetHasOpenedMenu(g_PlayerData[iClient][0]);
+		}
+		
+		PlayerData_SetCookiesRead(g_PlayerData[iClient][0]);
+	}
 }
 
 /**
@@ -1491,6 +1429,12 @@ public OnClientDisconnect (iClient)
 	Call_StartForward(g_hClientDataDestroy); //Esc_PlayerDataCreated
 	Call_PushCell(iClient);
 	Call_Finish();
+
+	//Save any cookie values.
+	new String:MenuOpened[4];
+	IntToString(PlayerData_GetHasOpenedMenu(g_PlayerData[iClient][0]), MenuOpened, sizeof(MenuOpened));
+
+	SetClientCookie(iClient, g_hMenuOpenedCookie, MenuOpened);
 	
 	//Destroy the client's data object.
 	PlayerData_Destroy(g_PlayerData[iClient][0]);
@@ -1510,6 +1454,35 @@ public OnClientDisconnect (iClient)
 			PlayerData_ResetDeathCounter(g_PlayerData[i][0], iClient);
 		}
 	}
+
+
+}
+
+/**
+ * Reads in a client's cookies.
+ *
+ * @param iClient		The index of the client whose cookies are cached.
+ *
+ * @noreturn
+ */
+public OnClientCookiesCached (iClient)
+{
+	if (! g_bClientHasData[iClient] || PlayerData_GetReadCookies(g_PlayerData[iClient][0]))
+	{
+		return;
+	}
+	
+	decl String:CookieValue[32];
+	GetClientCookie(iClient, g_hMenuOpenedCookie, CookieValue, sizeof(CookieValue));
+	
+	new bool:bValue = bool:StringToInt(CookieValue);
+	
+	if (bValue)
+	{
+		PlayerData_SetHasOpenedMenu(g_PlayerData[iClient][0]);
+	}
+	
+	PlayerData_SetCookiesRead(g_PlayerData[iClient][0]);
 }
 
 /**
@@ -1574,54 +1547,7 @@ public Event_PlayerResupply (Handle:event, const String:name[], bool:dontBroadca
 		return;
 	}
 
-	//Check if the upgrade queue needs reprocessing.
-	if (PlayerData_GetForceQueueReprocess(g_PlayerData[iClient][0]))
-	{
-		PlayerAttributeManager_ClearAttributes(iClient);
-		WeaponAttributes_Clear(iClient);
-		PlayerData_ResetQueuePosition(g_PlayerData[iClient][0]);
-
-		PlayerData_SetForceQueueReprocess(g_PlayerData[iClient][0], false)
-	}
-
-	if (PlayerData_HaveWeaponsChanged(g_PlayerData[iClient][0]))
-	{
-		PlayerAttributeManager_ClearAttributes(iClient);
-		WeaponAttributes_Clear(iClient);
-		
-		for (new i = 0; i < UPGRADABLE_SLOTS; i ++)
-		{
-			decl iAttributes[ENTITY_MAX_ATTRIBUTES];
-			decl Float:fValues[ENTITY_MAX_ATTRIBUTES];
-		
-			if (StockAttributes_GetItemAttributes(g_StockAttributes[0], PlayerData_GetWeaponID(g_PlayerData[iClient][0], i), iAttributes, fValues))
-			{
-				WeaponAttributes_SetAttributes(iClient, i, iAttributes, fValues);
-			}
-		}
-
-
-		PlayerData_ResetQueuePosition(g_PlayerData[iClient][0]);
-	}
-	
-	//This has to come after PlayerData_HaveWeaponsChanged to allow it to cache the player's weapon indexes.
-	if (IsPluginDisabled() || ! g_bBuyUpgrades)
-	{
-		return;
-	}
-		
-	//Process the upgrade queue.
-	for ( ; PlayerData_GetQueuePosition(g_PlayerData[iClient][0]) < PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient)); PlayerData_IncrementQueuePosition(g_PlayerData[iClient][0]) )
-	{
-		if (! (ProcessQueueAtPosition(iClient, PlayerData_GetQueuePosition(g_PlayerData[iClient][0]))))
-		{
-			break;
-		}
-	}
-	
-
-	WeaponAttributes_Apply(iClient);
-	PlayerAttributeManager_ApplyAttributes(iClient);
+	ProcessUpgradeQueue(iClient);
 }
 
 /**
@@ -1636,30 +1562,33 @@ public Event_PlayerChangeTeam (Handle:event, const String:name[], bool:dontBroad
 	new iTeam = GetEventInt(event, "team");
 	new iOldTeam = GetEventInt(event, "oldteam");
 	new bool:bClientDisconnected = GetEventBool(event, "disconnect");
-	
+
+	new bool:bSwapObjectiveCredits;	
+	KVMap_IndexGetCell(g_GameInfo[0], "PlayerChangeTeam.SwapObjectiveCredits", bSwapObjectiveCredits);
+
 	//Safety shibboleth to make sure stuff stays securely snug.
 	if (bClientDisconnected || iClient == 0)
 	{
 		return;
 	}
-	
+
 	if (PlayerData_GetGiveObjectiveCredits(g_PlayerData[iClient][0]))
 	{
 		Set_iClientCredits(Get_iObjectiveCredits(iTeam), SET_ADD, iClient, ESC_CREDITS_OBJECTIVE);
 		PlayerData_SetGiveObjectiveCredits(g_PlayerData[iClient][0], true);
 	}
-	else if (g_iPlayerChangeTeam_SwapObjectiveCredits == 1)
+	else if (bSwapObjectiveCredits)
 	{	
 		RefundUpgrades(iClient);
 		Set_iClientCredits(Get_iObjectiveCredits(iOldTeam), SET_SUBTRACT, iClient, ESC_CREDITS_OBJECTIVE);
 		Set_iClientCredits(Get_iObjectiveCredits(iTeam), SET_ADD, iClient, ESC_CREDITS_OBJECTIVE);
 	}
-	
+
 	CreateTimer(0.25, Timer_ForceHUDTextUpdate, iUserID);
 }
 
 /**
- * Refunds a client's upgrades when they change class, also forces their credit counter on their HUD to update.
+ * Refunds a client's upgrades when they change class, processes their upgrade queue and forces their credit counter on their HUD to update.
  *
  * @noreturn
  */
@@ -1674,6 +1603,11 @@ public Event_PlayerChangeClass (Handle:event, const String:name[], bool:dontBroa
 	}
 
 	RefundUpgrades(iClient);
+
+	if (IsPlayerAlive(iClient))
+	{
+		ProcessUpgradeQueue(iClient);
+	}
 
 	CreateTimer(0.25, Timer_ForceHUDTextUpdate, iUserID);
 }
@@ -1707,7 +1641,7 @@ public Action:Timer_MenuReminder (Handle:timer, any:data)
 {
 	new iClient = GetClientOfUserId(data);
 
-	if (iClient == 0 || ! g_bClientHasData[iClient] || IsPluginDisabled())
+	if (iClient == 0 || ! g_bClientHasData[iClient] || IsPluginDisabled() || ! g_bChatReminder)
 	{
 		return Plugin_Stop;
 	}
@@ -1738,7 +1672,7 @@ public Action:Timer_AnnoyingMenuReminder (Handle:timer, any:data)
 {
 	new iClient = GetClientOfUserId(data);
 
-	if (iClient == 0 || ! g_bClientHasData[iClient] || IsPluginDisabled())
+	if (iClient == 0 || ! g_bClientHasData[iClient] || IsPluginDisabled() || ! g_bHUDReminder)
 	{
 		return Plugin_Stop;
 	}
@@ -1950,6 +1884,19 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 	
 	new bool:bFullReset = GetEventBool(event, "full_reset");
 
+	new bool:bForceResetOutcome;
+	new bool:bForceResetCredits;
+	new iStartingCredits;
+	
+	KVMap_IndexGetCell(g_GameInfo[0], "RoundEvents.ForceResetOutcome", bForceResetOutcome);
+	KVMap_IndexGetCell(g_GameInfo[0], "RoundEvents.ResetCredits", bForceResetCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "ClientConnected.StartingCredits", iStartingCredits);
+	
+	if (bForceResetOutcome)
+	{
+		bFullReset = bForceResetCredits;
+	}
+	
 	if (bFullReset)
 	{
 		for (new iClient = 1; iClient <= MaxClients; iClient++)
@@ -1958,16 +1905,21 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 			{
 				continue;
 			}
-				
-			Set_iClientCredits(g_iClientConnected_StartingCredits, SET_ABSOLUTE, iClient, ESC_CREDITS_STARTING);
+
+			Set_iClientCredits(iStartingCredits, SET_ABSOLUTE, iClient, ESC_CREDITS_STARTING | ESC_CREDITS_RESET);
 		}
 	}
-	
-	for (new i = 1; i <= MaxClients; i ++)
+
+	for (new iClient = 1; iClient <= MaxClients; iClient ++)
 	{
-		if (IsClientInGame(i))
+		if (IsClientInGame(iClient))
 		{
-			CreateTimer(0.25, Timer_ForceHUDTextUpdate, GetClientUserId(i));
+			CreateTimer(0.5, Timer_ForceHUDTextUpdate, GetClientUserId(iClient));
+			
+			if (! IsClientSpectator(iClient))
+			{
+				ProcessUpgradeQueue(iClient);
+			}
 		}
 	}
 }
@@ -1998,7 +1950,20 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			bResetCredits = true;
 		}
 	}
+	
+	new bool:bForceResetOutcome;
+	new bool:bForceResetCredits;
+	new iStartingCredits;
+	
+	KVMap_IndexGetCell(g_GameInfo[0], "RoundEvents.ForceResetOutcome", bForceResetOutcome);
+	KVMap_IndexGetCell(g_GameInfo[0], "RoundEvents.ResetCredits", bForceResetCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "ClientConnected.StartingCredits", iStartingCredits);
 
+	if (bForceResetOutcome)
+	{
+		bResetCredits = bForceResetCredits;
+	}
+	
 	if (bResetCredits)
 	{
 		for (new iClient = 1; iClient <= MaxClients; iClient++)
@@ -2008,7 +1973,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 				continue;
 			}
 			
-			Set_iClientCredits(g_iClientConnected_StartingCredits, SET_ABSOLUTE, iClient, ESC_CREDITS_STARTING);
+			Set_iClientCredits(iStartingCredits, SET_ABSOLUTE, iClient, ESC_CREDITS_STARTING | ESC_CREDITS_RESET);
 		
 			for (new TFClassType:iClass = TFClassType:1; iClass <= TFClassType:9; iClass ++) 
 			{
@@ -2052,8 +2017,23 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		return;
 	}
-	
 
+	new iCreditsOnDeath;
+	new iCreditsOnKill;	
+	new iDeathMaxStreak;
+	new iKillMaxStreak;
+	new iDominatedCredits;
+	new iDominationCredits;
+	new iAssistCredits;
+	
+	KVMap_IndexGetCell(g_GameInfo[0], "OnDeath.Credits", iCreditsOnDeath);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnKill.Credits", iCreditsOnKill);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnDeath.MaxStreak", iDeathMaxStreak);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnKill.MaxStreak", iKillMaxStreak);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnDominated.Credits", iDominatedCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnDomination.Credits", iDominationCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnAssist.Credits", iAssistCredits);
+	
 	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	
@@ -2072,11 +2052,11 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 
 	//Check to see if we're at the limit on the amount of times a person will get extra credits from dying to someone else.
-	if (iDeathCount >= g_iOnDeath_MaxStreak)
-		iDeathCount = g_iOnDeath_MaxStreak; //If we are we set iDeathCount to the limit defined in escalation_gameinfo.
+	if (iDeathCount >= iDeathMaxStreak)
+		iDeathCount = iDeathMaxStreak; //If we are we set iDeathCount to the limit defined in escalation_gameinfo.
 	//Same thing as above only for the attacker.
-	if (iKillCount >= g_iOnKill_MaxStreak)
-		iKillCount = g_iOnKill_MaxStreak;
+	if (iKillCount >= iKillMaxStreak)
+		iKillCount = iKillMaxStreak;
 
 	//Grab the name of the client that died.		
 	decl String:clientName[MAX_NAME_LENGTH];
@@ -2091,12 +2071,12 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	new iOldCreditsAttacker = PlayerData_GetCredits(g_PlayerData[attacker][0]);
 	
 	//Determine how much to scale the amount of credits being given to the client.
-	new Float:fScaleClient = 1.0 / g_iOnDeath_MaxStreak * iDeathCount;
-	new Float:fScaleAttacker = (g_iOnKill_MaxStreak - (iKillCount - 1.0)) / g_iOnKill_MaxStreak;
+	new Float:fScaleClient = 1.0 / iDeathMaxStreak * iDeathCount;
+	new Float:fScaleAttacker = (iKillMaxStreak - (iKillCount - 1.0)) / iKillMaxStreak;
 	
 	//Finally we figure out how many credits to give each iClient.
-	new iCreditsForClient = RoundFloat(float(g_iOnDeath_Credits) * fScaleClient);
-	new iCreditsForAttacker = RoundFloat(float(g_iOnKill_Credits) * fScaleAttacker);
+	new iCreditsForClient = RoundFloat(float(iCreditsOnDeath) * fScaleClient);
+	new iCreditsForAttacker = RoundFloat(float(iCreditsOnKill) * fScaleAttacker);
 	
 	//Increase the credits of the player.
 	new iNewCreditsClient = Set_iClientCredits(iCreditsForClient, SET_ADD, iClient, ESC_CREDITS_KILLED);
@@ -2107,11 +2087,11 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	//Was this a domination kill?
 	if (iFlags & TF_DEATHFLAG_KILLERDOMINATION != 0)
 	{
-		Set_iClientCredits(g_iOnDominated_Credits, SET_ADD, iClient, ESC_CREDITS_DOMINATED);
-		Set_iClientCredits(g_iOnDomination_Credits, SET_ADD, attacker, ESC_CREDITS_DOMINATION);
+		Set_iClientCredits(iDominatedCredits, SET_ADD, iClient, ESC_CREDITS_DOMINATED);
+		Set_iClientCredits(iDominationCredits, SET_ADD, attacker, ESC_CREDITS_DOMINATION);
 	
-		CPrintToChatEx(iClient, attacker, "%t %t", "Escalation_Tag", "Credits_From_Dominated", g_iOnDominated_Credits, attackerName);
-		CPrintToChatEx(attacker, iClient, "%t %t", "Escalation_Tag", "Credits_From_Domination", g_iOnDomination_Credits, clientName);
+		CPrintToChatEx(iClient, attacker, "%t %t", "Escalation_Tag", "Credits_From_Dominated", iDominatedCredits, attackerName);
+		CPrintToChatEx(attacker, iClient, "%t %t", "Escalation_Tag", "Credits_From_Domination", iDominationCredits, clientName);
 	}
 	
 	if (iOldCreditsClient != iNewCreditsClient)
@@ -2128,29 +2108,33 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	
 	//Handle the assistor now.
 	
-	new assister = GetClientOfUserId(GetEventInt(event, "assister"));
+	new iAssister = GetClientOfUserId(GetEventInt(event, "assister"));
 	
-	//Check to see if someone assisted in this kill, if not return from this function. (This also catches an invalid UserID)
-	if (assister == 0) 
+	//Check to see if someone assisted in this kill, if not return from this function.
+	if (iAssister == 0)
+	{
 		return; 
-		
+	}
+
 	//Get the name of the assister.
 	decl String:assisterName[MAX_NAME_LENGTH];
-	GetClientName(assister, assisterName, sizeof(assisterName));
+	GetClientName(iAssister, assisterName, sizeof(assisterName));
 	
 	if (iFlags & TF_DEATHFLAG_ASSISTERDOMINATION != 0)
 	{
-		Set_iClientCredits(g_iOnDominated_Credits, SET_ADD, iClient, ESC_CREDITS_DOMINATED);
-		Set_iClientCredits(g_iOnDomination_Credits, SET_ADD, assister, ESC_CREDITS_DOMINATION);
+		Set_iClientCredits(iDominatedCredits, SET_ADD, iClient, ESC_CREDITS_DOMINATED);
+		Set_iClientCredits(iDominationCredits, SET_ADD, iAssister, ESC_CREDITS_DOMINATION);
 	
-		CPrintToChatEx(iClient, assister, "%t %t", "Escalation_Tag", "Credits_From_Dominated", g_iOnDominated_Credits, assisterName);
-		CPrintToChatEx(assister, iClient, "%t %t", "Escalation_Tag", "Credits_From_Domination", g_iOnDomination_Credits, clientName);
+		CPrintToChatEx(iClient, iAssister, "%t %t", "Escalation_Tag", "Credits_From_Dominated", iDominatedCredits, assisterName);
+		CPrintToChatEx(iAssister, iClient, "%t %t", "Escalation_Tag", "Credits_From_Domination", iDominationCredits, clientName);
 	}
 	
-	new iOldAssisterCredits = PlayerData_GetCredits(g_PlayerData[assister][0]);
+	new iOldAssisterCredits = PlayerData_GetCredits(g_PlayerData[iAssister][0]);
 	
-	if (iOldAssisterCredits != Set_iClientCredits(g_iOnAssist_Credits, SET_ADD, assister, ESC_CREDITS_ASSIST))
-		CPrintToChatEx(assister, attacker, "%t %t", "Escalation_Tag", "Credits_From_Assist", g_iOnAssist_Credits, attackerName);
+	if (iOldAssisterCredits != Set_iClientCredits(iAssistCredits, SET_ADD, iAssister, ESC_CREDITS_ASSIST))
+	{
+		CPrintToChatEx(iAssister, attacker, "%t %t", "Escalation_Tag", "Credits_From_Assist", iAssistCredits, attackerName);
+	}
 }
 
 /**
@@ -2171,32 +2155,42 @@ public Event_MedicDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 	
-
+	new iBonusCredits;
+	new iUberDroppedCredits;
+	new iAmountHealedPacketSize;
+	new iCreditsPerAmountHealed;
+	
+	KVMap_IndexGetCell(g_GameInfo[0], "OnMedicKilled.BonusCredits", iBonusCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnMedicKilled.UberDroppedCredits", iUberDroppedCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnMedicDeath.AmountHealed", iAmountHealedPacketSize);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnMedicDeath.CreditsPerAmountHealed", iCreditsPerAmountHealed);
+	
+	
 	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	new iAmountHealed = GetEventInt(event, "healing");
 	new bool:bHadCharge = GetEventBool(event, "charged");
 	
 	//Make sure the person will be gaining credits and that the client is valid.
-	if (g_iOnMedicKilled_BonusCredits > 0 && attacker != 0 && attacker != iClient)
+	if (iBonusCredits > 0 && attacker != 0 && attacker != iClient)
 	{
-		Set_iClientCredits(g_iOnMedicKilled_BonusCredits, SET_ADD, attacker, ESC_CREDITS_KILL | ESC_CREDITS_TEAMPLAY);
+		Set_iClientCredits(iBonusCredits, SET_ADD, attacker, ESC_CREDITS_KILL | ESC_CREDITS_TEAMPLAY);
 		
-		CPrintToChat(attacker, "%t %t", "Escalation_Tag", "Credits_From_MedicKilled", g_iOnMedicKilled_BonusCredits);
+		CPrintToChat(attacker, "%t %t", "Escalation_Tag", "Credits_From_MedicKilled", iBonusCredits);
 	}
 	
 	//Same as above.
-	if (bHadCharge && g_iOnMedicKilled_UberDroppedCredits > 0 && attacker != 0 && attacker != iClient)
+	if (bHadCharge && iUberDroppedCredits > 0 && attacker != 0 && attacker != iClient)
 	{
-		Set_iClientCredits(g_iOnMedicKilled_UberDroppedCredits, SET_ADD, attacker, ESC_CREDITS_KILL | ESC_CREDITS_TEAMPLAY);
+		Set_iClientCredits(iUberDroppedCredits, SET_ADD, attacker, ESC_CREDITS_KILL | ESC_CREDITS_TEAMPLAY);
 		
-		CPrintToChat(attacker, "%t %t", "Escalation_Tag", "Credits_From_UberDropped", g_iOnMedicKilled_UberDroppedCredits);
+		CPrintToChat(attacker, "%t %t", "Escalation_Tag", "Credits_From_UberDropped", iUberDroppedCredits);
 	}
 	
-	if (iAmountHealed >= g_iOnMedicDeath_AmountHealed && g_iOnMedicDeath_CreditsPerAmountHealed > 0 && iClient != 0)
+	if (iAmountHealed >= iAmountHealedPacketSize && iCreditsPerAmountHealed > 0 && iClient != 0)
 	{
-		new iCreditPackects = iAmountHealed / g_iOnMedicDeath_AmountHealed;
-		new iCreditsGiven = iCreditPackects * g_iOnMedicDeath_CreditsPerAmountHealed;
+		new iCreditPackects = iAmountHealed / iAmountHealedPacketSize;
+		new iCreditsGiven = iCreditPackects * iCreditsPerAmountHealed;
 		
 		Set_iClientCredits(iCreditsGiven, SET_ADD, iClient, ESC_CREDITS_HEALED);
 		
@@ -2223,14 +2217,17 @@ public Event_MedicDefended(Handle:event, const String:name[], bool:dontBroadcast
 		return;
 	}
 	
+	new iCredits;
+
+	KVMap_IndexGetCell(g_GameInfo[0], "OnMedicDefended.Credits", iCredits);
 
 	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));	
 	
-	if (g_iOnMedicDefended_Credits > 0 && iClient != 0)
+	if (iCredits > 0 && iClient != 0)
 	{
-		Set_iClientCredits(g_iOnMedicDefended_Credits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+		Set_iClientCredits(iCredits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
 		
-		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_MedicDefended", g_iOnMedicDefended_Credits);		
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_MedicDefended", iCredits);		
 	}
 }
 
@@ -2250,6 +2247,10 @@ public Event_CaptureBlocked(Handle:event, const String:name[], bool:dontBroadcas
 	{
 		return;
 	}
+
+	new iCredits;
+
+	KVMap_IndexGetCell(g_GameInfo[0], "OnDefendedPoint.Credits", iCredits);
 	
 	new iClient = GetEventInt(event, "blocker");
 	
@@ -2258,8 +2259,8 @@ public Event_CaptureBlocked(Handle:event, const String:name[], bool:dontBroadcas
 		return;
 	}
 
-	Set_iClientCredits(g_iOnDefendedPoint_Credits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
-	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_CaptureBlocked", g_iOnDefendedPoint_Credits);
+	Set_iClientCredits(iCredits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_CaptureBlocked", iCredits);
 }
 
 /**
@@ -2278,7 +2279,11 @@ public Event_PlayerTeleported(Handle:event, const String:name[], bool:dontBroadc
 	{
 		return;
 	}
-	
+
+	new iCredits;
+
+	KVMap_IndexGetCell(g_GameInfo[0], "PlayerTeleported.Credits", iCredits);
+
 	new iClient = GetClientOfUserId(GetEventInt(event, "builderid"));
 	
 	if (iClient == 0)
@@ -2287,8 +2292,8 @@ public Event_PlayerTeleported(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	
-	Set_iClientCredits(g_iPlayerTeleported_Credits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
-	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_Teleport", g_iPlayerTeleported_Credits);
+	Set_iClientCredits(iCredits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+	CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_Teleport", iCredits);
 }
 
 /**
@@ -2307,6 +2312,13 @@ public Event_PlayerUpgradedBuilding(Handle:event, const String:name[], bool:dont
 	{
 		return;
 	}
+
+	new iCredits;
+	new iCreditsOther;
+
+	KVMap_IndexGetCell(g_GameInfo[0], "UpgradedBuilding.Credits", iCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "UpgradedBuilding.OtherCredits", iCreditsOther);
+	
 	
 	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
 	new bool:bIsBuilder = GetEventBool(event, "isbuilder");
@@ -2318,13 +2330,13 @@ public Event_PlayerUpgradedBuilding(Handle:event, const String:name[], bool:dont
 	
 	if (bIsBuilder)
 	{
-		Set_iClientCredits(g_iUpgradedBuilding_Credits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
-		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_BuildingUpgrade", g_iUpgradedBuilding_Credits);
+		Set_iClientCredits(iCredits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_BuildingUpgrade", iCredits);
 	}
 	else
 	{
-		Set_iClientCredits(g_iUpgradedBuilding_OtherCredits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
-		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_BuildingUpgradeOther", g_iUpgradedBuilding_OtherCredits);
+		Set_iClientCredits(iCreditsOther, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+		CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_BuildingUpgradeOther", iCreditsOther);
 	}
 }
 
@@ -2344,30 +2356,40 @@ public Event_ChargeDeployed(Handle:event, const String:name[], bool:dontBroadcas
 	{
 		return;
 	}
-	
+
 	new iClient = GetClientOfUserId(GetEventInt(event, "userid"));
-	
+
 	if (iClient == 0)
 	{
 		return;
 	}
 
-	new Float:fCreditsToGive = float(g_iChargeDeployed_Credits);
+	new iCredits;
+	new Float:fKritzScale;
+	new Float:fQFScale;
+	new Float:fVaccScale;
+
+	KVMap_IndexGetCell(g_GameInfo[0], "ChargeDeployed.Credits", iCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "ChargeDeployed.KritzScale", fKritzScale);
+	KVMap_IndexGetCell(g_GameInfo[0], "ChargeDeployed.QFScale", fQFScale);
+	KVMap_IndexGetCell(g_GameInfo[0], "ChargeDeployed.VaccScale", fVaccScale);
+
+	new Float:fCreditsToGive = float(iCredits);
 	new iMediGunIndex = PlayerData_GetWeaponID(g_PlayerData[iClient][0], 1);
 	
 	switch (iMediGunIndex)
 	{
 		case KRITZKRIEG_INDEXES:
 		{
-			fCreditsToGive *= g_fChargeDeployed_KritzScale;
+			fCreditsToGive *= fKritzScale;
 		}
 		case QUICKFIX_INDEXES:
 		{
-			fCreditsToGive *= g_fChargeDeployed_QFScale;
+			fCreditsToGive *= fQFScale;
 		}
 		case VACCINATOR_INDEXES:
 		{
-			fCreditsToGive *= g_fChargeDeployed_VaccScale;
+			fCreditsToGive *= fVaccScale;
 		}
 	}
 	
@@ -2386,22 +2408,25 @@ public Event_PlayerExtinguished(Handle:event, const String:name[], bool:dontBroa
 	{
 		return;
 	}
-	
+
 	if (! g_bGiveCredits)
 	{
 		return;
 	}
 
+	new iCredits;
+
+	KVMap_IndexGetCell(g_GameInfo[0], "PlayerExtinguished.Credits", iCredits);
+
 	new healer = GetEventInt(event, "healer");
-	
-	if (! IsClientInGame(healer))
+
+	if (! IsClientValid(healer) || ! IsClientInGame(healer))
 	{
 		return;
 	}
-	
 
-	Set_iClientCredits(g_iPlayerExtinguished_Credits, SET_ADD, healer, ESC_CREDITS_TEAMPLAY);
-	CPrintToChat(healer, "%t %t", "Escalation_Tag", "Credits_From_Extinguished", g_iPlayerExtinguished_Credits);
+	Set_iClientCredits(iCredits, SET_ADD, healer, ESC_CREDITS_TEAMPLAY);
+	CPrintToChat(healer, "%t %t", "Escalation_Tag", "Credits_From_Extinguished", iCredits);
 }
 
 /**
@@ -2420,116 +2445,245 @@ public Event_ObjectDestroyed(Handle:event, const String:name[], bool:dontBroadca
 	{
 		return;
 	}
-	
-	new builder = GetClientOfUserId(GetEventInt(event, "userid"));
-	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-	new assister = GetClientOfUserId(GetEventInt(event, "assister"));
 
-	new TFObjectType:iObjectType = TFObjectType:GetEventInt(event, "iObjectType");
+	new iSentryCredits;
+	new Float:fMinScale;
+	new Float:fWasBuildingScale;
+	new iDispenserCredits;
+	new iTeleporterCredits;
+	new iSapperCredits;
+	
+	KVMap_IndexGetCell(g_GameInfo[0], "ObjectDestroyed.SentryCredits", iSentryCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "ObjectDestroyed.MiniScale", fMinScale);
+	KVMap_IndexGetCell(g_GameInfo[0], "ObjectDestroyed.WasBuildingScale", fWasBuildingScale);
+	KVMap_IndexGetCell(g_GameInfo[0], "ObjectDestroyed.DispenserCredits", iDispenserCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "ObjectDestroyed.TeleporterCredits", iTeleporterCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "ObjectDestroyed.SapperCredits", iSapperCredits);
+
+	new iBuilder = GetClientOfUserId(GetEventInt(event, "userid"));
+	new iAttacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	new iAssister = GetClientOfUserId(GetEventInt(event, "assister"));
+
+	new TFObjectType:iObjectType = TFObjectType:GetEventInt(event, "objecttype");
 	new bool:bWasBuilding = GetEventBool(event, "was_building");
 
-	if (attacker != 0)
+	if (iAttacker != 0)
 	{
 		if (iObjectType == TFObject_Sentry)
 		{
-			new Float:fCreditsToGive = float(g_iObjectDestroyed_SentryCredits);
+			new Float:fCreditsToGive = float(iSentryCredits);
 		
-			if (PlayerData_GetWeaponID(g_PlayerData[builder][0], 2) == GUNSLINGER_INDEXES)
+			if (PlayerData_GetWeaponID(g_PlayerData[iBuilder][0], 2) == GUNSLINGER_INDEXES)
 			{
-				fCreditsToGive *= g_fObjectDestroyed_MiniScale;
+				fCreditsToGive *= fMinScale;
 			}
 		
 			if (bWasBuilding)
 			{
-				fCreditsToGive *= g_fObjectDestroyed_WasBuildingScale;
+				fCreditsToGive *= fWasBuildingScale;
 			}
 		
-			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, attacker, ESC_CREDITS_TEAMPLAY);
-			CPrintToChat(attacker, "%t %t", "Escalation_Tag", "Credits_From_SentryDestroyed", RoundFloat(fCreditsToGive));
+			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, iAttacker, ESC_CREDITS_TEAMPLAY);
+			CPrintToChat(iAttacker, "%t %t", "Escalation_Tag", "Credits_From_SentryDestroyed", RoundFloat(fCreditsToGive));
 		}
 		else if (iObjectType == TFObject_Dispenser)
 		{
-			new Float:fCreditsToGive = float(g_iObjectDestroyed_DispenserCredits);
+			new Float:fCreditsToGive = float(iDispenserCredits);
 		
 			if (bWasBuilding)
 			{
-				fCreditsToGive *= g_fObjectDestroyed_WasBuildingScale;
+				fCreditsToGive *= fWasBuildingScale;
 			}
 		
-			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, attacker, ESC_CREDITS_TEAMPLAY);
-			CPrintToChat(attacker, "%t %t", "Escalation_Tag", "Credits_From_DispenserDestroyed", RoundFloat(fCreditsToGive));
+			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, iAttacker, ESC_CREDITS_TEAMPLAY);
+			CPrintToChat(iAttacker, "%t %t", "Escalation_Tag", "Credits_From_DispenserDestroyed", RoundFloat(fCreditsToGive));
 		}
 		else if (iObjectType == TFObject_Teleporter)
 		{
-			new Float:fCreditsToGive = float(g_iObjectDestroyed_TeleporterCredits);
+			new Float:fCreditsToGive = float(iTeleporterCredits);
 		
 			if (bWasBuilding)
 			{
-				fCreditsToGive *= g_fObjectDestroyed_WasBuildingScale;
+				fCreditsToGive *= fWasBuildingScale;
 			}
 		
-			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, attacker, ESC_CREDITS_TEAMPLAY);
-			CPrintToChat(attacker, "%t %t", "Escalation_Tag", "Credits_From_TeleporterDestroyed", RoundFloat(fCreditsToGive));
+			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, iAttacker, ESC_CREDITS_TEAMPLAY);
+			CPrintToChat(iAttacker, "%t %t", "Escalation_Tag", "Credits_From_TeleporterDestroyed", RoundFloat(fCreditsToGive));
 		}
 		else if (iObjectType == TFObject_Sapper)
 		{
-			Set_iClientCredits(g_iObjectDestroyed_SapperCredits, SET_ADD, attacker, ESC_CREDITS_TEAMPLAY);
-			CPrintToChat(attacker, "%t %t", "Escalation_Tag", "Credits_From_SapperDestroyed", g_iObjectDestroyed_SapperCredits);
+			Set_iClientCredits(iSapperCredits, SET_ADD, iAttacker, ESC_CREDITS_TEAMPLAY);
+			CPrintToChat(iAttacker, "%t %t", "Escalation_Tag", "Credits_From_SapperDestroyed", iSapperCredits);
 		}
 	}
 
-	if (assister != 0)
+	if (iAssister != 0)
 	{
 		if (iObjectType == TFObject_Sentry)
 		{
-			new Float:fCreditsToGive = float(g_iObjectDestroyed_SentryCredits);
+			new Float:fCreditsToGive = float(iSentryCredits);
 		
-			if (PlayerData_GetWeaponID(g_PlayerData[builder][0], 2) == GUNSLINGER_INDEXES)
+			if (PlayerData_GetWeaponID(g_PlayerData[iBuilder][0], 2) == GUNSLINGER_INDEXES)
 			{
-				fCreditsToGive *= g_fObjectDestroyed_MiniScale;
+				fCreditsToGive *= fMinScale;
 			}
 		
 			if (bWasBuilding)
 			{
-				fCreditsToGive *= g_fObjectDestroyed_WasBuildingScale;
+				fCreditsToGive *= fWasBuildingScale;
 			}
 		
-			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, assister, ESC_CREDITS_TEAMPLAY);
-			CPrintToChat(assister, "%t %t", "Escalation_Tag", "Credits_From_HelpedSentryDestroyed", RoundFloat(fCreditsToGive));
+			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, iAssister, ESC_CREDITS_TEAMPLAY);
+			CPrintToChat(iAssister, "%t %t", "Escalation_Tag", "Credits_From_HelpedSentryDestroyed", RoundFloat(fCreditsToGive));
 		}
 		else if (iObjectType == TFObject_Dispenser)
 		{
-			new Float:fCreditsToGive = float(g_iObjectDestroyed_DispenserCredits);
+			new Float:fCreditsToGive = float(iDispenserCredits);
 		
 			if (bWasBuilding)
 			{
-				fCreditsToGive *= g_fObjectDestroyed_WasBuildingScale;
+				fCreditsToGive *= fWasBuildingScale;
 			}
 		
-			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, assister, ESC_CREDITS_TEAMPLAY);
-			CPrintToChat(assister, "%t %t", "Escalation_Tag", "Credits_From_HelpedDispenserDestroyed", RoundFloat(fCreditsToGive));
+			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, iAssister, ESC_CREDITS_TEAMPLAY);
+			CPrintToChat(iAssister, "%t %t", "Escalation_Tag", "Credits_From_HelpedDispenserDestroyed", RoundFloat(fCreditsToGive));
 		}
 		else if (iObjectType == TFObject_Teleporter)
 		{
-			new Float:fCreditsToGive = float(g_iObjectDestroyed_TeleporterCredits);
+			new Float:fCreditsToGive = float(iTeleporterCredits);
 		
 			if (bWasBuilding)
 			{
-				fCreditsToGive *= g_fObjectDestroyed_WasBuildingScale;
+				fCreditsToGive *= fWasBuildingScale;
 			}
 		
-			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, assister, ESC_CREDITS_TEAMPLAY);
-			CPrintToChat(assister, "%t %t", "Escalation_Tag", "Credits_From_HelpedTeleporterDestroyed", RoundFloat(fCreditsToGive));
+			Set_iClientCredits(RoundFloat(fCreditsToGive), SET_ADD, iAssister, ESC_CREDITS_TEAMPLAY);
+			CPrintToChat(iAssister, "%t %t", "Escalation_Tag", "Credits_From_HelpedTeleporterDestroyed", RoundFloat(fCreditsToGive));
 		}
 		else if (iObjectType == TFObject_Sapper)
 		{
-			Set_iClientCredits(g_iObjectDestroyed_SapperCredits, SET_ADD, assister, ESC_CREDITS_TEAMPLAY);
-			CPrintToChat(assister, "%t %t", "Escalation_Tag", "Credits_From_HelpedSapperDestroyed", g_iObjectDestroyed_SapperCredits);
+			Set_iClientCredits(iSapperCredits, SET_ADD, iAssister, ESC_CREDITS_TEAMPLAY);
+			CPrintToChat(iAssister, "%t %t", "Escalation_Tag", "Credits_From_HelpedSapperDestroyed", iSapperCredits);
 		}
 	}
 }
 
 /************************TEAM OBJECTIVE EVENTS************************/
+
+/**
+ * Handles giving credits to players when flag events occur.
+ *
+ * @noreturn
+ */
+public Event_FlagEvent(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if (IsPluginDisabled())
+	{
+		return;
+	}
+	
+	if (! g_bGiveCredits)
+	{
+		return;
+	}
+
+	new iPickupCredits;
+	new iWasHomeBonus;
+	new iPickupTimeout;
+	new iDefendedCredits;
+	new iCaptureCredits;
+	new iCompensateCredits;
+	
+	KVMap_IndexGetCell(g_GameInfo[0], "FlagEvent.PickupCredits", iPickupCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "FlagEvent.WasHomeBonus", iWasHomeBonus);
+	KVMap_IndexGetCell(g_GameInfo[0], "FlagEvent.PickupTimeout", iPickupTimeout);
+	KVMap_IndexGetCell(g_GameInfo[0], "FlagEvent.DefendedCredits", iDefendedCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "FlagEvent.CaptureCredits", iCaptureCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "FlagEvent.CompensateCredits", iCompensateCredits);
+
+	
+	new iClient = GetEventInt(event, "player");
+	new iEventType = GetEventInt(event, "eventtype");
+	new bool:bWasHome = bool:GetEventInt(event, "home");
+	new iFlagTeam = GetEventInt(event, "team");
+
+	switch (iEventType)
+	{
+		case TF_FLAGEVENT_PICKEDUP:
+		{
+			if (! IsClientInGame(iClient))
+			{
+				return;
+			}
+
+			if (iPickupCredits <= 0)
+			{
+				return;
+			}
+		
+			if (bWasHome)
+			{
+				iPickupCredits += iWasHomeBonus;
+			}
+			
+			if (PlayerData_GetTimeStartedCapture(g_PlayerData[iClient][0]) >= iPickupTimeout)
+			{
+				Set_iClientCredits(iPickupCredits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+				CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_Intel_Pickup", iPickupCredits);
+				PlayerData_SetTimeStartedCapture(g_PlayerData[iClient][0]);
+			}
+		}
+		case TF_FLAGEVENT_CAPTURED:
+		{
+			if (iCaptureCredits > 0)
+			{
+				new iTeam = GetEnemyTeam(iFlagTeam);
+
+				decl iClients[MaxClients + 1];
+				new iNumClients = GetClientsOnTeam(iTeam, iClients, MaxClients + 1);
+
+				for (new i = 0; i < iNumClients; i++)
+				{
+					Set_iClientCredits(iCaptureCredits, SET_ADD, iClients[i], ESC_CREDITS_OBJECTIVE);
+					CPrintToChat(iClients[i], "%t %t", "Escalation_Tag", "Credits_From_Intel_Capture", iCaptureCredits);
+				}
+			
+				Set_iObjectiveCredits(iCaptureCredits, SET_ADD, iTeam);
+			}
+
+
+			if (iCompensateCredits > 0)
+			{
+				decl iClients[MaxClients + 1];
+				new iNumClients = GetClientsOnTeam(iFlagTeam, iClients, MaxClients + 1);
+
+				for (new i = 0; i < iNumClients; i++)
+				{
+					Set_iClientCredits(iCompensateCredits, SET_ADD, iClients[i], ESC_CREDITS_OBJECTIVE);
+					CPrintToChat(iClients[i], "%t %t", "Escalation_Tag", "Credits_From_Intel_Lost", iCompensateCredits);
+				}
+				
+				Set_iObjectiveCredits(iCompensateCredits, SET_ADD, iFlagTeam);
+			}
+
+		}
+		case TF_FLAGEVENT_DEFENDED:
+		{
+			if (! IsClientInGame(iClient))
+			{
+				return;
+			}
+			
+			if (iDefendedCredits <= 0)
+			{
+				return;
+			}
+			
+			Set_iClientCredits(iDefendedCredits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+			CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_Intel_Defended", iDefendedCredits);
+		}
+	}
+}
 
 /**
  * Gives credits to players that start capturing a control point.
@@ -2548,7 +2702,14 @@ public Event_PointContested(Handle:event, const String:name[], bool:dontBroadcas
 	{
 		return;
 	}
+
+	new iTimeout;
+	new iCredits;
+
+	KVMap_IndexGetCell(g_GameInfo[0], "OnCaptureStarted.Timeout", iTimeout);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnCaptureStarted.Credits", iCredits);
 	
+
 	decl String:point_name[64];
 	GetEventString(event, "cpname", point_name, sizeof(point_name));
 	
@@ -2566,10 +2727,10 @@ public Event_PointContested(Handle:event, const String:name[], bool:dontBroadcas
 		
 		if (IsClientInGame(iClient))
 		{
-			if (PlayerData_GetTimeStartedCapture(g_PlayerData[iClient][0]) >= g_iOnCaptureStarted_Timeout)
+			if (PlayerData_GetTimeStartedCapture(g_PlayerData[iClient][0]) >= iTimeout)
 			{
-				Set_iClientCredits(g_iOnCaptureStarted_Credits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
-				CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_CaptureStarted", g_iOnCaptureStarted_Credits);
+				Set_iClientCredits(iCredits, SET_ADD, iClient, ESC_CREDITS_TEAMPLAY);
+				CPrintToChat(iClient, "%t %t", "Escalation_Tag", "Credits_From_CaptureStarted", iCredits);
 				PlayerData_SetTimeStartedCapture(g_PlayerData[iClient][0]);
 			}
 		}
@@ -2596,6 +2757,11 @@ public Event_CapturedPoint(Handle:event, const String:name[], bool:dontBroadcast
 		return;
 	}
 	
+	new iCredits;
+	new iCreditsOther;
+
+	KVMap_IndexGetCell(g_GameInfo[0], "OnCapturePoint.Credits", iCredits);
+	KVMap_IndexGetCell(g_GameInfo[0], "OnLosePoint.Credits", iCreditsOther);
 
 	new iTeam = GetEventInt(event, "team");
 	
@@ -2605,15 +2771,14 @@ public Event_CapturedPoint(Handle:event, const String:name[], bool:dontBroadcast
 	decl iClients[MaxClients + 1];
 	new iNumClients = GetClientsOnTeam(iTeam, iClients, MaxClients + 1);
 	
-	
 	for (new i = 0; i < iNumClients; i++)
 	{
-		Set_iClientCredits(g_iOnCapturePoint_Credits, SET_ADD, iClients[i], ESC_CREDITS_OBJECTIVE);
-		CPrintToChat(iClients[i], "%t %t", "Escalation_Tag", "Credits_From_PointCapture", g_iOnCapturePoint_Credits);
+		Set_iClientCredits(iCredits, SET_ADD, iClients[i], ESC_CREDITS_OBJECTIVE);
+		CPrintToChat(iClients[i], "%t %t", "Escalation_Tag", "Credits_From_PointCapture", iCredits);
 	}
 	
 	//Increase the objective credits of this team.	
-	Set_iObjectiveCredits(g_iOnCapturePoint_Credits, SET_ADD, iTeam);
+	Set_iObjectiveCredits(iCredits, SET_ADD, iTeam);
 	
 	//Now we need to give credits to the team that lost the point.
 	GetTrieValue(g_hPointOwner, point_name, iTeam);
@@ -2627,11 +2792,11 @@ public Event_CapturedPoint(Handle:event, const String:name[], bool:dontBroadcast
 	
 	for (new i = 0; i < iNumClients; i++)
 	{
-		Set_iClientCredits(g_iOnLosePoint_Credits, SET_ADD, iClients[i], ESC_CREDITS_OBJECTIVE);
-		CPrintToChat(iClients[i], "%t %t", "Escalation_Tag", "Credits_From_PointLost", g_iOnLosePoint_Credits);
+		Set_iClientCredits(iCreditsOther, SET_ADD, iClients[i], ESC_CREDITS_OBJECTIVE);
+		CPrintToChat(iClients[i], "%t %t", "Escalation_Tag", "Credits_From_PointLost", iCreditsOther);
 	}
 	
-	Set_iObjectiveCredits(g_iOnLosePoint_Credits, SET_ADD, iTeam);
+	Set_iObjectiveCredits(iCreditsOther, SET_ADD, iTeam);
 }
 
 /************************USER COMMANDS************************/
@@ -2718,6 +2883,18 @@ public Action:Command_Upgrade(iClient, iArgs)
 		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 		return Plugin_Handled;
 	}
+	
+	if (! IsClientInGame(iClient))
+	{
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Command_Ingame_Only");
+		return Plugin_Handled;
+	}
+	
+	if (IsClientSpectator(iClient))
+	{
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Command_Onteam_Only");
+		return Plugin_Handled;
+	}
  
 	//Check for errors first.
 	if (iArgs < 1)
@@ -2750,6 +2927,18 @@ public Action:Command_UpgradeMenu(iClient, iArgs)
 	else if (g_bPluginDisabledForMap)
 	{
 		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+		return Plugin_Handled;
+	}
+	
+	if (! IsClientInGame(iClient))
+	{
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Command_Ingame_Only");
+		return Plugin_Handled;
+	}
+	
+	if (IsClientSpectator(iClient))
+	{
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Command_Onteam_Only");
 		return Plugin_Handled;
 	}
  
@@ -3382,6 +3571,81 @@ public Action:Command_UnbanUpgradeMenu(iClient, iArgs)
 	SetMenuTitle(hMenu, "%T", "Menu_Select_Upgrade_Unban", iClient);
 	
 	DisplayMenu(hMenu, iClient, MENU_DISPLAY_DURATION);
+
+	return Plugin_Handled;
+}
+
+/**
+ * Displays a menu to the client, that they can use to unban upgrades.
+ *
+ * @return An Action value.
+ */
+public Action:Command_SetGameInfo(iClient, iArgs)
+{
+	if (g_bPluginDisabledAdmin)
+	{
+		if (iClient == 0)
+		{
+			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+		}
+		else
+		{
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Admin");
+		}
+
+		return Plugin_Handled;
+	}
+	else if (g_bPluginDisabledForMap)
+	{
+		if (iClient == 0)
+		{
+			PrintToServer("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+		}
+		else
+		{
+			CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
+		}
+
+		return Plugin_Handled;
+	}
+
+	if (iArgs == 0 || iArgs > 3)
+	{
+		CReplyToCommand(iClient, "%t", "SetGameInfo_Usage");
+
+		return Plugin_Handled;
+	}
+
+	new iTestValue;
+	new bool:bIsFloat;
+	
+	decl String:IndexKey[KEYVALUE_NAME_MAX_LENGTH];
+	decl String:Value[16];
+	decl String:IsFloat[4];
+
+	GetCmdArg(1, IndexKey, sizeof(IndexKey));
+	GetCmdArg(2, Value, sizeof(Value));
+	GetCmdArg(3, IsFloat, sizeof(IsFloat));
+	
+	bIsFloat = bool:StringToInt(IsFloat);
+	
+	if (! KVMap_IndexGetCell(g_GameInfo[0], IndexKey, iTestValue))
+	{
+		CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "GameInfo_UnknownVar");
+
+		return Plugin_Handled;
+	}
+	
+	if (bIsFloat)
+	{
+		KVMap_IndexSetCell(g_GameInfo[0], IndexKey, StringToFloat(Value));
+	}
+	else
+	{
+		KVMap_IndexSetCell(g_GameInfo[0], IndexKey, StringToInt(Value));
+	}
+	
+	CReplyToCommand(iClient, "%t %t", "Escalation_Tag", "GameInfo_VarSet");
 
 	return Plugin_Handled;
 }
@@ -4128,7 +4392,6 @@ public Menu_UnbanUpgrade(Handle:menu, MenuAction:action, param1, param2)
 	return 0;
 }
 
-
 /************************UPGRADE COMMAND FUNCTIONS************************/
 
 
@@ -4414,6 +4677,65 @@ Handle:GetEditUpgradeQueueMenu(iClient)
 }
 
 /************************UPGRADE QUEUE FUNCTIONS************************/
+
+/**
+ * Processes a client's upgrade queue.
+ *
+ * @param iClient				The index of the client of whose upgrade queue to process.
+ *
+ * @noreturn
+ */
+ProcessUpgradeQueue(iClient)
+{
+	//Check if the upgrade queue needs reprocessing.
+	if (PlayerData_GetForceQueueReprocess(g_PlayerData[iClient][0]))
+	{
+		PlayerAttributeManager_ClearAttributes(iClient);
+		WeaponAttributes_Clear(iClient);
+		PlayerData_ResetQueuePosition(g_PlayerData[iClient][0]);
+
+		PlayerData_SetForceQueueReprocess(g_PlayerData[iClient][0], false)
+	}
+
+	if (PlayerData_HaveWeaponsChanged(g_PlayerData[iClient][0]))
+	{
+		PlayerAttributeManager_ClearAttributes(iClient);
+		WeaponAttributes_Clear(iClient);
+		
+		for (new i = 0; i < UPGRADABLE_SLOTS; i ++)
+		{
+			decl iAttributes[ENTITY_MAX_ATTRIBUTES];
+			decl Float:fValues[ENTITY_MAX_ATTRIBUTES];
+		
+			if (StockAttributes_GetItemAttributes(g_StockAttributes[0], PlayerData_GetWeaponID(g_PlayerData[iClient][0], i), iAttributes, fValues))
+			{
+				WeaponAttributes_SetAttributes(iClient, i, iAttributes, fValues);
+			}
+		}
+
+
+		PlayerData_ResetQueuePosition(g_PlayerData[iClient][0]);
+	}
+
+	//This has to come after PlayerData_HaveWeaponsChanged to allow it to cache the player's weapon indexes.
+	if (IsPluginDisabled() || ! g_bBuyUpgrades)
+	{
+		return;
+	}
+
+	//Process the upgrade queue.
+	for ( ; PlayerData_GetQueuePosition(g_PlayerData[iClient][0]) < PlayerData_GetUpgradeQueueSize(g_PlayerData[iClient][0], TF2_GetPlayerClass(iClient)); PlayerData_IncrementQueuePosition(g_PlayerData[iClient][0]) )
+	{
+		if (! (ProcessQueueAtPosition(iClient, PlayerData_GetQueuePosition(g_PlayerData[iClient][0]))))
+		{
+			break;
+		}
+	}
+
+
+	WeaponAttributes_Apply(iClient);
+	PlayerAttributeManager_ApplyAttributes(iClient);
+}
 
 /**
  * Processes an upgrade on a client's queue, buying it if possible

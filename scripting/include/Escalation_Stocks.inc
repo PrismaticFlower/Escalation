@@ -312,6 +312,13 @@ stock GetClientWearables (iClient, iWearables[], iSize)
 	return iWearableCount;
 }
 
+/**
+ * Checks if an entity is part of a Spy's disguise.
+ *
+ * @param iEntity						The entity to check.
+ *
+ * @return								True if the entity is part of a Spy's disguise, false if it isn't.
+ */
 stock bool:IsDisguiseEntity (iEntity)
 {
 	decl String:NetClass[32];
@@ -336,6 +343,55 @@ stock bool:IsDisguiseEntity (iEntity)
 	}
 	
 	return false;
+}
+
+/**
+ * Checks if a client is on a spectator team.
+ *
+ * @param iClient						The client to check.
+ *
+ * @return								The count of wearables on the player.
+ */
+stock bool:IsClientSpectator (iClient)
+{
+	new iTeam = GetClientTeam(iClient);
+
+	if (iTeam <= 1)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+/**
+ * Given a team index returns the enemy team's index.
+ *
+ * @param iTeam							The team to get the enemy of.
+ *
+ * @return								The index of the enemy team or -1 if they do not have one.
+ */
+stock GetEnemyTeam (iTeam)
+{
+	switch (iTeam)
+	{
+		case 0, 1:
+		{
+			return -1;
+		}
+		case 2:
+		{
+			return 3;
+		}
+		case 3:
+		{
+			return 2;
+		}
+	}
+	
+	return -1;
 }
 
 #define VPK2_SIGNATURE 1437209140

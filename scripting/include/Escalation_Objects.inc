@@ -15,3 +15,4 @@
 #include<Escalation_BannedUpgrades>
 #include<Escalation_LevelData>
 #include<Escalation_StockAttributes>
+#include<Escalation_KVMap>

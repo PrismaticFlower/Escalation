@@ -25,6 +25,7 @@
             <File name="scripting\include\Escalation_UpgradeDescriptions.inc" />
             <File name="scripting\include\Escalation_BannedUpgrades.inc" />
             <File name="scripting\include\Escalation_LevelData.inc" />
+            <File name="scripting\include\Escalation_KVMap.inc" />
         </Folder>
         <Folder name="Config Files">
             <File name="configs\escalation\escalation_classinfo.cfg" />
@@ -37,6 +38,9 @@
             <File name="translations\Escalation.phrases.txt" />
             <File name="translations\Escalation_AttrDescriptions.phrases.txt" />
             <File name="translations\escalation_upgrade.phrases.txt" />
+        </Folder>
+        <Folder name="Queue Saving">
+            <File name="scripting\Escalation_QueueSaving.sp" />
         </Folder>
     </Project>
 </NotepadPlus>

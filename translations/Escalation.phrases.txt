@@ -157,12 +157,12 @@
 
 	"Credits_From_Death"
 	{
-		"en" "You earned {dodgerblue}%i{silver} credits for dying to {teamcolor}%s{silver}. You now have {dodgerblue}%i{silver} credits."
+		"en" "You earned {dodgerblue}%i{silver} credits for dying to {teamcolor}%s{silver}."
 	}
 
 	"Credits_From_Kill"
 	{
-		"en" "You earned {dodgerblue}%i{silver} credits for killing {teamcolor}%s{silver}. You now have {dodgerblue}%i{silver} credits."
+		"en" "You earned {dodgerblue}%i{silver} credits for killing {teamcolor}%s{silver}."
 	}
 	
 	"Credits_From_Assist"
@@ -252,7 +252,7 @@
 	
 	"Credits_From_DispenserDestroyed"
 	{
-		"en" "You earned {dodgerblue}%i{silver} credits for destroying a building."
+		"en" "You earned {dodgerblue}%i{silver} credits for destroying a dispenser."
 	}
 
 	"Credits_From_TeleporterDestroyed"
@@ -272,7 +272,7 @@
 
 	"Credits_From_HelpedDispenserDestroyed"
 	{
-		"en" "You earned {dodgerblue}%i{silver} credits for helping to destroying a building."
+		"en" "You earned {dodgerblue}%i{silver} credits for helping to destroying a dispenser."
 	}
 
 	"Credits_From_HelpedTeleporterDestroyed"
@@ -283,6 +283,26 @@
 	"Credits_From_HelpedSapperDestroyed"
 	{
 		"en" "You earned {dodgerblue}%i{silver} credits for helping to destroying a sapper."
+	}
+	
+	"Credits_From_Intel_Pickup"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for picking up the flag."
+	}
+	
+	"Credits_From_Intel_Defended"
+	{
+		"en" "You earned {dodgerblue}%i{silver} credits for defending the flag."
+	}
+	
+	"Credits_From_Intel_Capture"
+	{
+		"en" "Your team earned {dodgerblue}%i{silver} credits for capturing the flag."
+	}
+	
+	"Credits_From_Intel_Lost"
+	{
+		"en" "Your team gained {dodgerblue}%i{silver} to help defend the flag."
 	}
 
 	"Credits_Message"
@@ -543,5 +563,30 @@
 	"UnbanUpgradeCombo_Usage"
 	{
 		"en" "Usage: sm_unbancombo <UpgradeName> <Weapon Item Definition index>"
+	}
+	
+	"SetGameInfo_Usage"
+	{
+		"en" "Usage: sm_setgameinfo <SectionName.Key> <Value> <IsFloat>"
+	}
+	
+	"GameInfo_UnknownVar"
+	{
+		"en" "Unknown variable."
+	}
+	
+	"GameInfo_VarSet"
+	{
+		"en" "GameInfo variable set."
+	}
+
+	"Command_Ingame_Only"
+	{
+		"en" "You must be ingame to use this command."
+	}
+
+	"Command_Onteam_Only"
+	{
+		"en" "You must join a team to use this command."
 	}
 }

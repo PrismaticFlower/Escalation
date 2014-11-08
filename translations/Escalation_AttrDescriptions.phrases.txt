@@ -675,6 +675,11 @@
 		"en"	"On Backstab: Instantly Cloak"
 	}
 	
+	"AttrbDesc_SilentKiller"
+	{
+		"en"	"Silent Killer: No Attack Noise From Backstabs"
+	}
+	
 	"AttrbDesc_ProjectilePenetration"
 	{
 		"en"	"Projectiles Penetrate Enemy Players"

@@ -1123,7 +1123,7 @@ public OnMapStart()
 	}
 	else if (IsPluginDisabled() && g_bPluginStarted)
 	{
-		LogMessage("%T", LANG_SERVER, "Plugin_Disabled_Nosupport");
+		LogMessage("%T", "Plugin_Disabled_Nosupport", LANG_SERVER);
 		
 		CPrintToChatAll("%t %t", "Escalation_Tag", "Plugin_Disabled_Nosupport");
 	}

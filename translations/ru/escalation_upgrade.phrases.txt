@@ -1,0 +1,832 @@
+"Phrases"
+{
+	/* SCOUT PRIMARY WEAPON PHRASES */
+	
+	"UpgradeScattergunDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeScattergunReloadSpeed"
+	{
+		"ru" "Ск.перезарядки"
+	}
+	
+	"UpgradeScattergunFiringSpeed"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeScattergunClipSize"
+	{
+		"ru" "Размер обоймы"
+	}
+	
+	"UpgradeScattergunClipSize_FAN"
+	{
+		"ru" "Размер обоймы"
+	}
+	
+	"UpgradeScattergunClipSize_SS"
+	{
+		"ru" "Размер обоймы"
+	}
+	
+	"UpgradeScattergunPushForce"
+	{
+		"ru" "Увеличение силы отбрасывания"
+	}
+	
+	"UpgradeScattergunAccuracy"
+	{
+		"ru" "Уменьшение разброса пуль"
+	}
+
+	/* SCOUT SECONDARY WEAPON PHRASES */
+
+	"UpgradePistolDamage_Scout"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradePistolDamage_Winger"
+	{
+		"ru" "Урон"
+	}
+
+	"UpgradePistolReloadSpeed_Scout"
+	{
+		"ru" "Ск.перезарядки"
+	}
+	
+	"UpgradePistolCarriedAmmo_Scout"
+	{
+		"ru" "Боеприпасы"
+	}
+	
+	"UpgradePistolFiringSpeed_Scout"
+	{
+		"ru" "Скоростр-ть"
+	}
+
+	"UpgradeJumpHeightFromWeapon"
+	{
+		"ru" "Высота прыжка, если это оружие в руках"
+	}
+	
+	"UpgradeRechargeRate_Bonk"
+	{
+		"ru" "Ск. перезарядки напитка"
+	}
+	
+	"UpgradeRechargeRate_Cola"
+	{
+		"ru" "Ск. перезарядки напитка"
+	}
+	
+	"UpgradeMilkySlowDown"
+	{
+		"ru" "Замедление от Зломолока"
+	}
+	
+	"UpgradeThrowableRegenRate_Milk"
+	{
+		"ru" "Скорость восст."
+	}
+	
+	/* SCOUT MELEE WEAPON PHRASES */
+
+	"UpgradeAttackSpeed_Scout"
+	{
+		"ru" "Скор. атаки"
+	}
+	
+	"UpgradeAttackSpeed_FAN_Scout"
+	{
+		"ru" "Скор. атаки"
+	}
+
+	"UpgradeMeleeDamage_Scout"
+	{
+		"ru" "Урон"
+	}
+
+	"UpgradeBallDamage_Scout"
+	{
+		"ru" "Урон от шаров"
+	}
+	
+	"UpgradeMiniCritsOnKill"
+	{
+		"ru" "Мини-криты при убийстве"
+	}
+	
+	"UpgradeIncreasedMiscAmmo_Scout"
+	{
+		"ru" "Боеприпасы"
+	}
+	
+	"UpgradeHealthOnKill_CandyCane"
+	{
+		"ru" "Здор. за уб-во"
+	}
+	
+	"UpgradeBleedLength_BostonBasher"
+	{
+		"ru" "Длит-ть кровотечения"
+	}
+	
+	"UpgradeMarkMultiple_Scout"
+	{
+		"ru" "Пометить несколько целей на смерть"
+	}
+	
+	"UpgradeMoreJumps_Scout"
+	{
+		"ru" "Доп. прыжок"
+	}
+	
+	"UpgradeHealth_Scout"
+	{
+		"ru" "Макс. здоровье"
+	}
+
+	"UpgradeSpeed_Scout"
+	{
+		"ru" "Макс. скорость"
+	}
+	
+	"UpgradeJumpHeight_Scout"
+	{
+		"ru" "Высота прыжка"
+	}
+	
+	/* SOLDIER CLASS PHRASES */
+	
+	"UpgradeHealth_Soldier"
+	{
+		"ru" "Макс. здоровье"
+	}
+
+	"UpgradeSpeed_Soldier"
+	{
+		"ru" "Макс. скорость"
+	}
+	
+	"UpgradeRocketJump_Soldier"
+	{
+		"ru" "Урон от прыжка на ракете"
+	}
+
+	/* SOLDIER PRIMARY WEAPON PHRASES */
+	
+	"UpgradeRocketLauncherDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeRocketLauncherClipSize"
+	{
+		"ru" "Размер обоймы"
+	}
+	
+	"UpgradeRocketLauncherFireSpeed"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeRocketReloadSpeed"
+	{
+		"ru" "Ск.перезарядки"
+	}
+
+	"UpgradeDirectHitDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeRocketJumperClipSize"
+	{
+		"ru" "Размер обоймы"
+	}
+	
+	"UpgradeSurviveGrenadeTaunt"
+	{
+		"ru" "Выжить после выполения насмешки камикадзе"
+	}
+	
+	"UpgradeRocketLauncherBlast"
+	{
+		"ru" "Радиус взрыва"
+	}
+	
+	/* SOLDIER SECONDARY WEAPON PHRASES */
+	
+	"UpgradeShotgunDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeShotgunReloadSpeed"
+	{
+		"ru" "Ск.перезарядки"
+	}
+	
+	"UpgradeShotgunFiringSpeed"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeShotgunClipSize"
+	{
+		"ru" "Размер обоймы"
+	}
+	
+	"UpgradeBuffDuration"
+	{
+		"ru" "Длительность эффекта"
+	}
+	
+	"UpgradeReducedFallDamage"
+	{
+		"ru" "Уменьшен урон от падения"
+	}
+	
+	"UpgradeBootDamage"
+	{
+		"ru" "Урон от ботинок"
+	}
+	
+	"UpgradeBisonDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeParachuteDamageReduced"
+	{
+		"ru" "Уменьшение урона в парашуте"
+	}
+	
+	/* SOLDIER MELEE WEAPONS */
+	
+	"UpgradeMeleeDamage_DA"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeAttackSpeed_DA"
+	{
+		"ru" "Скор. атаки"
+	}
+	
+	/* PYRO CLASS UPGRADES */
+	
+	"UpgradeHealth_Pyro"
+	{
+		"ru" "Макс. здоровье"
+	}
+	
+	"UpgradeJumpHeight_Pyro"
+	{
+		"ru" "Высота прыжка"
+	}
+	
+	"UpgradeSpeed_Pyro"
+	{
+		"ru" "Скорость"
+	}
+	
+	/* PYRO PRIMARY WEAPONS */
+	
+	"UpgradeFlameThrowerDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeFlameThrowerAfterBurn"
+	{
+		"ru" "Урон от догорания"
+	}
+	
+	"UpgradeAirBlastDelay"
+	{
+		"ru" "Ск-сть перез-ки сжатого воздуха"
+	}
+	
+	"UpgradeAirBlastStrength"
+	{
+		"ru" "Сила cжатого воздуха"
+	}
+	
+	"UpgradeFlameThrowerAmmo"
+	{
+		"ru" "Боеприпасы"
+	}
+	
+	"UpgradeAirBlastStrength_BB"
+	{
+		"ru" "Сила cжатого воздуха"
+	}
+	
+	/* PYRO SECONDARY WEAPONS */
+	
+	"UpgradeFlaregunDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeFlaregunAfterBurn"
+	{
+		"ru" "Длительность догорания"
+	}
+	
+	"UpgradeFlaregunAmmo"
+	{
+		"ru" "Боеприпасы"
+	}
+	
+	"UpgradeFlaregunJump"
+	{
+		"ru" "Сила прыжка от ракетницы"
+	}
+	
+	/* PYRO MELEE WEAPONS */
+	
+	"UpgradeMeleeDamageVsBurning"
+	{
+		"ru" "Бонусный урон против горящих врагов"
+	}
+	
+	"UpgradeMeleeCritVsPocketed"
+	{
+		"ru" "Криты по лечащим медикам"
+	}
+	
+	"UpgradeMeleeResistSentry"
+	{
+		"ru" "Сопротивление урону от турелей"
+	}
+	
+	/* DEMOMAN PRIMARY WEAPONS */
+	
+	"UpgradeGrenadeBlastRadius"
+	{
+		"ru" "Радиус взрыва"
+	}
+	
+	"UpgradeGrenadeReloadSpeed"
+	{
+		"ru" "Ск.перезарядки"
+	}
+	
+	"UpgradeGrenadeMaxAmmo"
+	{
+		"ru" "Боеприпасы"
+	}
+	
+	"UpgradeGrenadeFiringSpeed"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeGrenadeReload_Loch"
+	{
+		"ru" "Ск.перезарядки"
+	}
+	
+	"UpgradeCannonDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeResistStickyJumpDamage"
+	{
+		"ru" "Уменьшение урона от бомб-липучек"
+	}
+	
+	"UpgradeBootsChargeControl"
+	{
+		"ru" "Управляемость во время рывка"
+	}	
+	
+	"UpgradeReducedFallDamage_Demo"
+	{
+		"ru" "Уменьшен урона от падения"
+	}
+	
+	"UpgradeParachuteDamage_Demo"
+	{
+		"ru" "Уменьшение урона в парашуте"
+	}
+	
+	/* DEMOMAN SECONDARY WEAPONS */
+	
+	"UpgradeStickybombDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeStickybombReloadSpeed"
+	{
+		"ru" "Ск.перезарядки"
+	}
+	
+	"UpgradeStickybombFiringSpeed"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeStickybombClipSize"
+	{
+		"ru" "Размер обоймы"
+	}
+	
+	"UpgradeStickybombBuildingDamage"
+	{
+		"ru" "Урон по постройкам"
+	}
+	
+	"UpgradeStickybombFiringSpeed_SR"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeStickybombMaxBombs_SR"
+	{
+		"ru" "Макс. липучек"
+	}
+	
+	"UpgradeStickyJumpReloadSpeed"
+	{
+		"ru" "Ск.перезарядки"
+	}
+	
+	"UpgradeStickyJumpFiringSpeed"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeShieldChargeRate"
+	{
+		"ru" "Скорость восстановления"
+	}
+	
+	"UpgradeShieldResistPushForce"
+	{
+		"ru" "Отталкивание уроном"
+	}
+	
+	"UpgradeShieldDamage"
+	{
+		"ru" "Урон от удара щитом"
+	}
+	
+	"UpgradeShieldDamage_Screen"
+	{
+		"ru" "Урон от удара щитом"
+	}
+	
+	/* DEMOMAN MELEE WEAPONS */
+	
+	"UpgradeChargeLength"
+	{
+		"ru" "Длительность рывка"
+	}
+	
+	/* DEMOMAN CLASS UPGRADES */
+	
+	"UpgradeSpeed_Demo"
+	{
+		"ru" "Скорость"
+	}
+	
+	"UpgradeJumpHeight_Demo"
+	{
+		"ru" "Высота прыжка"
+	}
+	
+	"UpgradeSelfDamage_Demo"
+	{
+		"ru" "Урон по себе"
+	}
+	
+	/* HEAVY PRIMARY WEAPONS */
+	
+	"UpgradeMinigunFiringSpeed"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeMinigunAmmo"
+	{
+		"ru" "Боеприпасы"
+	}
+	
+	"UpgradeMinigunDeployedSpeed"
+	{
+		"ru" "Скорость бега во время раскрутки"
+	}
+	
+	"UpgradeMinigunDeployedSpeed_NAT"
+	{
+		"ru" "Скорость бега во время раскрутки"
+	}
+	
+	"UpgradeMinigunIgnite"
+	{
+		"ru" "Поджигать врагов при попадании"
+	}
+	
+	/* HEAVY SECONADRY WEAPONS */
+	
+	"UpgradeRechargeRate_Sandvich"
+	{
+		"ru" "Скорость перезарядки"
+	}
+	
+	"UpgradeRechargeRate_Steak"
+	{
+		"ru" "Скорость перезарядки"
+	}
+	
+	/* HEAVY MELEE WEAPONS */
+	
+	"UpgradeEvictionNoticeBleed"
+	{
+		"ru" "Кровотечение при попадании"
+	}
+	
+	/* HEAVY CLASS UPGRADES */
+	
+	"UpgradeJumpHeight_Heavy"
+	{
+		"ru" "Высота прыжка"
+	}
+	
+	"UpgradeResistPushForce"
+	{
+		"ru" "Отталкивание уроном"
+	}
+	
+	"UpgradeHealth_Heavy"
+	{
+		"ru" "Макс. здоровье"
+	}
+	
+	/* ENGINEER PRIMARY WEAPONS */
+	
+	"UpgradeShotgunDamage_Engi"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeShotgunReloadSpeed_Engi"
+	{
+		"ru" "Ск.перезарядки"
+	}
+	
+	"UpgradeShotgunFiringSpeed_Engi"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeShotgunClipSize_Engi"
+	{
+		"ru" "Размер обоймы"
+	}
+	
+	"UpgradeShotgunClipSize_RR"
+	{
+		"ru" "Размер обоймы"
+	}
+	
+	"UpgradeRescueRangerDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradePomsonCloakDrain"
+	{
+		"ru" "Расход заряда невидимости"
+	}
+	
+	/* ENGINEER SECONDARY WEAPONS */
+	
+	"UpgradeWranglerJump"
+	{
+		"ru" "Уменьшение урона по себе"
+	}
+	
+	"UpgradeShortCircuitFiringSpeed"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeResistDamageWhileEating"
+	{
+		"ru" "Сопр. урону во время еды"
+	}
+	
+	/* ENGINEER MELEE WEAPONS */
+	
+	"UpgradeBleedLength_SH"
+	{
+		"ru" "Длит-ть кровотечения"
+	}
+	
+	/* ENGINEER BUILDING UPGRADES */
+	
+	"UpgradeBuildingHealth"
+	{
+		"ru" "Прочн. построек"
+	}
+	
+	"UpgradeDispenserRange"
+	{
+		"ru" "Дальность раздатч."
+	}
+	
+	/* ENGINEER CLASS UPGRADES */
+	
+	"UpgradeMetalEngineer"
+	{
+		"ru" "Запас металла"
+	}
+	
+	/* MEDIC PRIMARY WEAPONS */
+	
+	"UpgradeSyringeGunReloadSpeed"
+	{
+		"ru" "Ск.перезарядки"
+	}
+	
+	"UpgradeSyringeGunFiringSpeed"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeSyringeGunMaxAmmo"
+	{
+		"ru" "Боеприпасы"
+	}
+	
+	"UpgradeCrossbowRemoveDamaging"
+	{
+		"ru" "Убрать эффект разрушения"
+	}
+	
+	/* MEDIC SECONDARY WEAPONS */
+	
+	"UpgradeMediGunOverhealDuration"
+	{
+		"ru" "Длит-ть Сверхлечения"
+	}
+	
+	"UpgradeMediGunUberDuration"
+	{
+		"ru" "Длит-ть убер-заряда"
+	}
+	
+	"UpgradeMediGunHealRate"
+	{
+		"ru" "Cкорость лечения"
+	}
+	
+	/* MEDIC MELEE WEAPONS */
+	
+	"UpgradeResistDamageWhileActive"
+	{
+		"ru" "Сопр. урону, если это оружие в руках"
+	}
+	
+	/* MEDIC CLASS UPGRADES */
+	
+	"UpgradeSpeed_Medic"
+	{
+		"ru" "Скорость"
+	}
+	
+	"UpgradeJumpHeight_Medic"
+	{
+		"ru" "Высота прыжка"
+	}
+	
+	"UpgradeHealth_Medic"
+	{
+		"ru" "Макс. здоровье"
+	}
+	
+	/* SNIPER PRIMARY WEAPONS */
+	
+	"UpgradeSniperRifleReloadSpeed"
+	{
+		"ru" "Ск.перезарядки"
+	}
+	
+	"UpgradeSniperRifleChargeSpeed"
+	{
+		"ru" "Ск. накопления заряда"
+	}
+	
+	"UpgradeSniperRifleMaxAmmo"
+	{
+		"ru" "Боеприпасы"
+	}
+	
+	"UpgradeSleeperExtinguish"
+	{
+		"ru" "Тушение товарищей по команде"
+	}
+	
+	"UpgradeHuntsManPenetration"
+	{
+		"ru" "Пробитие насквозь"
+	}
+	
+	"UpgradeHuntsManReloadSpeed"
+	{
+		"ru" "Ск.натягивания стрелы"
+	}
+	
+	"UpgradeHuntsManBleed"
+	{
+		"ru" "Кровотечение при попадании"
+	}
+	
+	/* SNIPER SECONDARY WEAPONS */
+	
+	"UpgradeThrowableRegenRate_Pee"
+	{
+		"ru" "Скорость восст."
+	}
+	
+	"UpgradeReducedFallDamage_Sniper"
+	{
+		"ru" "Уменьшен урон от падения"
+	}
+	
+	"UpgradeCozyAmmoRegen"
+	{
+		"ru" "Рег.боеприпасов"
+	}
+	
+	/* SNIPER MELEE WEAPONS */
+	
+	"UpgradeBleedLength_Shiv"
+	{
+		"ru" "Длит-ть кровотечения"
+	}
+	
+	"UpgradeKurkiHealthOnKill"
+	{
+		"ru" "Здор. за уб-во"
+	}
+	
+	/* SPY PRIMARY WEAPONS */
+	
+	"UpgradeRevolverDamage"
+	{
+		"ru" "Урон"
+	}
+	
+	"UpgradeRevolverFiringSpeed"
+	{
+		"ru" "Скоростр-ть"
+	}
+	
+	"UpgradeRevolverReloadSpeed"
+	{
+		"ru" "Ск.перезарядки"
+	}
+
+	/* SPY MELEE WEAPONS */
+	
+	"UpgradeWeaponSwitchTime_Melee"
+	{
+		"ru" "Время переключения оружия"
+	}
+	
+	"UpgradeCloakOnBackstab"
+	{
+		"ru" "Невидимость при ударе в спину"
+	}
+	
+	/* SPY WATCHES */
+	
+	"UpgradeCloakDuration"
+	{
+		"ru" "Длит-ть невидимости"
+	}
+	
+	"UpgradeCloakRegenRate"
+	{
+		"ru" "Восст. невидимости"
+	}
+	
+	/* SPY CLASS UPGRADES */
+	
+	"UpgradeSpeed_Spy"
+	{
+		"ru" "Скорость"
+	}
+}

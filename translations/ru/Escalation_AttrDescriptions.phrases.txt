@@ -1,0 +1,712 @@
+"Phrases"
+{
+	"AttrbDesc_HealthIncrease"
+	{
+		"ru"	"Макс. здоровье: +%i"
+	}
+	
+	"AttrbDesc_HealthDecrease"
+	{
+		"ru"	"Макс. здоровье: -%i"
+	}
+	
+	"AttrbDesc_SpeedIncrease"
+	{
+		"ru"	"Скорость передвижения: +%i%%"
+	}
+	
+	"AttrbDesc_SpeedDecrease"
+	{
+		"ru"	"Скорость передвижения: -%i%%"
+	}
+
+	"AttrbDesc_JumpIncrease"
+	{
+		"ru"	"Высота прыжка: +%i%%"
+	}
+	
+	"AttrbDesc_JumpDecrease"
+	{
+		"ru"	"Высота прыжка: -%i%%"
+	}
+
+	"AttrbDesc_BulletIncrease"
+	{
+		"ru"	"Урон от пуль: +%i%%"
+	}
+	
+	"AttrbDesc_BlastIncrease"
+	{
+		"ru"	"Урон от взрыва: +%i%%"
+	}
+	
+	"AttrbDesc_FireIncrease"
+	{
+		"ru"	"Урон от огня: +%i%%"
+	}
+
+	"AttrbDesc_SentryDecrease"
+	{
+		"ru"	"Урон от турелей: -%i%%"
+	}
+
+	"AttrbDesc_AirBlastPushIncrease"
+	{
+		"ru"	"Отталкивание уроном: +%i%%"
+	}
+
+	"AttrbDesc_DamagePushIncrease"
+	{
+		"ru"	"Урон от отталкивания: +%i%%"
+	}
+
+	"AttrbDesc_PushDecrease"
+	{
+		"ru"	"Урон от отталкивания и сжатым воздухом: -%i%%"
+	}
+	
+	"AttrbDesc_PushIncrease"
+	{
+		"ru"	"Урон от отталкивания и сжатым воздухом: +%i%%"
+	}
+	
+	"AttrbDesc_ReloadSpeedIncrease"
+	{
+		"ru"	"Ск.перезарядки быстрее на: %i%%"
+	}
+
+	"AttrbDesc_ReloadSpeedDecrease"
+	{
+		"ru"	"Ск.перезарядки медленнее на: %i%%"
+	}
+	
+	"AttrbDesc_RocketSpeedDecrease"
+	{
+		"ru"	"Ск.полета снаряда меньше на: -%i%%"
+	}
+	
+	"AttrbDesc_ClipSizeIncrease"
+	{
+		"ru"	"Размер обоймы: +%i%%"
+	}
+	
+	"AttrbDesc_ClipSizeDecrease"
+	{
+		"ru"	"Размер обоймы: -%i%%"
+	}
+
+	"AttrbDesc_FireRateIncrease"
+	{
+		"ru"	"Ск.перезарядки быстрее на: %i%%"
+	}
+
+	"AttrbDesc_FireRateDecrease"
+	{
+		"ru"	"Ск.перезарядки медленнее на: %i%%"
+	}
+	
+	"AttrbDesc_DmgPenaltyOverhealed"
+	{
+		"ru"	"Урон против игроков с сверхлечением: -%i%%"
+	}
+
+	"AttrbDesc_DmgPenaltyGrounded"
+	{
+		"ru"	"Урон против игроков, не находящихся в воздухе: -%i%%"
+	}
+
+	"AttrbDesc_DmgBonusBuildings"
+	{
+		"ru"	"Урон против построек: +%i%%"
+	}
+
+	"AttrbDesc_DmgPenaltyBuildings"
+	{
+		"ru"	"Урон против построек: -%i%%"
+	}
+	
+	"AttrbDesc_PrimaryAmmoIncrease"
+	{
+		"ru"	"Боезапас основного оружия: +%i%%"
+	}
+	
+	"AttrbDesc_PrimaryAmmoDecrease"
+	{
+		"ru"	"Боезапас основного оружия: -%i%%"
+	}
+	
+	"AttrbDesc_SecondaryAmmoIncrease"
+	{
+		"ru"	"Боезапас доп. оружия: +%i%%"
+	}
+	
+	"AttrbDesc_SecondaryAmmoDecrease"
+	{
+		"ru"	"Боезапас доп. оружия: -%i%%"
+	}
+	
+	"AttrbDesc_MiscAmmoIncrease"
+	{
+		"ru"	"Дополнительные боеприпасы: +%i%%"
+	}
+	
+	"AttrbDesc_ScatKnockbackIncrease"
+	{
+		"ru"	"Отдача обреза увеличена на: %i%%"  
+	}
+	
+	"AttrbDesc_BulletPerShotDecrease"
+	{
+		"ru"	"Количество пуль за выстрел: -%i%%"
+	}
+
+	"AttrbDesc_SpreadBonus"
+	{
+		"ru"	"Точность: +%i%%"
+	}
+	
+	"AttrbDesc_SpreadPenalty"
+	{
+		"ru"	"Точность: -%i%%"
+	}
+
+	"AttrbDesc_DamageIncrease"
+	{
+		"ru"	"Урон: +%i%%"
+	}
+	
+	"AttrbDesc_DamageDecrease"
+	{
+		"ru"	"Урон: -%i%%"
+	}
+	
+	"AttrbDesc_BodyshotDamagePenalty"
+	{
+		"ru"	"Урон при попадании в тело: -%i%%"
+	}
+	
+	"AttrbDesc_WeaponSwitchIncrease"
+	{
+		"ru"	"Ск.переключения оружия дольше на: %i%%" 
+	}
+	
+	"AttrbDesc_WeaponSwitchDecrease"
+	{
+		"ru"	"Ск.переключения оружия быстрее на: %i%%" 
+	}
+
+	"AttrbDesc_DmgPenaltyPlayers"
+	{
+		"ru"	"Урон против игроков: -%i%%"
+	}
+
+	"AttrbDesc_DmgPenaltyNonBurning"
+	{
+		"ru"	"Урон против негорящих врагов: -%i%%"
+	}
+	
+	"AttrbDesc_DmgBonusBurning"
+	{
+		"ru"	"Урон против негорящих врагов: +%i%%"
+	}
+	
+	"AttrbDesc_DmgPenaltySurface"
+	{
+		"ru"	"Урона при касании поверхностей: -%i%%"
+	}
+	
+	"AttrbDesc_JumpWeaponIncrease"
+	{
+		"ru"	"Высота прыжка при использовании: +%i%%"
+	}
+	
+	"AttrbDesc_RechargeRateIncrease"
+	{
+		"ru"	"Скорость перезарядки быстрее на: +%i%%"
+	}
+	
+	"AttrbDesc_RechargeRateDecrease"
+	{
+		"ru"	"Скорость перезарядки медленнее на: +%i%%"
+	}
+	
+	"AttrbDesc_DmgPushForceIncrease"
+	{
+		"ru"	"Отталкивание уроном и сжатым воздухом: %i%%"
+	}
+	
+	"AttrbDesc_SlowMilkedPlayers"
+	{
+		"ru"	"Замедление игроков в молоке на %i Секунд"
+	}
+	
+	"AttrbDesc_MilkDurationDecrease"
+	{
+		"ru"	"Длит-ть Зломолока: -%i%%"
+	}
+
+	"AttrbDesc_HealthPacksDecrease"
+	{
+		"ru"	"Лечение от аптечек: -%i%%"
+	}
+
+	"AttrbDesc_HealthHealersDecrease"
+	{
+		"ru"	"Лечение от игроков: -%i%%"
+	}
+
+	"AttrbDesc_SwingRateIncrease"
+	{
+		"ru"	"Скорость атаки быстрее на: %i%%"
+	}
+	
+	"AttrbDesc_MeleeRangeDecrease"
+	{
+		"ru"	"Дальность удара: -%i%%"
+	}
+	
+	"AttrbDesc_MeleeBoundsDecrease"
+	{
+		"ru"	"Дальность попадания удара: -%i%%"
+	}
+	
+	"AttrbDesc_BallDamageIncrease"
+	{
+		"ru"	"Урон шаров: +%i%%"
+	}
+	
+	"AttrbDesc_MiniCritsOnKill"
+	{
+		"ru"	"При убийстве: мини-криты в течение %i сек"
+	}
+	
+	"AttrbDesc_DmgFromCritsIncrease"
+	{
+		"ru"	"Урон от критических попаданий: +%i%%"
+	}
+	
+	"AttrbDesc_BleedDuration"
+	{
+		"ru"	"При попадании: кровотечение на %i сек"
+	}
+	
+	"AttrbDesc_BleedDurationIncrease"
+	{
+		"ru"	"При попадании: кровотечение увеличено %i сек"
+	}
+	
+	"AtrbDesc_SelfBleedDmgIncrease"
+	{
+		"ru"	"Урон от кровотечения: +%i%%"
+	}
+	
+	"AttrbDesc_MarkMultipleForDeath"
+	{
+		"ru"	"Отметить несколько целей для смерти на %i секунд каждую"
+	}
+
+	"AtrbDesc_RangedDmgIncrease"
+	{
+		"ru"	"Если это оружие в руках: Получение доп. урона от пуль %i%%"
+	}
+
+	"AtrbDesc_RangedDmgDecrease"
+	{
+		"ru"	"Если это оружие в руках: Получение урона от пуль на %i%% меньше"
+	}
+	
+	"AttrbDesc_AirDashCount"
+	{
+		"ru"	"Получение дополнительных %i прыжков в воздухе"
+	}
+	
+	"AtrbDesc_DmgPerJump"
+	{
+		"ru"	"Каждый дополнительный прыжок наносит %i урона"
+	}
+	
+	"AttrbDesc_HealthOnAnyKill"
+	{
+		"ru"	"При любом убийстве: Получение %i здоровья"
+	}
+	
+	"AttrbDesc_HealthOnKill"
+	{
+		"ru"	"При убийстве: Получение %i здоровья"
+	}
+	
+	"AttrbDesc_DmgTakenIncrease"
+	{
+		"ru"	"Получаемый урон: +%i%%"
+	}
+	
+	"AttrbDesc_BlastRadiusIncrease"
+	{
+		"ru"	"Радиус взрыва: +%i%%"
+	}
+	
+	"AttrbDesc_BlastRadiusDecrease"
+	{
+		"ru"	"Радиус взрыва: -%i%%"
+	}
+	
+	"AttrbDesc_RocketSpeedDecrease"
+	{
+		"ru"	"Ск. снаряда: -%i%%"
+	}
+	
+	"AttrbDesc_ClipSizeOverride"
+	{
+		"ru"	"Получение размера обоймы из %i"
+	}
+	
+	"AttrbDesc_BuffDurationIncrease"
+	{
+		"ru"	"Эффект знамени: +%i%%"
+	}
+	
+	"AttrbDesc_BlastDmgSelfIncrease"
+	{
+		"ru"	"Урон по себе: +%i%%"
+	}
+	
+	"AttrbDesc_BlastDmgSelfDecrease"
+	{
+		"ru"	"Урон по себе: -%i%%"
+	}
+
+	"AttrbDesc_SelfBlastDescrease"
+	{
+		"ru"	"Отбрасывание себя уроном: -%i%%"
+	}
+	
+	"AttrbDesc_SelfBlastInscrease"
+	{
+		"ru"	"Отбрасывание себя уроном: +%i%%"
+	}
+	
+	"AttrbDesc_BootDamageIncrease"
+	{
+		"ru"	"Урон по врагу от приземления: +%i%%"
+	}
+
+	"AttrbDesc_SurviveGrenadeTaunt"
+	{
+		"ru"	"Выжить после выполения насмешки камикадзе"
+	}
+
+	"AttrbDesc_ReducedFallDamage"
+	{
+		"ru"	"Получение только %i%% урона от падения"
+	}
+
+	"AttrbDesc_IncreasedFallDamage"
+	{
+		"ru"	"Получение дополнительного %i%% урона от падения"
+	}
+
+	"AttrbDesc_IncreasedGroundDamage"
+	{
+		"ru"	"Пока не в воздухе: Получение дополнительного %i%% урона"
+	}
+
+	"AttrbDesc_IncreasedAirExpDamage"
+	{
+		"ru"	"В прыжке на взрывчатке: Получение дополнительного %i%% урона"
+	}
+	
+	"AttrbDesc_ReducedBASEDamage"
+	{
+		"ru"	"Спускаясь на парашюте: Получение на %i%% меньше урона"
+	}
+
+	"AttrbDesc_RocketJumpDmgReduced"
+	{
+		"ru"	"Урон от прыжков на ракете: -%i%%"
+	}
+
+	"AttrbDesc_StickyJumpDmgReduced"
+	{
+		"ru"	"Урон от прыжков на бомбах-липучках: -%i%%"
+	}
+
+	"AttrbDesc_AfterBurnDecrease"
+	{
+		"ru"	"Длительность догорания: -%i%%"
+	}
+	
+	"AttrbDesc_AfterBurnIncrease"
+	{
+		"ru"	"Длительность догорания: +%i%%"
+	}
+	
+	"AttrbDesc_AfterBurnDMGIncrease"
+	{
+		"ru"	"Урон от догорания: +%i%%"
+	}
+	
+	"AttrbDesc_AmmoConsumeIncrease"
+	{
+		"ru"	"Расход топлива огнемётом в секунду: +%i%%"
+	}
+	
+	"AttrbDesc_AirBlastSpeedIncrease"
+	{
+		"ru"	"Перезарядка сжатого воздуха уменьшена на: %i%%"
+	}
+	
+	"AttrbDesc_AirBlastPushIncrease"
+	{
+		"ru"	"Сила отталкивания сжатым воздухом: +%i%%"
+	}
+	
+	"AttrbDesc_AirBlastCostIncrease"
+	{
+		"ru"	"Потребление топлива сжатым воздухом: +%i%%"
+	}
+	
+	"AttrbDesc_FlameRangeDecrease"
+	{
+		"ru"	"Дальность огнемёта: -%i%%"
+	}
+	
+	"AttrbDesc_RangeDecrease"
+	{
+		"ru"	"Дальность полета снаряда: -%i%%"
+	}
+	
+	"AttrbDesc_DmgFallOffIncrease"
+	{
+		"ru"	"Урон в радиусе взрыва: +%i%%"
+	}
+	
+	"AttrbDesc_ChargeTurnIncrease"
+	{
+		"ru"	"Управляемость во время рывка: +%i%%"
+	}
+
+	"AttrbDesc_ChargeLengthDecrease"
+	{
+		"ru"	"Время заряда: -0.%i"
+	}
+	
+	"AttrbDesc_ChargeLengthIncrease"
+	{
+		"ru"	"Время заряда: +0.%i"
+	}
+
+	"AttrbDesc_ChargeDamageDecrease"
+	{
+		"ru"	"Урон при столкновении: -%i%%"
+	}
+
+	"AttrbDesc_ChargeDamageIncrease"
+	{
+		"ru"	"Урон при столкновении: +%i%%"
+	}
+	
+	"AttrbDesc_ChargeRateIncrease"
+	{
+		"ru"	"+%i%% к скорости перезарядки"
+	}
+	
+	"AttrbDesc_StickyArmTimeIncrease"
+	{
+		"ru"	"Время установки бомбы: 0.%i сек."
+	}
+	
+	"AttrbDesc_MaxPipeBombsIncrease"
+	{
+		"ru"	"Максимальное кол-во выпущенных бомб-липучек: +%i"
+	}
+	
+	"AttrbDesc_DeployedSpeedIncrease"
+	{
+		"ru"	"Скорость бега во время раскрутки: +%i%%"
+	}
+	
+	"AttrbDesc_SpinupTimeIncrease"
+	{
+		"ru"	"Скорость раскрутки пулемёта: +%i%%"
+	}
+	
+	"AttrbDesc_AmmoPerShotIncrease"
+	{
+		"ru"	"За выстрел: -%i патронов"
+	}
+
+	"AttrbDesc_BuildingHealthBonus"
+	{
+		"ru"	"Прочность построек: +%i%%"
+	}
+
+	"AttrbDesc_BuildingHealthPenalty"
+	{
+		"ru"	"Прочность построек: -%i%%"
+	}
+
+	"AttrbDesc_SentryDamageIncrease"
+	{
+		"ru"	"Урон турелью: +%i%%"
+	}
+	
+	"AttrbDesc_SentryDamageDecrease"
+	{
+		"ru"	"Урон турелью: -%i%%"
+	}
+
+	"AttrbDesc_DispenserRangeBonus"
+	{
+		"ru"	"Дальность действия раздатчика: +%i%%"
+	}
+	
+	"AttrbDesc_OverhealPenalty"
+	{
+		"ru"	"Сверхлечение: -%i%%"
+	}
+	
+	"AttrbDesc_OverhealTimeBonus"
+	{
+		"ru"	"Длит-ть сверхлечения: +%i%%"
+	}
+	
+	"AttrbDesc_UberBuildRatePenalty"
+	{
+		"ru"	"Скорость накопления убер-заряда: -%i%%"
+	}
+	
+	"AttrbDesc_UberTimeBonus"
+	{
+		"ru"	"Длительность убер-заряда увеличена на %i сек."
+	}
+	
+	"AttrbDesc_HealRateBonus"
+	{
+		"ru"	"Скорость лечения: +%i%%"
+	}
+	
+	"AttrbDesc_OverhealRatePenalty"
+	{
+		"ru"	"Скорость накопления сверхлечения дольше на: +%i%%"
+	}
+	
+	"AttrbDesc_MaxMetalIncrease"
+	{
+		"ru"	"Запас металла: +%i%%"
+	}
+
+	"AttrbDesc_NoCritNonBurning"
+	{
+		"ru"	"Без критов по негорящим врагам"
+	}
+	
+	"AttrbDesc_CritVsPocketedPlayers"
+	{
+		"ru"	"100% Критическое попадание по лечащим медикам"
+	}
+	
+	"AttrbDesc_ReloadFullCip"
+	{
+		"ru"	"Получение обоймы основанной на перезарядке"
+	}
+	
+	"AttrbDesc_IgniteOnHitModerate"
+	{
+		"ru"	"При попадании: Подожжение врага"
+	}
+	
+	"AttrbDesc_ProjectileDeviation"
+	{
+		"ru"	"Разброс выстрела: +%i град."
+	}
+	
+	"AttrbDesc_SubtractCloakOnHit"
+	{
+		"ru"	"При попадании: Жертва теряет до %s1% заряда невидимости"
+	}
+
+	"AttrbDesc_CrossbowRemoveEffects"
+	{
+		"ru"	"При попадании по товарищу: Снятие кровотечения и догорания"
+	}
+	
+	"AttrbDesc_DamageEatingReduced"
+	{
+		"ru"	"Во время поедания: Получение до %i%% меньше урона"
+	}
+	
+	"AttrbDesc_SleeperExtinguish"
+	{
+		"ru"	"При попадании по товарищу: Тушение, если накопить заряд %i%% или больше"
+	}
+	
+	"AttrbDesc_JarateDurationPenalty"
+	{
+		"ru"	"Длит-ть Банкате: -%i"
+	}
+	
+	"AttrbDesc_CloakRegenDecrease"
+	{
+		"ru"	"Восстановление невидимости: -%i%%"
+	}
+	
+	"AttrbDesc_CloakRegenIncrease"
+	{
+		"ru"	"Восстановление невидимости: +%i%%"
+	}
+	
+	"AttrbDesc_CloakDurationDecrease"
+	{
+		"ru"	"Длительность невидимости: -%i%%"
+	}
+	
+	"AttrbDesc_CloakDurationIncrease"
+	{
+		"ru"	"Длительность невидимости: +%i%%"
+	}
+	
+	"AttrbDesc_AmmoRegen"
+	{
+		"ru"	"+%i%% Боеприпасов регенерируются каждые пять секунд"
+	}
+	
+	"AttrbDesc_CloakOnBackstab"
+	{
+		"ru"	"Убийство ударом в спину восстанавливает невидимость"
+	}
+	
+	"AttrbDesc_SilentKiller"
+	{
+		"ru"	"Это оружие убивает бесшумно"
+	}
+	
+	"AttrbDesc_ProjectilePenetration"
+	{
+		"ru"	"Снаряды пробивают игроков насквозь."
+	}
+	
+	"AttrbDesc_NoHeadShots"
+	{
+		"ru"	"Без попаданий в голову."
+	}
+	
+	"AttrbDesc_HeadshotsDealMiniCrit"
+	{
+		"ru"	"Попадание в голову наносит только мини-криты."
+	}
+
+	"AttrbDesc_NoFallDamage"
+	{
+		"ru"	"Нет урона от падения."
+	}
+
+	"AttrbDesc_NoAmmoFromDispensers"
+	{
+		"ru"	"Нет получаете боеприпасы от раздатчиков при использовании."
+	}
+
+	"AttrbDesc_NoDownSide"
+	{
+		"ru"	"Нет недостатка."
+	}
+}

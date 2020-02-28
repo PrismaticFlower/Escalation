@@ -1,0 +1,592 @@
+"Phrases"
+{
+	"Escalation_Tag"
+	{
+		"ru" "{royalblue}[Escalation]{silver}"
+	}
+	
+	"Escalation_Commands"
+	{
+		"ru" "Команды Escalation"
+	}
+
+	"Select_Menu_Action"
+	{
+		"ru" "Выберите действие"
+	}
+
+	"Select_Upgrade"
+	{
+		"ru" "Выберите улучшение"
+	}
+
+	"Select_Class"
+	{
+		"ru" "Выберите класс"
+	}
+
+	"Select_Class_All"
+	{
+		"ru" "Все классы"
+	}
+
+	"Select_Class_Scout"
+	{
+		"ru" "Разведчик"
+	}
+
+	"Select_Class_Soldier"
+	{
+	 	"ru" "Солдат"
+	}
+	
+	"Select_Class_Pyro"
+	{
+		"ru" "Поджигатель"
+	}
+
+	"Select_Class_Demoman"
+	{
+		"ru" "Подрывник"
+	}
+
+	"Select_Class_Heavy"
+	{	
+		"ru" "Пулемётчик"
+	}
+	
+	"Select_Class_Engineer"
+	{
+		"ru" "Инженер"
+	}
+	
+	"Select_Class_Medic"
+	{
+		"ru" "Медик"
+	}
+
+	"Select_Class_Spy"
+	{
+		"ru" "Шпион"
+	}
+
+	"Select_Class_Sniper" 
+	{
+		"ru" "Снайпер"
+	}
+
+	"Upgrade_Class"
+	{
+		"ru" "Улучшить класс"
+	}
+
+	"Upgrade_Slot_0"
+	{
+		"ru" "Улучшить Основное оружие"
+	}
+
+	"Upgrade_Slot_1"
+	{
+		"ru" "Улучшить Доп. оружие"
+	}
+
+	"Upgrade_Slot_2"
+	{
+		"ru" "Улучшить Ближний бой"
+	}
+
+	"Menu_Action_Clear"
+	{
+		"ru" "Очистить очередь улучшения"
+	}
+	
+	"Menu_Action_RemoveQueue"
+	{
+		"ru" "Удалить улучшение из своей очереди"
+	}
+
+	"Menu_Action_EditQueue"
+	{
+		"ru" "Изменить очередь улучшения"
+	}
+	
+	"Menu_Action_BanUpgrade"
+	{
+		"ru" "Запретить улучшение"
+	}
+
+	"Menu_Action_UnbanUpgrade"
+	{
+		"ru" "Разрешить улучшение"
+	}
+
+	"Menu_Action_ResetBanned"
+	{
+		"ru" "Сбросить запрещенные улучшения"
+	}
+	
+	"Menu_Select_Upgrade_Remove"
+	{
+		"ru" "Выберите улучшения для удаления из очереди"
+	}
+	
+	"Menu_Select_Upgrade_Shift"
+	{
+		"ru" "Выберите улучшение, чтобы его перевести в вашу очередь"
+	}
+
+	"Menu_Select_Upgrade_Ban"
+	{
+		"ru" "Выберите улучшения для запрета"
+	}
+	
+	"Menu_Select_Upgrade_Unban"
+	{
+		"ru" "Выберите улучшения для разрешения"
+	}
+
+	"Weapon_Not_Found"
+	{
+		"ru" "Невозможно найти ваше оружие в базе данных Escalation."
+	}
+
+	"Weapon_Not_Found_Possible_Cause"
+	{
+		"ru" "Возможной причиной этого является то, что TF2 был только что обновлен, и этот сервер еще не обновил свои файлы конфигурации."
+	}
+
+	"Credits_From_Death"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за смерть от {teamcolor}%s{silver}."
+	}
+
+	"Credits_From_Kill"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за убийство {teamcolor}%s{silver}."
+	}
+	
+	"Credits_From_Assist"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за помощь в убийстве {teamcolor}%s{silver}."
+	}
+
+	"Credits_From_MedicKilled"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за убийство медика."
+	}
+	
+	"Credits_From_UberDropped"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за сброс убер-заряда медика."
+	}
+
+	"Credits_From_AmountHealed"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за исцеление {dodgerblue}%i{silver} здоровья за эту жизнь."
+	}
+	
+	"Credits_From_MedicDefended"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за защиту медика."
+	}
+	
+	"Credits_From_Dominated"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов, чтобы помочь вам отомстить {teamcolor}%s{silver}."
+	}
+	
+	"Credits_From_Domination"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за превосходство над {teamcolor}%s{silver}."
+	}
+	
+	"Credits_From_PointCapture"
+	{
+		"ru" "Ваша команда получила {dodgerblue}%i{silver} кредитов за захват контрольной точки."
+	}
+	
+	"Credits_From_PointLost"
+	{
+		"ru" "Вашей команде был выдано {dodgerblue}%i{silver} кредиты, чтобы помочь отбить контрольную точку."
+	}
+	
+	"Credits_From_CaptureBlocked"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за блокировку захвата точки."
+	}
+
+	"Credits_From_CaptureStarted"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за начало захвата точки."
+	}
+
+	"Credits_From_Teleport"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за телепортацию товарища по команде."
+	}
+
+	"Credits_From_BuildingUpgrade"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов на улучшение постройки."
+	}
+
+	"Credits_From_BuildingUpgradeOther"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за улучшение постройки товарища по команде."
+	}
+	
+	"Credits_From_UberPopped"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за использование Убер-заряда."
+	}
+	
+	"Credits_From_Extinguished"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за тушение товарища по команде."
+	}
+	
+	"Credits_From_SentryDestroyed"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за уничтожение турели."
+	}
+	
+	"Credits_From_DispenserDestroyed"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за уничтожение раздатчика."
+	}
+
+	"Credits_From_TeleporterDestroyed"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за уничтожение телепорта."
+	}
+
+	"Credits_From_SapperDestroyed"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за уничтожение жучка."
+	}
+
+	"Credits_From_HelpedSentryDestroyed"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за помощь в уничтожении турели."
+	}
+
+	"Credits_From_HelpedDispenserDestroyed"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за помощь в уничтожении раздатчика."
+	}
+
+	"Credits_From_HelpedTeleporterDestroyed"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за помощь в уничтожении телепорта."
+	}
+
+	"Credits_From_HelpedSapperDestroyed"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за помощь в уничтожении жучка."
+	}
+	
+	"Credits_From_Intel_Pickup"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за поднятие флага."
+	}
+	
+	"Credits_From_Intel_Defended"
+	{
+		"ru" "Вы получили {dodgerblue}%i{silver} кредитов за защиту флага."
+	}
+	
+	"Credits_From_Intel_Capture"
+	{
+		"ru" "Ваша команда получила {dodgerblue}%i{silver} кредитов за захват флага."
+	}
+	
+	"Credits_From_Intel_Lost"
+	{
+		"ru" "Ваша команда получила {dodgerblue}%i{silver} чтобы помочь защитить флаг."
+	}
+
+	"Credits_Message"
+	{
+		"ru" "У вас есть всего {dodgerblue}%i{silver} кредитов."
+	}
+
+	"Refunded_New_Credits"
+	{
+		"ru" "Вы теперь имеете {dodgerblue}%i{silver} кредитов."
+	}
+
+	"Refund_Valid_Classnames"
+	{
+		"ru" "Имена следующие."
+	}
+
+	"Refund_Invalid_Class"
+	{
+		"ru" "Невозможно распознать класс {dodgerblue}%s{silver}. Убедитесь в правильности написания!"
+	}
+
+	"Cleared_All_Classes"
+	{
+		"ru" "Ваша очередь улучшения для всех классов была сброшена."
+	}
+
+	"Clear_Empty_Queue"
+	{
+		"ru" "Очередь улучшения этого класса пуста!"
+	}
+
+	"Cleared_Success_Class"
+	{
+		"ru" "Успешно ваша очередь улучшения для этого класса была сброшена."
+	}
+
+	"Upgrade_Not_Found"
+	{
+		"ru" "Невозможно найти улучшение {dodgerblue}%s{silver}."
+	}
+
+	"Upgrade_Not_Found_Bug"
+	{
+		"ru" "Если вы использовали меню улучшения, это скорее всего ошибка. Не стесняйтесь рассказать создателю игрового режима, каким он был непослушным."
+	}
+
+	"Upgrade_Highest_Level"
+	{
+		"ru" "Вы уже получили самый высокий уровень этого улучшения в своей очереди!"
+	}
+
+	"Upgrade_Weapon_Not_Allowed"
+	{
+		"ru" "Для вашего текущего оружия не разрешено это улучшение."
+	}
+
+	"Upgrade_Class_Not_Allowed"
+	{
+		"ru" "Для вашего текущего класса не разрешено это улучшение'"
+	}
+
+	"Upgrade_Added_Success"
+	{
+		"ru" "Вы успешно добавили улучшение {dodgerblue}%t{silver} в своею очередь на уровень {dodgerblue}%i{silver}."
+	}
+
+	"Upgrade_Removed"
+	{
+		"ru" "Вы удалили улучшение {dodgerblue}%t{silver} из вашей очереди."
+	}
+
+	"Upgrade_Removed_Credits"
+	{
+		"ru" "Вы удалили улучшение {dodgerblue}%t{silver} из вашей очереди и получили {dodgerblue}%i{silver} от возврата."
+	}
+
+	"Plugin_Disabled_Dependency"
+	{
+		"ru" "Зависимость плагина отсутствует, и плагин был приостановлен, пока не будет перезагружен."
+	}
+
+	"Plugin_Disabled_Admin"
+	{
+		"ru" "Плагин был отключен администратором."
+	}
+
+	"Plugin_Disabled_Nosupport"
+	{
+		"ru" "Плагин не поддерживается на этой карте и был отключен."
+	}
+
+	"Plugin_Started"
+	{
+		"ru" "Плагин запущен и готов."
+	}
+
+	"Open_Menu_Reminder"
+	{
+		"ru" "Напишите {dodgerblue}!upgrade{silver} или {dodgerblue}/upgrade{silver} в чат, чтобы открыть меню улучшений!"
+	}
+
+	"Open_Menu_ReminderHud"
+	{
+		"ru" "Напишите !upgrade или /upgrade в чат, чтобы открыть меню улучшений!"
+	}
+
+	"Menu_Level"
+	{
+		"ru" "Уровень: %i / %i"
+	}
+
+	"Menu_Cost"
+	{
+		"ru" "Цена: %i"
+	}
+
+	"Menu_Credits"
+	{
+		"ru" "Кредитов: %i"
+	}
+
+	"Menu_Queue_Level"
+	{
+		"ru" "(Уровень: %i)"
+	}
+
+	"Menu_Queue_Credits"
+	{
+		"ru" "(Кредитов: %i)"
+	}
+
+	"Class"
+	{
+		"ru" "Класс"
+	}
+
+	"Slot_Primary"
+	{
+		"ru" "Основное оружие"
+	}
+
+	"Slot_Secondary"
+	{
+		"ru" "Доп. оружие"
+	}
+
+	"Slot_Melee"
+	{
+		"ru" "Ближний бой"
+	}
+
+	"Upgrade_Does_Not_Exist"
+	{
+		"ru" "Улучшение {dodgerblue}%s{silver} не существует."
+	}
+
+	"Weapon_Does_Not_Exist"
+	{
+		"ru" "Оружие {dodgerblue}%s{silver} не существует в конфигурационных файлах Escalation или недействительно."
+	}
+	
+	"Upgrade_Not_Banned"
+	{
+		"ru" "Улучшение {dodgerblue}%s{silver} не запрещено."
+	}
+	
+	"Combo_Not_Banned"
+	{
+		"ru" "Улучшение ({dodgerblue}%s{silver}) и оружие ({dodgerblue}%s{silver}) не запрещено вместе."
+	}
+
+	"Upgrade_Banned_Admin"
+	{
+		"ru" "Улучшение {dodgerblue}%s{silver} было запрещено."
+	}
+
+	"Upgrade_Banned_Admin_Log"
+	{
+		"ru" "\"%L\" запретил улучшение \"%s\"."
+	}
+
+	"Upgrade_Unbanned_Admin"
+	{
+		"ru" "Улучшение {dodgerblue}%s{silver} было запрещено."
+	}
+
+	"Upgrade_Unbanned_Admin_Log"
+	{
+		"ru" "\"%L\" разрешил улучшение \"%s\"."
+	}
+	
+	"Upgrade_BannedReset_Admin"
+	{
+		"ru" "Все запреты на улучшения были сброшены."
+	}
+
+	"Upgrade_BannedReset_Admin_Log"
+	{
+		"ru" "\"%L\" сбросил все запреты на улучшение."
+	}
+	
+	"UpgradeCombo_Banned_Admin"
+	{
+		"ru" "Покупка улучшения {dodgerblue}%s{silver} при использовании оружия {dodgerblue}%s{silver} было запрещено."
+	}
+	
+	"UpgradeCombo_Banned_Admin_Log"
+	{
+		"ru" "\"%L\" запретил покупку улучшения \"%s\" при использовании оружия \"%s\"."
+	}
+	
+	"UpgradeCombo_Unbanned_Admin"
+	{
+		"ru" "Покупка улучшения {dodgerblue}%s{silver} при использовании оружия {dodgerblue}%s{silver} было разрешено."
+	}
+
+	"UpgradeCombo_Unbanned_Admin_Log"
+	{
+		"ru" "\"%L\" разрешил покупку улучшения \"%s\" при использовании оружия \"%s\"."
+	}
+
+	"UpgradeCombo_BannedReset_Admin"
+	{
+		"ru" "Все запреты на улучшение/комбинацию оружия были сброшены."
+	}
+
+	"UpgradeCombo_BannedReset_Admin_Log"
+	{
+		"ru" "\"%L\" сбросиил все запреты на улучшения/комбинации оружия."
+	}
+
+	"Configs_Reloaded_Admin"
+	{
+		"ru" "Все конфигурационные файлы были перезапущены."
+	}
+
+	"Configs_Reloaded_Admin_Log"
+	{
+		"ru" "\"%L\" перезапустил все конфигурационные файлы."
+	}
+	
+	"BanUpgrade_Usage"
+	{
+		"ru" "Использование: sm_banupgrade <UpgradeName>"
+	}
+	
+	"UnbanUpgrade_Usage"
+	{
+		"ru" "Использование: sm_unbanupgrade <UpgradeName>"
+	}
+
+	"BanUpgradeCombo_Usage"
+	{
+		"ru" "Использование: sm_bancombo <UpgradeName> <Weapon Item Definition index>"
+	}
+
+	"UnbanUpgradeCombo_Usage"
+	{
+		"ru" "Использование: sm_unbancombo <UpgradeName> <Weapon Item Definition index>"
+	}
+	
+	"SetGameInfo_Usage"
+	{
+		"ru" "Использование: sm_setgameinfo <SectionName.Key> <Value> <IsFloat>"
+	}
+	
+	"GameInfo_UnknownVar"
+	{
+		"ru" "Неизвестная переменная."
+	}
+	
+	"GameInfo_VarSet"
+	{
+		"ru" "Переменная GameInfo установлена."
+	}
+
+	"Command_Ingame_Only"
+	{
+		"ru" "Вы должны быть в игре, чтобы использовать эту команду."
+	}
+
+	"Command_Onteam_Only"
+	{
+		"ru" "Вы должны присоединиться к команде, чтобы использовать эту команду."
+	}
+}
